@@ -1,0 +1,120 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: blog_db_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.7.1
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+
+      - name: Install project
+        run: poetry install --no-interaction
+
+      - name: Run tests
+        env:
+          ENVIRONMENT: testing
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/blog_db_test
+          OPENAI_API_KEY: sk-test
+          ANTHROPIC_API_KEY: sk-ant-test
+          AHREFS_API_KEY: test
+          PERPLEXITY_API_KEY: test
+        run: |
+          poetry run pytest tests/unit tests/integration \
+            --cov=src/blog_automation \
+            --cov-report=xml \
+            --cov-report=html \
+            -v
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install linting tools
+        run: |
+          pip install black flake8 mypy isort
+
+      - name: Check formatting with Black
+        run: black --check src/ tests/
+
+      - name: Check imports with isort
+        run: isort --check-only src/ tests/
+
+      - name: Lint with flake8
+        run: flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203
+
+      - name: Type check with mypy
+        run: mypy src/ --ignore-missing-imports
+
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install safety
+        run: pip install safety
+
+      - name: Check for vulnerabilities
+        run: safety check --full-report || true
