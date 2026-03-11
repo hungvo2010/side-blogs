@@ -43,25 +43,44 @@ def research_keyword(
 
     keyword = keyword.strip().lower()
 
+    from blog_automation.config import get_settings
+    settings = get_settings()
+
+    if settings.mock_mode:
+        logger.info("MOCK MODE: Skipping keyword research API calls")
+        metrics = {"volume": 1200, "difficulty": 35}
+        serp_features = {"featured_snippet": True, "knowledge_panel": False}
+        top_pages = [
+            {"url": "https://example.com/competitor1", "title": "Top Competitor", "word_count": 1800}
+        ]
+        competitor_analysis = {"avg_word_count": 1800, "avg_domain_rating": 45}
+    else:
+        try:
+            # Initialize Ahrefs client
+            ahrefs = AhrefsClient()
+
+            # Get keyword metrics
+            logger.info("Fetching keyword metrics", keyword=keyword)
+            metrics = ahrefs.get_keyword_metrics(keyword, country)
+
+            # Get SERP features
+            logger.info("Analyzing SERP features", keyword=keyword)
+            serp_features = ahrefs.serp_features(keyword, country)
+
+            # Get top pages for competitor analysis
+            logger.info("Analyzing competitors", keyword=keyword)
+            top_pages = ahrefs.top_pages(keyword, country, limit=10)
+
+            # Analyze competitors
+            competitor_analysis = ahrefs.competitor_analysis(keyword, country)
+        except Exception as e:
+            raise ProcessingError(
+                message=f"Keyword research failed: {str(e)}",
+                step="keyword_research",
+                context={"keyword": keyword},
+            ) from e
+
     try:
-        # Initialize Ahrefs client
-        ahrefs = AhrefsClient()
-
-        # Get keyword metrics
-        logger.info("Fetching keyword metrics", keyword=keyword)
-        metrics = ahrefs.get_keyword_metrics(keyword, country)
-
-        # Get SERP features
-        logger.info("Analyzing SERP features", keyword=keyword)
-        serp_features = ahrefs.serp_features(keyword, country)
-
-        # Get top pages for competitor analysis
-        logger.info("Analyzing competitors", keyword=keyword)
-        top_pages = ahrefs.top_pages(keyword, country, limit=10)
-
-        # Analyze competitors
-        competitor_analysis = ahrefs.competitor_analysis(keyword, country)
-
         # Determine search intent
         intent = _determine_intent(keyword, serp_features)
 

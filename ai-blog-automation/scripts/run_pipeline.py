@@ -130,34 +130,92 @@ def cmd_publish(article_id: int):
         return result
 
 
+def cmd_revise(article_id: int, feedback: str = None):
+    """Revise article based on feedback."""
+    print(f"✍️  Revising article ID: {article_id}")
+    
+    from blog_automation.models import get_session, Article
+    from blog_automation.pipelines import revise_article_with_feedback
+    
+    with get_session() as session:
+        article = session.query(Article).get(article_id)
+        if not article:
+            print(f"❌ Article {article_id} not found")
+            return None
+        
+        # If no feedback provided as arg, use the one stored in DB from review interface
+        if not feedback:
+            feedback = getattr(article, "reviewer_feedback", None)
+            if not feedback:
+                print("❌ No feedback found in database or arguments")
+                return None
+        
+        print(f"   Using feedback: {feedback}")
+        article = revise_article_with_feedback(article, feedback)
+        
+        # Commit the changes
+        session.add(article)
+        session.commit()
+        
+        print(f"✅ Revision complete!")
+        print(f"   New words: {article.word_count}")
+        return article
+
+
 def cmd_full(keyword: str):
     """Run full pipeline from keyword to draft."""
     print(f"🎯 Running full pipeline for: {keyword}")
     print("=" * 50)
     
-    # Step 1: Research
+    # Step 1: Research & Brief
     brief = cmd_brief(keyword)
     if not brief:
         return None
     
     print()
     
-    # Step 2: Draft
     from blog_automation.models import get_session
-    from blog_automation.pipelines import content_brief_to_draft
+    from blog_automation.pipelines import (
+        content_brief_to_draft,
+        fact_check_article,
+        seo_optimize_article,
+        run_quality_gates
+    )
     
     with get_session() as session:
-        session.add(brief)
-        article = content_brief_to_draft(brief, session)
+        # Step 2: Draft
+        print("\n✍️  Drafting Article...")
+        article = content_brief_to_draft(brief)
+        session.add(article)
+        session.commit()
+        session.refresh(article)
+        print(f"✅ Draft created: ID={article.id} ({article.word_count} words)")
+        
+        # Step 3: Fact-check
+        print("\n🔬 Running Fact-checking...")
+        report = fact_check_article(article)
+        session.refresh(article)
+        print(f"✅ Fact-check complete: {report.get('accuracy_rate', 0):.1f}% accuracy")
+        
+        # Step 4: SEO Optimization
+        print("\n📈 Running SEO Optimization...")
+        seo_optimize_article(article)
+        session.refresh(article)
+        print(f"✅ SEO optimized: Score={article.seo_score}")
+        
+        # Step 5: Quality Gates
+        print("\n🛡️  Running Quality Gates...")
+        run_quality_gates(article)
+        session.refresh(article)
+        print(f"✅ Quality gates complete: Status={article.status}")
         
         print(f"\n{'=' * 50}")
         print(f"✅ COMPLETE!")
         print(f"   Article ID: {article.id}")
         print(f"   Title: {article.title}")
-        print(f"   Words: {article.word_count}")
-        print(f"\nNext steps:")
-        print(f"   poetry run python scripts/run_pipeline.py factcheck {article.id}")
-        print(f"   poetry run python scripts/run_pipeline.py seo {article.id}")
+        print(f"   Final Status: {article.status}")
+        print(f"\nReview this article in the dashboard: http://localhost:8501")
+        print(f"\nTo publish, run:")
         print(f"   poetry run python scripts/run_pipeline.py publish {article.id}")
         
         return article
@@ -177,6 +235,7 @@ def main():
         "factcheck": (cmd_factcheck, int, "article_id"),
         "seo": (cmd_seo, int, "article_id"),
         "publish": (cmd_publish, int, "article_id"),
+        "revise": (cmd_revise, int, "article_id"),
         "full": (cmd_full, str, "keyword"),
     }
     

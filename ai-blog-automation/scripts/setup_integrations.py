@@ -172,8 +172,7 @@ def test_google_analytics():
     try:
         from blog_automation.integrations import GoogleAnalyticsClient
         client = GoogleAnalyticsClient(
-            property_id=property_id,
-            credentials_path=service_account
+            property_id=property_id
         )
         print("   ✅ Google Analytics configured!")
         return True
@@ -191,11 +190,12 @@ def test_database():
         print("   ⚠️  Using default/local database URL")
     
     try:
-        from blog_automation.models import get_engine, Base
+        from blog_automation.models import get_engine
+        from sqlalchemy import text
         engine = get_engine()
         # Test connection
         with engine.connect() as conn:
-            conn.execute("SELECT 1")
+            conn.execute(text("SELECT 1"))
         print("   ✅ Database connected!")
         return True
     except Exception as e:

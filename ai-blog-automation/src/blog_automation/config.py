@@ -98,6 +98,9 @@ class Settings(BaseSettings):
     smtp_password: str | None = Field(default=None, description="SMTP password")
 
     # Content Generation
+    mock_mode: bool = Field(
+        default=False, description="Run in mock mode with dummy data"
+    )
     default_word_count: int = Field(
         default=2000, description="Default target word count"
     )

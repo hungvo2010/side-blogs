@@ -62,14 +62,14 @@ Return JSON:
 
 
 def extract_claims(content: str) -> list[dict[str, Any]]:
-    """Extract factual claims from article content.
+    """Extract factual claims from article content."""
+    from blog_automation.config import get_settings
+    if get_settings().mock_mode:
+        return [
+            {"claim": "The first computer was invented in 1943.", "type": "historical", "confidence": "high"},
+            {"claim": "Python was created by Guido van Rossum.", "type": "historical", "confidence": "high"}
+        ]
 
-    Args:
-        content: Article content
-
-    Returns:
-        List of claim dictionaries
-    """
     logger.info("Extracting claims from content")
 
     claude = ClaudeClient()
@@ -133,14 +133,11 @@ def filter_checkworthy_claims(claims: list[dict]) -> list[dict]:
 
 
 def retrieve_evidence(claim: str) -> list[dict[str, Any]]:
-    """Retrieve evidence for a claim using web search.
+    """Retrieve evidence for a claim using web search."""
+    from blog_automation.config import get_settings
+    if get_settings().mock_mode:
+        return [{"url": "https://wikipedia.org", "title": "Wikipedia", "snippet": "Evidence supports this claim."}]
 
-    Args:
-        claim: Claim to find evidence for
-
-    Returns:
-        List of evidence sources
-    """
     perplexity = PerplexityClient()
 
     result = perplexity.get_evidence(claim, source_count=3)
@@ -161,15 +158,11 @@ def retrieve_evidence(claim: str) -> list[dict[str, Any]]:
 
 
 def verify_claim(claim: str, evidence: list[dict]) -> dict[str, Any]:
-    """Verify a claim against evidence.
+    """Verify a claim against evidence."""
+    from blog_automation.config import get_settings
+    if get_settings().mock_mode:
+        return {"verdict": "supported", "confidence": 100, "explanation": "Mock verification.", "suggested_revision": None}
 
-    Args:
-        claim: Claim to verify
-        evidence: List of evidence sources
-
-    Returns:
-        Verification result
-    """
     claude = ClaudeClient()
 
     # Format evidence

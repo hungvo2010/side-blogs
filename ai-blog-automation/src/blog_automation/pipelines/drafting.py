@@ -68,18 +68,14 @@ Requirements:
 
 
 def generate_outline(brief: ContentBrief) -> str:
-    """Generate article outline from content brief.
+    """Generate article outline from content brief."""
+    from blog_automation.config import get_settings
+    if get_settings().mock_mode:
+        return f"# {brief.keyword.title()}\n\n## Introduction\n\n## Section 1\n\n### Sub 1\n\n## Section 2\n\n## Conclusion"
 
-    Args:
-        brief: ContentBrief with sections
-
-    Returns:
-        Markdown outline string
-    """
     logger.info("Generating outline", keyword=brief.keyword)
-
     openai = OpenAIClient()
-
+    # ... rest of the original logic ...
     # Format sections for prompt
     sections_text = ""
     for section in brief.get_sections():
@@ -108,19 +104,25 @@ def generate_article_draft(
     brief: ContentBrief,
     outline: str,
 ) -> Article:
-    """Generate full article draft from brief and outline.
+    """Generate full article draft from brief and outline."""
+    from blog_automation.config import get_settings
+    if get_settings().mock_mode:
+        mock_content = f"# {brief.keyword.title()}\n\nThis is a mock article about {brief.keyword}.\n\n## Introduction\nWelcome to our guide about {brief.keyword}.\n\n## Benefits\nThere are many benefits to {brief.keyword}.\n\n## Conclusion\nIn summary, {brief.keyword} is great. [Source: https://wikipedia.org]"
+        return Article(
+            title=brief.keyword.title(),
+            slug=_generate_slug(brief.keyword),
+            keyword=brief.keyword,
+            content_draft=mock_content,
+            outline=outline,
+            status="draft",
+            ai_model_used="mock-model",
+            ai_generation_cost=0.0,
+            word_count=len(mock_content.split()),
+        )
 
-    Args:
-        brief: ContentBrief with all data
-        outline: Generated outline
-
-    Returns:
-        Article with draft content
-    """
     logger.info("Generating article draft", keyword=brief.keyword)
-
     openai = OpenAIClient()
-
+    # ... rest of original logic ...
     # Prepare prompt data
     word_count = brief.get_target_word_count()
     unique_angle = brief.get_unique_angle() or "Provide comprehensive, actionable information"
@@ -245,6 +247,89 @@ def validate_draft_quality(
     return is_valid, errors
 
 
+REVISION_SYSTEM_PROMPT = """You are a professional blog editor. Your task is to revise an existing blog post based on specific human feedback.
+
+Maintain the original structure where possible, but strictly address all points in the feedback.
+Ensure the final output is high-quality, follows the original guidelines, and improves upon the initial draft.
+
+Guidelines:
+- Address ALL points in the feedback
+- Maintain the conversational tone
+- Keep short paragraphs
+- Ensure proper markdown formatting
+- Do not add meta-commentary about the changes (just return the revised article)"""
+
+REVISION_USER_PROMPT = """Please revise the following blog post.
+
+--- ORIGINAL CONTENT ---
+{content}
+--- END ORIGINAL CONTENT ---
+
+--- HUMAN FEEDBACK ---
+{feedback}
+--- END HUMAN FEEDBACK ---
+
+Target keyword: {keyword}
+
+Requirements for the revision:
+- Address all feedback points
+- Keep the length similar unless requested otherwise
+- Ensure all H2/H3 headings are still present and improved
+- Return the full revised article in markdown format."""
+
+
+def revise_article_with_feedback(
+    article: Article,
+    feedback: str,
+) -> Article:
+    """Revise an article based on human feedback.
+
+    Args:
+        article: Article to revise
+        feedback: Human feedback string
+
+    Returns:
+        Updated Article with revised content
+    """
+    logger.info("Revising article with feedback", article_id=article.id)
+
+    openai = OpenAIClient()
+
+    user_prompt = REVISION_USER_PROMPT.format(
+        content=article.content_draft or "",
+        feedback=feedback,
+        keyword=article.keyword,
+    )
+
+    response = openai.chat_complete(
+        messages=[
+            {"role": "system", "content": REVISION_SYSTEM_PROMPT},
+            {"role": "user", "content": user_prompt},
+        ],
+        temperature=0.5,  # Lower temperature for more focused revision
+        max_tokens=4000,
+    )
+
+    revised_content = response.get("content", "")
+
+    # Update article
+    article.content_draft = revised_content
+    article.status = "draft"  # Reset to draft status for re-validation/review
+    article.ai_generation_cost += response.get("cost", 0)
+    
+    # Update word count
+    article.update_word_count()
+
+    logger.info(
+        "Article revised",
+        article_id=article.id,
+        new_word_count=article.word_count,
+        cost=f"${response.get('cost', 0):.4f}",
+    )
+
+    return article
+
+
 def content_brief_to_draft(brief: ContentBrief) -> Article:
     """Complete pipeline: brief → outline → draft.
 
@@ -332,20 +417,15 @@ def _extract_title(content: str, keyword: str) -> str:
 
 
 def _generate_slug(keyword: str) -> str:
-    """Generate URL slug from keyword.
-
-    Args:
-        keyword: Target keyword
-
-    Returns:
-        URL-safe slug
-    """
+    """Generate URL slug from keyword."""
+    import uuid
     # Convert to lowercase and replace spaces with hyphens
     slug = keyword.lower().strip()
     slug = re.sub(r"[^\w\s-]", "", slug)
     slug = re.sub(r"[\s_]+", "-", slug)
     slug = re.sub(r"-+", "-", slug)
 
-    # Add timestamp for uniqueness
+    # Add timestamp and random suffix for uniqueness
     timestamp = datetime.utcnow().strftime("%Y%m%d")
-    return f"{slug}-{timestamp}"
+    random_suffix = str(uuid.uuid4())[:4]
+    return f"{slug}-{timestamp}-{random_suffix}"

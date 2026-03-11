@@ -13,6 +13,7 @@ from blog_automation.pipelines.drafting import (
     generate_article_draft,
     content_brief_to_draft,
     validate_draft_quality,
+    revise_article_with_feedback,
 )
 from blog_automation.pipelines.fact_checking import (
     extract_claims,
@@ -56,6 +57,7 @@ __all__ = [
     "generate_article_draft",
     "content_brief_to_draft",
     "validate_draft_quality",
+    "revise_article_with_feedback",
     # Fact Checking
     "extract_claims",
     "filter_checkworthy_claims",

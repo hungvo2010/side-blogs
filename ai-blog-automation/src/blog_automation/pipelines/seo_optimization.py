@@ -45,14 +45,22 @@ Return only the meta description, nothing else."""
 
 
 def analyze_content(article: Article) -> dict[str, Any]:
-    """Analyze article content for SEO.
+    """Analyze article content for SEO."""
+    from blog_automation.config import get_settings
+    if get_settings().mock_mode:
+        return {
+            "score": 85,
+            "metrics": {
+                "word_count": article.word_count,
+                "keyword_density": 1.2,
+                "h2_count": 4,
+                "internal_links": 2,
+                "external_links": 3
+            },
+            "issues": ["Add one more internal link"],
+            "suggestions": ["Use keyword in first paragraph"]
+        }
 
-    Args:
-        article: Article to analyze
-
-    Returns:
-        SEO analysis results
-    """
     logger.info("Analyzing content for SEO", article_id=article.id)
 
     rankmath = RankMathClient()
@@ -187,16 +195,11 @@ def generate_meta_title(
     title: str,
     content: str,
 ) -> str:
-    """Generate SEO-optimized meta title.
+    """Generate SEO-optimized meta title."""
+    from blog_automation.config import get_settings
+    if get_settings().mock_mode:
+        return f"{title} | Expert Guide to {keyword}"
 
-    Args:
-        keyword: Target keyword
-        title: Article title
-        content: Article content
-
-    Returns:
-        Meta title (50-60 chars)
-    """
     openai = OpenAIClient()
 
     # Create summary from first 500 chars
@@ -223,16 +226,11 @@ def generate_meta_description(
     title: str,
     content: str,
 ) -> str:
-    """Generate SEO-optimized meta description.
+    """Generate SEO-optimized meta description."""
+    from blog_automation.config import get_settings
+    if get_settings().mock_mode:
+        return f"Discover everything you need to know about {keyword}. Our expert guide covers the best tips, strategies, and insights for success."
 
-    Args:
-        keyword: Target keyword
-        title: Article title
-        content: Article content
-
-    Returns:
-        Meta description (150-160 chars)
-    """
     openai = OpenAIClient()
 
     # Create summary from first 500 chars

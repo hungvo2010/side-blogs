@@ -1,12 +1,12 @@
 """Ahrefs API client for keyword research.
 
-Provides keyword metrics, SERP analysis, and competitor research.
+Provides keyword metrics, SERP analysis, and competitor research using API v3.
 """
 
 from typing import Any
 
 from blog_automation.config import get_settings
-from blog_automation.errors import APIAuthenticationError, InvalidKeywordError
+from blog_automation.errors import APIAuthenticationError, InvalidKeywordError, APIInvalidResponseError
 from blog_automation.integrations.base_client import HTTPClient
 from blog_automation.integrations.cache import get_cache
 from blog_automation.logging_config import get_logger
@@ -15,7 +15,7 @@ logger = get_logger(__name__)
 
 
 class AhrefsClient(HTTPClient):
-    """Ahrefs API client for keyword research.
+    """Ahrefs API client for keyword research (v3).
 
     Provides methods for:
     - Search volume lookup
@@ -46,320 +46,172 @@ class AhrefsClient(HTTPClient):
             base_url=self.BASE_URL,
             timeout=30,
             max_retries=3,
-            rate_limit=30,  # Ahrefs has strict rate limits
+            rate_limit=30,
         )
 
         self.set_auth_header("Authorization", f"Bearer {self.api_key}")
         self.cache = get_cache()
-        logger.info("Ahrefs client initialized")
+        logger.info("Ahrefs client initialized (v3)")
 
     def _validate_keyword(self, keyword: str) -> str:
-        """Validate and clean keyword.
-
-        Args:
-            keyword: Keyword to validate
-
-        Returns:
-            Cleaned keyword
-
-        Raises:
-            InvalidKeywordError: If keyword is invalid
-        """
+        """Validate and clean keyword."""
         if not keyword or not keyword.strip():
             raise InvalidKeywordError(
                 message="Keyword cannot be empty",
                 keyword=keyword,
             )
+        return keyword.strip().lower()
 
-        keyword = keyword.strip().lower()
-
-        if len(keyword) > 200:
-            raise InvalidKeywordError(
-                message="Keyword too long (max 200 characters)",
-                keyword=keyword,
-            )
-
-        return keyword
-
-    def search_volume(
+    def get_keyword_overview(
         self,
         keyword: str,
         country: str = "us",
     ) -> dict[str, Any]:
-        """Get search volume for a keyword.
-
-        Args:
-            keyword: Target keyword
-            country: Country code (default: us)
-
-        Returns:
-            Dict with volume, cpc, and trend data
-        """
-        keyword = self._validate_keyword(keyword)
-
-        # Check cache
-        cache_key = f"ahrefs_volume:{keyword}:{country}"
-        cached = self.cache.get_cached(cache_key, "keyword_volume")
-        if cached:
-            return cached
-
-        response = self.get(
-            "keywords-explorer/volume",
-            params={
-                "keyword": keyword,
-                "country": country,
-            },
-        )
-
-        result = {
-            "keyword": keyword,
-            "volume": response.get("volume", 0),
-            "cpc": response.get("cpc", 0),
-            "trend": response.get("trend", []),
-            "country": country,
-        }
-
-        self.cache.set_cache(cache_key, result, "keyword_volume")
-        return result
-
-    def keyword_difficulty(
-        self,
-        keyword: str,
-        country: str = "us",
-    ) -> dict[str, Any]:
-        """Get keyword difficulty score.
+        """Get overview metrics for a keyword.
 
         Args:
             keyword: Target keyword
             country: Country code
 
         Returns:
-            Dict with difficulty score and metrics
+            Dict with volume, difficulty, etc.
         """
         keyword = self._validate_keyword(keyword)
-
-        cache_key = f"ahrefs_kd:{keyword}:{country}"
-        cached = self.cache.get_cached(cache_key, "keyword_difficulty")
+        cache_key = f"ahrefs_overview:{keyword}:{country}"
+        cached = self.cache.get_cached(cache_key, "keyword_overview")
         if cached:
             return cached
 
         response = self.get(
-            "keywords-explorer/difficulty",
+            "keywords-explorer/overview",
             params={
-                "keyword": keyword,
+                "keywords": keyword,
                 "country": country,
+                "select": "volume,difficulty,cpc,lowest_dr_top10"
             },
         )
 
+        # v3 returns results in a list under "keywords"
+        keywords_data = response.get("keywords", [])
+        if not keywords_data:
+            logger.warning(f"No keyword data returned for: {keyword}")
+            return {"volume": 0, "difficulty": 50, "cpc": 0}
+
+        data = keywords_data[0]
         result = {
             "keyword": keyword,
-            "difficulty": response.get("difficulty", 50),
-            "clicks": response.get("clicks", 0),
-            "clicks_per_search": response.get("clicks_per_search", 0),
+            "volume": data.get("volume", 0),
+            "difficulty": data.get("difficulty", 50),
+            "cpc": data.get("cpc", 0),
             "country": country,
         }
 
-        self.cache.set_cache(cache_key, result, "keyword_difficulty")
+        self.cache.set_cache(cache_key, result, "keyword_overview")
         return result
 
-    def serp_features(
+    def get_serp_overview(
         self,
         keyword: str,
         country: str = "us",
     ) -> dict[str, Any]:
-        """Get SERP features for a keyword.
+        """Get SERP overview for a keyword.
 
         Args:
             keyword: Target keyword
             country: Country code
 
         Returns:
-            Dict with SERP feature information
+            Dict with SERP data
         """
         keyword = self._validate_keyword(keyword)
-
-        cache_key = f"ahrefs_serp:{keyword}:{country}"
-        cached = self.cache.get_cached(cache_key, "serp_features")
+        cache_key = f"ahrefs_serp_v3:{keyword}:{country}"
+        cached = self.cache.get_cached(cache_key, "serp_overview")
         if cached:
             return cached
 
         response = self.get(
-            "keywords-explorer/serp-overview",
+            "serp-overview",
             params={
                 "keyword": keyword,
                 "country": country,
+                "select": "position,url,title,domain_rating,backlinks,word_count,serp_features"
             },
         )
 
-        # Extract SERP features
-        features = response.get("serp_features", {})
+        # v3 response structure for serp-overview
+        serp_data = response.get("serp", [])
         result = {
             "keyword": keyword,
-            "featured_snippet": features.get("featured_snippet", False),
+            "serp": serp_data,
+            "serp_features": response.get("serp_features", {}),
+            "country": country,
+        }
+
+        self.cache.set_cache(cache_key, result, "serp_overview")
+        return result
+
+    def search_volume(self, keyword: str, country: str = "us") -> dict[str, Any]:
+        """Backward compatibility for search_volume."""
+        overview = self.get_keyword_overview(keyword, country)
+        return {"volume": overview.get("volume", 0), "cpc": overview.get("cpc", 0)}
+
+    def keyword_difficulty(self, keyword: str, country: str = "us") -> dict[str, Any]:
+        """Backward compatibility for keyword_difficulty."""
+        overview = self.get_keyword_overview(keyword, country)
+        return {"difficulty": overview.get("difficulty", 50)}
+
+    def serp_features(self, keyword: str, country: str = "us") -> dict[str, Any]:
+        """Backward compatibility for serp_features."""
+        serp = self.get_serp_overview(keyword, country)
+        features = serp.get("serp_features", {})
+        return {
+            "keyword": keyword,
+            "featured_snippet": "featured_snippet" in features,
+            "knowledge_panel": "knowledge_panel" in features,
             "people_also_ask": features.get("people_also_ask", []),
-            "knowledge_panel": features.get("knowledge_panel", False),
-            "local_pack": features.get("local_pack", False),
-            "images": features.get("images", False),
-            "videos": features.get("videos", False),
-            "shopping": features.get("shopping", False),
             "country": country,
         }
 
-        self.cache.set_cache(cache_key, result, "serp_features")
-        return result
-
-    def top_pages(
-        self,
-        keyword: str,
-        country: str = "us",
-        limit: int = 10,
-    ) -> list[dict[str, Any]]:
-        """Get top ranking pages for a keyword.
-
-        Args:
-            keyword: Target keyword
-            country: Country code
-            limit: Number of results
-
-        Returns:
-            List of top page data
-        """
-        keyword = self._validate_keyword(keyword)
-
-        cache_key = f"ahrefs_top:{keyword}:{country}:{limit}"
-        cached = self.cache.get_cached(cache_key, "top_pages")
-        if cached:
-            return cached
-
-        response = self.get(
-            "keywords-explorer/serp-overview",
-            params={
-                "keyword": keyword,
-                "country": country,
-                "limit": limit,
-            },
-        )
-
+    def top_pages(self, keyword: str, country: str = "us", limit: int = 10) -> list[dict[str, Any]]:
+        """Backward compatibility for top_pages."""
+        serp = self.get_serp_overview(keyword, country)
         pages = []
-        for item in response.get("serp", [])[:limit]:
-            pages.append(
-                {
-                    "position": item.get("position"),
-                    "url": item.get("url"),
-                    "title": item.get("title"),
-                    "domain_rating": item.get("domain_rating"),
-                    "url_rating": item.get("url_rating"),
-                    "backlinks": item.get("backlinks"),
-                    "traffic": item.get("traffic"),
-                    "word_count": item.get("word_count"),
-                }
-            )
-
-        self.cache.set_cache(cache_key, pages, "top_pages")
+        for item in serp.get("serp", [])[:limit]:
+            pages.append({
+                "position": item.get("position"),
+                "url": item.get("url"),
+                "title": item.get("title"),
+                "domain_rating": item.get("domain_rating"),
+                "backlinks": item.get("backlinks"),
+                "word_count": item.get("word_count"),
+            })
         return pages
 
-    def competitor_analysis(
-        self,
-        keyword: str,
-        country: str = "us",
-    ) -> dict[str, Any]:
-        """Analyze competitor content for a keyword.
-
-        Args:
-            keyword: Target keyword
-            country: Country code
-
-        Returns:
-            Aggregated competitor analysis
-        """
-        keyword = self._validate_keyword(keyword)
-
-        # Get top pages
+    def competitor_analysis(self, keyword: str, country: str = "us") -> dict[str, Any]:
+        """Analyze competitor content."""
         top_pages = self.top_pages(keyword, country, limit=10)
-
         if not top_pages:
-            return {
-                "keyword": keyword,
-                "avg_word_count": 2000,
-                "avg_domain_rating": 50,
-                "avg_backlinks": 100,
-                "competitors": [],
-            }
+            return {"keyword": keyword, "avg_word_count": 2000, "avg_domain_rating": 50, "competitors": []}
 
-        # Calculate averages
         word_counts = [p.get("word_count", 0) for p in top_pages if p.get("word_count")]
-        domain_ratings = [
-            p.get("domain_rating", 0) for p in top_pages if p.get("domain_rating")
-        ]
-        backlinks = [p.get("backlinks", 0) for p in top_pages if p.get("backlinks")]
+        domain_ratings = [p.get("domain_rating", 0) for p in top_pages if p.get("domain_rating")]
 
         return {
             "keyword": keyword,
             "avg_word_count": sum(word_counts) // len(word_counts) if word_counts else 2000,
             "avg_domain_rating": sum(domain_ratings) // len(domain_ratings) if domain_ratings else 50,
-            "avg_backlinks": sum(backlinks) // len(backlinks) if backlinks else 100,
-            "min_word_count": min(word_counts) if word_counts else 1000,
-            "max_word_count": max(word_counts) if word_counts else 3000,
             "competitors": top_pages[:5],
         }
 
-    def keyword_difficulty_batch(
-        self,
-        keywords: list[str],
-        country: str = "us",
-    ) -> list[dict[str, Any]]:
-        """Get difficulty for multiple keywords.
-
-        Args:
-            keywords: List of keywords
-            country: Country code
-
-        Returns:
-            List of difficulty results
-        """
-        results = []
-        for keyword in keywords:
-            try:
-                result = self.keyword_difficulty(keyword, country)
-                results.append(result)
-            except InvalidKeywordError:
-                results.append(
-                    {
-                        "keyword": keyword,
-                        "difficulty": None,
-                        "error": "Invalid keyword",
-                    }
-                )
-        return results
-
-    def get_keyword_metrics(
-        self,
-        keyword: str,
-        country: str = "us",
-    ) -> dict[str, Any]:
-        """Get comprehensive keyword metrics.
-
-        Combines volume, difficulty, and SERP data.
-
-        Args:
-            keyword: Target keyword
-            country: Country code
-
-        Returns:
-            Combined keyword metrics
-        """
-        keyword = self._validate_keyword(keyword)
-
-        volume_data = self.search_volume(keyword, country)
-        difficulty_data = self.keyword_difficulty(keyword, country)
-        serp_data = self.serp_features(keyword, country)
-
+    def get_keyword_metrics(self, keyword: str, country: str = "us") -> dict[str, Any]:
+        """Get combined keyword metrics."""
+        overview = self.get_keyword_overview(keyword, country)
+        serp = self.serp_features(keyword, country)
         return {
             "keyword": keyword,
-            "volume": volume_data.get("volume", 0),
-            "difficulty": difficulty_data.get("difficulty", 50),
-            "cpc": volume_data.get("cpc", 0),
-            "clicks": difficulty_data.get("clicks", 0),
-            "serp_features": serp_data,
+            "volume": overview.get("volume", 0),
+            "difficulty": overview.get("difficulty", 50),
+            "cpc": overview.get("cpc", 0),
+            "serp_features": serp,
             "country": country,
         }

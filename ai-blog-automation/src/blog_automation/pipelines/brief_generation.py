@@ -190,19 +190,16 @@ def _generate_sections(
     volume: int,
     brief_data: dict,
 ) -> list[dict[str, Any]]:
-    """Generate H2 sections using Claude.
+    """Generate H2 sections using Claude."""
+    from blog_automation.config import get_settings
+    if get_settings().mock_mode:
+        return [
+            {"h2": f"Understanding {keyword}", "purpose": "Introduction", "target_length": "200 words", "key_points": ["Point 1"]},
+            {"h2": f"Benefits of {keyword}", "purpose": "Value", "target_length": "300 words", "key_points": ["Point A"]},
+            {"h2": f"How to get started with {keyword}", "purpose": "Guide", "target_length": "400 words", "key_points": ["Step 1"]},
+            {"h2": "Conclusion", "purpose": "Wrap up", "target_length": "100 words", "key_points": ["Summary"]}
+        ]
 
-    Args:
-        claude: Claude client
-        keyword: Target keyword
-        intent: Search intent
-        difficulty: Keyword difficulty
-        volume: Search volume
-        brief_data: Existing brief data
-
-    Returns:
-        List of section dictionaries
-    """
     # Extract competitor H2s if available
     competitor_h2s = ""
     competitor_analysis = brief_data.get("competitor_analysis", {})
@@ -261,16 +258,11 @@ def _generate_lsi_keywords(
     keyword: str,
     intent: str,
 ) -> list[str]:
-    """Generate LSI keywords using Claude.
+    """Generate LSI keywords using Claude."""
+    from blog_automation.config import get_settings
+    if get_settings().mock_mode:
+        return [f"{keyword} tips", f"{keyword} guide", f"best {keyword}", f"{keyword} reviews"]
 
-    Args:
-        claude: Claude client
-        keyword: Target keyword
-        intent: Search intent
-
-    Returns:
-        List of LSI keywords
-    """
     prompt = LSI_KEYWORD_PROMPT.format(keyword=keyword, intent=intent)
 
     response = claude.extract_json(prompt)
@@ -297,16 +289,11 @@ def _collect_sources(
     keyword: str,
     source_count: int = 10,
 ) -> list[dict[str, Any]]:
-    """Collect external sources using Perplexity.
+    """Collect external sources using Perplexity."""
+    from blog_automation.config import get_settings
+    if get_settings().mock_mode:
+        return [{"url": "https://wikipedia.org", "title": "Wikipedia"}]
 
-    Args:
-        perplexity: Perplexity client
-        keyword: Target keyword
-        source_count: Number of sources to collect
-
-    Returns:
-        List of source dictionaries
-    """
     # Search for authoritative sources
     result = perplexity.search(
         f"authoritative sources about {keyword}",
@@ -333,17 +320,11 @@ def _generate_unique_angle(
     intent: str,
     competitor_analysis: dict,
 ) -> str:
-    """Generate unique angle using Claude.
+    """Generate unique angle using Claude."""
+    from blog_automation.config import get_settings
+    if get_settings().mock_mode:
+        return f"A fresh look at {keyword} from a data-driven perspective."
 
-    Args:
-        claude: Claude client
-        keyword: Target keyword
-        intent: Search intent
-        competitor_analysis: Competitor data
-
-    Returns:
-        Unique angle description
-    """
     # Create competitor summaries
     competitor_summaries = ""
     if competitor_analysis.get("top_pages"):

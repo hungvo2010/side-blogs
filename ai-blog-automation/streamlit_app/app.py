@@ -49,9 +49,8 @@ def init_db():
     os.environ.setdefault("ENVIRONMENT", "development")
     os.environ.setdefault("DATABASE_URL", "sqlite:///./blog_automation.db")
     
-    from blog_automation.models import Base, get_engine
+    from blog_automation.models import get_engine
     engine = get_engine()
-    Base.metadata.create_all(engine)
     return engine
 
 
@@ -206,12 +205,38 @@ if page == "🏠 Dashboard":
     with col1:
         if st.button("📝 New Article", use_container_width=True):
             st.session_state["show_new_article"] = True
+            st.rerun()
     with col2:
         if st.button("🔄 Run Pipeline", use_container_width=True):
-            st.info("Run: `poetry run python scripts/run_pipeline.py`")
+            st.info("Run: `poetry run python scripts/run_pipeline.py full --keyword 'your-keyword'`")
     with col3:
-        if st.button("📊 View Reports", use_container_width=True):
-            st.switch_page = "📄 All Articles"
+        if st.button("📅 Plan Content", use_container_width=True):
+            st.session_state["page"] = "📅 Content Calendar"
+            st.rerun()
+
+    if st.session_state.get("show_new_article"):
+        with st.form("quick_new_article"):
+            st.subheader("📝 Quick New Article")
+            new_kw = st.text_input("Target Keyword")
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.form_submit_button("🚀 Start Automation"):
+                    if new_kw:
+                        import subprocess
+                        st.info(f"🚀 Launching pipeline for: {new_kw}...")
+                        try:
+                            # Run as background process so it doesn't block UI
+                            subprocess.Popen(["python", "scripts/run_pipeline.py", "full", new_kw])
+                            st.success("Pipeline started! Check back in a few minutes.")
+                            st.session_state["show_new_article"] = False
+                        except Exception as e:
+                            st.error(f"Failed to start pipeline: {e}")
+                    else:
+                        st.error("Please enter a keyword")
+            with col2:
+                if st.form_submit_button("❌ Cancel"):
+                    st.session_state["show_new_article"] = False
+                    st.rerun()
 
 
 # ============================================================================
@@ -360,6 +385,80 @@ elif page == "📄 All Articles":
             
             st.markdown(f"**{len(articles)} article(s) found**")
             
+            # Show article details if one is selected
+            if "selected_article" in st.session_state:
+                selected_id = st.session_state["selected_article"]
+                article = next((a for a in articles if a["id"] == selected_id), None)
+                
+                if article:
+                    st.markdown("---")
+                    col1, col2 = st.columns([5, 1])
+                    with col1:
+                        st.subheader(f"📄 {article['title'] or 'Untitled'}")
+                    with col2:
+                        if st.button("⬅️ Back to List"):
+                            del st.session_state["selected_article"]
+                            st.rerun()
+                    
+                    # Article Info Metrics
+                    m1, m2, m3, m4 = st.columns(4)
+                    m1.metric("Status", article["status"])
+                    m2.metric("Word Count", article["word_count"] or 0)
+                    m3.metric("SEO Score", article["seo_score"] or "N/A")
+                    m4.metric("Keyword", article["keyword"])
+
+                    # Quick Actions for Article
+                    st.markdown("### 🛠️ Article Actions")
+                    col_act1, col_act2 = st.columns(2)
+                    with col_act1:
+                        if st.button("📄 Export to Static HTML", use_container_width=True):
+                            import subprocess
+                            try:
+                                # Run the export script
+                                subprocess.run(["python", "scripts/export_static.py", str(article["id"])], check=True)
+                                st.success(f"Successfully exported to dist/{article['keyword'].replace(' ', '-')}.html")
+                                st.info(f"View at: file://{Path(__file__).parent.parent}/dist/{article['keyword'].replace(' ', '-')}.html")
+                            except Exception as e:
+                                st.error(f"Export failed: {e}")
+                    
+                    with col_act2:
+                        st.button("🚀 Publish to WordPress", disabled=True, use_container_width=True, help="Configure WordPress API keys to enable")
+
+                    tab1, tab2, tab3 = st.tabs(["📝 Content", "✅ Fact-Check", "📊 SEO"])
+                    
+                    with tab1:
+                        st.markdown("### Content Preview")
+                        if article["meta_title"]:
+                            st.markdown(f"**Meta Title:** {article['meta_title']}")
+                        if article["meta_description"]:
+                            st.markdown(f"**Meta Description:** {article['meta_description']}")
+                        st.markdown("---")
+                        st.markdown(article["content_draft"] or "No content yet")
+                    
+                    with tab2:
+                        st.markdown("### Fact-Check Report")
+                        if article["fact_check_report"]:
+                            report = article["fact_check_report"]
+                            c1, c2, c3 = st.columns(3)
+                            c1.metric("Claims Checked", report.get("total_claims_checked", 0))
+                            c2.metric("Accuracy", f"{report.get('accuracy_rate', 0):.1f}%")
+                            c3.metric("Status", "✅ Passed" if report.get("pass") else "❌ Failed")
+                        else:
+                            st.info("No fact-check report available")
+                    
+                    with tab3:
+                        st.markdown("### SEO Analysis")
+                        if article["seo_analysis"]:
+                            analysis = article["seo_analysis"]
+                            st.metric("Score", f"{analysis.get('score', 0)}/100")
+                            if analysis.get("suggestions"):
+                                for sug in analysis["suggestions"][:5]:
+                                    st.info(sug)
+                        else:
+                            st.info("No SEO analysis available")
+                    
+                    st.markdown("---")
+
             # Articles table
             if articles:
                 for article in articles:
@@ -384,6 +483,7 @@ elif page == "📄 All Articles":
                         with col5:
                             if st.button("View", key=f"view_{article['id']}"):
                                 st.session_state["selected_article"] = article["id"]
+                                st.rerun()
                         st.markdown("---")
             else:
                 st.info("No articles found")
@@ -399,30 +499,67 @@ elif page == "📅 Content Calendar":
     st.title("📅 Content Calendar")
     st.markdown("Plan and schedule your content")
     
+    from blog_automation.models import ContentCalendar, get_session
+    
     # Add new keyword
     st.subheader("➕ Add New Keyword")
     with st.form("new_keyword"):
         col1, col2 = st.columns(2)
         with col1:
-            keyword = st.text_input("Keyword")
+            kw_input = st.text_input("Keyword")
         with col2:
-            scheduled_date = st.date_input("Scheduled Date", datetime.now() + timedelta(days=7))
+            date_input = st.date_input("Scheduled Date", datetime.now() + timedelta(days=7))
         
-        priority = st.selectbox("Priority", ["high", "medium", "low"])
-        notes = st.text_area("Notes (optional)")
+        prio_input = st.selectbox("Priority", ["high", "medium", "low"])
+        notes_input = st.text_area("Notes (optional)")
         
         if st.form_submit_button("Add to Calendar"):
-            if keyword:
-                st.success(f"Added '{keyword}' to calendar for {scheduled_date}")
-                # TODO: Save to ContentCalendar model
+            if kw_input:
+                with get_session() as session:
+                    new_entry = ContentCalendar(
+                        keyword=kw_input,
+                        scheduled_date=date_input,
+                        priority=prio_input,
+                        notes=notes_input,
+                        status="planned"
+                    )
+                    session.add(new_entry)
+                    session.commit()
+                st.success(f"Added '{kw_input}' to calendar for {date_input}")
+                st.rerun()
             else:
                 st.error("Please enter a keyword")
     
     st.markdown("---")
     
-    # Calendar view placeholder
+    # Calendar view
     st.subheader("📆 Upcoming Content")
-    st.info("Content calendar entries will appear here once you add keywords to the database.")
+    with get_session() as session:
+        entries = session.query(ContentCalendar).order_by(ContentCalendar.scheduled_date.asc()).all()
+        
+        if not entries:
+            st.info("No planned content yet.")
+        else:
+            for entry in entries:
+                with st.container():
+                    c1, c2, c3, c4 = st.columns([3, 2, 1, 2])
+                    c1.markdown(f"**{entry.keyword}**")
+                    c2.markdown(f"📅 {entry.scheduled_date.strftime('%Y-%m-%d')}")
+                    c3.markdown(f"[{entry.priority.upper()}]")
+                    
+                    if entry.status == "planned":
+                        if c4.button("🚀 Start Automation", key=f"start_{entry.id}"):
+                            import subprocess
+                            subprocess.Popen(["python", "scripts/run_pipeline.py", "full", entry.keyword])
+                            # Update status in DB
+                            db_entry = session.query(ContentCalendar).get(entry.id)
+                            db_entry.status = "in_progress"
+                            session.commit()
+                            st.success(f"Automation started for {entry.keyword}")
+                            st.rerun()
+                    else:
+                        c4.markdown(f"Status: **{entry.status}**")
+                st.markdown("---")
 
 
 # ============================================================================
