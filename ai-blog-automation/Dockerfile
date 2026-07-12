@@ -26,7 +26,6 @@ COPY . .
 
 # Set environment variables
 ENV PYTHONPATH=/app/src
-ENV AIRFLOW_HOME=/app/airflow
 
 # Default command
 CMD ["python", "src/blog_automation/review/interface.py", "stats"]

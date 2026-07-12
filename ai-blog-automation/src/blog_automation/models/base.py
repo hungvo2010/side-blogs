@@ -103,7 +103,6 @@ def get_engine(database_url: str | None = None):
             max_overflow=settings.database_max_overflow,
             pool_pre_ping=True,
         )
-        logger.info("Database engine created", database_url=url.split("@")[-1])
 
     return _engine
 

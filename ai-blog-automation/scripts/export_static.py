@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-import sys
-import os
 import re
+import sys
 from pathlib import Path
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from blog_automation.models import get_session, Article
-from blog_automation.pipelines.publishing import format_markdown_to_html
+from blog_automation.models import Article, get_session
+from blog_automation.pipelines.phase_8_publish.publishing import format_markdown_to_html
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
@@ -26,7 +25,8 @@ HTML_TEMPLATE = """
             --muted: #6b7280;
         }}
         body {{
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
             color: var(--text);
             background: #f9fafb;
@@ -108,6 +108,7 @@ HTML_TEMPLATE = """
 </html>
 """
 
+
 def export_article(article_id: int, output_dir: str = "dist"):
     with get_session() as session:
         article = session.query(Article).get(article_id)
@@ -116,16 +117,16 @@ def export_article(article_id: int, output_dir: str = "dist"):
             return
 
         print(f"📦 Exporting article: {article.title}")
-        
+
         # Ensure output directory exists
         Path(output_dir).mkdir(parents=True, exist_ok=True)
-        
+
         content = article.content_final or article.content_draft or ""
         html_body = format_markdown_to_html(content)
-        
+
         # Remove Gutenberg comments for static HTML
         html_body = re.sub(r"<!-- /?wp:.*? -->", "", html_body)
-        
+
         full_html = HTML_TEMPLATE.format(
             title=article.title,
             meta_description=article.meta_description or "",
@@ -134,19 +135,20 @@ def export_article(article_id: int, output_dir: str = "dist"):
             keyword=article.keyword,
             content_html=html_body,
             ai_model=article.ai_model_used or "GPT-4",
-            seo_score=article.seo_score or 0
+            seo_score=article.seo_score or 0,
         )
-        
+
         file_path = Path(output_dir) / f"{article.slug}.html"
         with open(file_path, "w") as f:
             f.write(full_html)
-            
+
         print(f"✅ Successfully exported to: {file_path}")
         return file_path
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python export_static.py <article_id>")
         sys.exit(1)
-        
+
     export_article(int(sys.argv[1]))

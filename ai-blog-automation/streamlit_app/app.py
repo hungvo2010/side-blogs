@@ -12,8 +12,9 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-import streamlit as st
 from datetime import datetime, timedelta
+
+import streamlit as st
 
 st.set_page_config(
     page_title="AI Blog Automation",
@@ -23,7 +24,8 @@ st.set_page_config(
 )
 
 # Custom CSS
-st.markdown("""
+st.markdown(
+    """
 <style>
     .stMetric {
         background-color: #f0f2f6;
@@ -40,16 +42,23 @@ st.markdown("""
     .status-approved { color: #4caf50; }
     .status-rejected { color: #f44336; }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 
 def init_db():
-    """Initialize database connection."""
+    """Initialize database connection.
+
+    DATABASE_URL (and all other settings) are loaded from .env by
+    blog_automation.config at import time, so we just build the engine.
+    """
     import os
+
     os.environ.setdefault("ENVIRONMENT", "development")
-    os.environ.setdefault("DATABASE_URL", "sqlite:///./blog_automation.db")
-    
+
     from blog_automation.models import get_engine
+
     engine = get_engine()
     return engine
 
@@ -57,7 +66,7 @@ def init_db():
 def get_articles():
     """Get all articles from database."""
     from blog_automation.models import Article, get_session
-    
+
     with get_session() as session:
         articles = session.query(Article).order_by(Article.created_at.desc()).all()
         return [
@@ -83,11 +92,13 @@ def get_pending_reviews():
     """Get pending review tasks."""
     from blog_automation.models import get_session
     from blog_automation.review.task_queue import ReviewTask
-    
+
     with get_session() as session:
-        tasks = session.query(ReviewTask).filter(
-            ReviewTask.status.in_(["pending", "in_review"])
-        ).all()
+        tasks = (
+            session.query(ReviewTask)
+            .filter(ReviewTask.status.in_(["pending", "in_review"]))
+            .all()
+        )
         return [
             {
                 "id": t.id,
@@ -104,7 +115,7 @@ def get_pending_reviews():
 def update_article_status(article_id: int, new_status: str, feedback: str = None):
     """Update article status."""
     from blog_automation.models import Article, get_session
-    
+
     with get_session() as session:
         article = session.query(Article).get(article_id)
         if article:
@@ -116,11 +127,163 @@ def update_article_status(article_id: int, new_status: str, feedback: str = None
     return False
 
 
+PIPELINE_STEPS = ["research", "brief", "draft", "fact_check", "seo", "quality_gates"]
+
+_STEP_LABELS = {
+    "research": "Research",
+    "brief": "Brief",
+    "draft": "Draft",
+    "fact_check": "Fact-check",
+    "seo": "SEO",
+    "quality_gates": "Quality gates",
+}
+
+_PROGRESS_STATUSES = [
+    "researching",
+    "briefing",
+    "drafting",
+    "fact_checking",
+    "seo_review",
+    "quality_gates",
+    "draft",
+    "failed",
+]
+
+
+def get_failed_pipeline_articles(limit: int = 10) -> list[dict]:
+    """Get articles whose pipeline run failed (for toast notifications)."""
+    from blog_automation.models import Article, get_session
+
+    with get_session() as session:
+        rows = (
+            session.query(Article)
+            .filter(Article.status == "failed")
+            .order_by(Article.updated_at.desc())
+            .limit(limit)
+            .all()
+        )
+        return [
+            {
+                "id": a.id,
+                "keyword": a.keyword,
+                "title": a.title,
+                "pipeline_error": a.pipeline_error,
+            }
+            for a in rows
+        ]
+
+
+def get_pipeline_progress_articles(limit: int = 10) -> list[dict]:
+    """Get in-progress / recently run articles for the progress view."""
+    from blog_automation.models import Article, get_session
+
+    with get_session() as session:
+        rows = (
+            session.query(Article)
+            .filter(Article.status.in_(_PROGRESS_STATUSES))
+            .order_by(Article.updated_at.desc())
+            .limit(limit)
+            .all()
+        )
+        return [
+            {
+                "id": a.id,
+                "keyword": a.keyword,
+                "title": a.title,
+                "status": a.status,
+                "pipeline_progress": a.pipeline_progress or {},
+                "pipeline_error": a.pipeline_error,
+            }
+            for a in rows
+        ]
+
+
+def render_pipeline_toasts():
+    """Surface failed pipeline runs as non-blocking toast notifications.
+
+    Note: toasts auto-dismiss after a few seconds, so this is a secondary
+    nudge for active users; see render_pipeline_failure_banner for the
+    persistent, always-visible failure display.
+    """
+    if not db_connected:
+        return
+    try:
+        for a in get_failed_pipeline_articles(limit=5):
+            st.toast(a["pipeline_error"] or "Pipeline failed", icon="❌")
+    except Exception:
+        pass
+
+
+def render_pipeline_failure_banner():
+    """Show a persistent, prominent banner of recent failed pipeline runs.
+
+    Unlike toasts, this stays visible on every dashboard render so the user
+    always sees what failed (even if they were away when it happened).
+    """
+    if not db_connected:
+        return
+    try:
+        failed = get_failed_pipeline_articles(limit=5)
+    except Exception:
+        return
+    if not failed:
+        return
+    with st.container(border=True):
+        st.warning(f"⚠️ {len(failed)} pipeline run(s) failed recently")
+        for a in failed:
+            st.error(
+                f"**{a['title'] or a['keyword']}** (keyword: {a['keyword']}) — "
+                f"{a['pipeline_error'] or 'Pipeline failed'}"
+            )
+
+
+def render_pipeline_progress_view():
+    """Render a progress bar + per-step list for in-progress (non-failed) articles."""
+    if not db_connected:
+        return
+    try:
+        articles = [
+            a
+            for a in get_pipeline_progress_articles(limit=5)
+            if a["status"] != "failed"
+        ]
+    except Exception:
+        return
+    if not articles:
+        return
+    st.subheader("🛠️ Pipeline Progress")
+    for a in articles:
+        prog = a["pipeline_progress"] or {}
+        done = sum(1 for s in PIPELINE_STEPS if prog.get(s) == "done")
+        total = len(PIPELINE_STEPS)
+        with st.container():
+            col1, col2 = st.columns([3, 2])
+            with col1:
+                st.markdown(f"**{a['title'] or a['keyword']}**")
+                st.caption(f"Keyword: {a['keyword']} · Status: {a['status']}")
+            with col2:
+                st.progress(done / total)
+                st.caption(f"{done}/{total} steps done")
+            parts = []
+            for step in PIPELINE_STEPS:
+                state = prog.get(step, "pending")
+                icon = {"done": "✅", "failed": "❌", "pending": "⏳"}.get(state, "⏳")
+                parts.append(f"{icon} {_STEP_LABELS[step]}")
+            st.markdown("  ·  ".join(parts))
+            st.markdown("---")
+
+
 # Sidebar Navigation
 st.sidebar.title("📝 AI Blog Automation")
 page = st.sidebar.radio(
     "Navigation",
-    ["🏠 Dashboard", "📋 Review Queue", "📄 All Articles", "📅 Content Calendar", "⚙️ Settings"]
+    [
+        "🏠 Dashboard",
+        "📋 Review Queue",
+        "📄 All Articles",
+        "📅 Content Calendar",
+        "⚙️ Settings",
+    ],
 )
 
 # Initialize database
@@ -137,9 +300,14 @@ if db_connected:
     try:
         articles = get_articles()
         st.sidebar.metric("Total Articles", len(articles))
-        st.sidebar.metric("Pending Review", len([a for a in articles if a["status"] == "pending_review"]))
-        st.sidebar.metric("Published", len([a for a in articles if a["status"] == "published"]))
-    except:
+        st.sidebar.metric(
+            "Pending Review",
+            len([a for a in articles if a["status"] == "pending_review"]),
+        )
+        st.sidebar.metric(
+            "Published", len([a for a in articles if a["status"] == "published"])
+        )
+    except Exception:
         st.sidebar.info("No articles yet")
 
 
@@ -149,29 +317,42 @@ if db_connected:
 if page == "🏠 Dashboard":
     st.title("🏠 Dashboard")
     st.markdown("Overview of your AI blog automation pipeline")
-    
+
+    render_pipeline_toasts()
+    render_pipeline_failure_banner()
+
     col1, col2, col3, col4 = st.columns(4)
-    
+
     if db_connected:
         try:
             articles = get_articles()
             with col1:
                 st.metric("📄 Total Articles", len(articles))
             with col2:
-                st.metric("⏳ Pending Review", len([a for a in articles if a["status"] == "pending_review"]))
+                st.metric(
+                    "⏳ Pending Review",
+                    len([a for a in articles if a["status"] == "pending_review"]),
+                )
             with col3:
-                st.metric("✅ Published", len([a for a in articles if a["status"] == "published"]))
+                st.metric(
+                    "✅ Published",
+                    len([a for a in articles if a["status"] == "published"]),
+                )
             with col4:
-                avg_seo = sum(a["seo_score"] or 0 for a in articles) / max(len(articles), 1)
+                avg_seo = sum(a["seo_score"] or 0 for a in articles) / max(
+                    len(articles), 1
+                )
                 st.metric("📊 Avg SEO Score", f"{avg_seo:.0f}")
-        except Exception as e:
+        except Exception:
             st.info("No data yet. Run the pipeline to generate articles.")
-    
+
     st.markdown("---")
-    
+
+    render_pipeline_progress_view()
+
     # Recent Activity
     st.subheader("📈 Recent Activity")
-    
+
     if db_connected:
         try:
             articles = get_articles()[:5]
@@ -188,7 +369,7 @@ if page == "🏠 Dashboard":
                                 "pending_review": "🟠",
                                 "approved": "🟢",
                                 "published": "✅",
-                                "rejected": "🔴"
+                                "rejected": "🔴",
                             }.get(article["status"], "⚪")
                             st.markdown(f"{status_color} {article['status']}")
                         with col3:
@@ -196,9 +377,9 @@ if page == "🏠 Dashboard":
                         st.markdown("---")
             else:
                 st.info("No articles yet. Start by running the pipeline!")
-        except:
+        except Exception:
             st.info("No articles yet.")
-    
+
     # Quick Actions
     st.subheader("🚀 Quick Actions")
     col1, col2, col3 = st.columns(3)
@@ -208,7 +389,10 @@ if page == "🏠 Dashboard":
             st.rerun()
     with col2:
         if st.button("🔄 Run Pipeline", use_container_width=True):
-            st.info("Run: `poetry run python scripts/run_pipeline.py full --keyword 'your-keyword'`")
+            st.info(
+                "Run: `poetry run python scripts/run_pipeline.py full "
+                "--keyword 'your-keyword'`"
+            )
     with col3:
         if st.button("📅 Plan Content", use_container_width=True):
             st.session_state["page"] = "📅 Content Calendar"
@@ -223,10 +407,13 @@ if page == "🏠 Dashboard":
                 if st.form_submit_button("🚀 Start Automation"):
                     if new_kw:
                         import subprocess
+
                         st.info(f"🚀 Launching pipeline for: {new_kw}...")
                         try:
                             # Run as background process so it doesn't block UI
-                            subprocess.Popen(["python", "scripts/run_pipeline.py", "full", new_kw])
+                            subprocess.Popen(
+                                ["python", "scripts/run_pipeline.py", "full", new_kw]
+                            )
                             st.success("Pipeline started! Check back in a few minutes.")
                             st.session_state["show_new_article"] = False
                         except Exception as e:
@@ -245,22 +432,32 @@ if page == "🏠 Dashboard":
 elif page == "📋 Review Queue":
     st.title("📋 Review Queue")
     st.markdown("Review and approve articles before publishing")
-    
+
+    render_pipeline_toasts()
+    render_pipeline_failure_banner()
+
     if not db_connected:
         st.error("Database not connected")
     else:
         try:
-            articles = [a for a in get_articles() if a["status"] in ["pending_review", "draft", "fact_checked", "seo_optimized"]]
-            
+            articles = [
+                a
+                for a in get_articles()
+                if a["status"]
+                in ["pending_review", "draft", "fact_checked", "seo_optimized"]
+            ]
+
             if not articles:
                 st.success("🎉 No articles pending review!")
                 st.info("All caught up! Run the pipeline to generate new articles.")
             else:
                 st.info(f"📬 {len(articles)} article(s) awaiting review")
-                
+
                 for article in articles:
-                    with st.expander(f"📄 {article['title'] or 'Untitled'} - {article['keyword']}", expanded=False):
-                        
+                    with st.expander(
+                        f"📄 {article['title'] or 'Untitled'} - {article['keyword']}",
+                        expanded=False,
+                    ):
                         # Article Info
                         col1, col2, col3 = st.columns(3)
                         with col1:
@@ -269,88 +466,129 @@ elif page == "📋 Review Queue":
                             st.metric("SEO Score", article["seo_score"] or "N/A")
                         with col3:
                             st.metric("Status", article["status"])
-                        
+
                         # Tabs for different views
-                        tab1, tab2, tab3, tab4 = st.tabs(["📝 Content", "✅ Fact-Check", "📊 SEO", "🎯 Decision"])
-                        
+                        tab1, tab2, tab3, tab4 = st.tabs(
+                            ["📝 Content", "✅ Fact-Check", "📊 SEO", "🎯 Decision"]
+                        )
+
                         with tab1:
                             st.markdown("### Content Preview")
                             if article["meta_title"]:
                                 st.markdown(f"**Meta Title:** {article['meta_title']}")
                             if article["meta_description"]:
-                                st.markdown(f"**Meta Description:** {article['meta_description']}")
+                                desc = article["meta_description"]
+                                st.markdown(f"**Meta Description:** {desc}")
                             st.markdown("---")
                             content = article["content_draft"] or "No content yet"
-                            st.markdown(content[:3000] + "..." if len(content) > 3000 else content)
-                        
+                            st.markdown(
+                                content[:3000] + "..."
+                                if len(content) > 3000
+                                else content
+                            )
+
                         with tab2:
                             st.markdown("### Fact-Check Report")
                             if article["fact_check_report"]:
                                 report = article["fact_check_report"]
                                 col1, col2, col3 = st.columns(3)
                                 with col1:
-                                    st.metric("Claims Checked", report.get("total_claims_checked", 0))
+                                    st.metric(
+                                        "Claims Checked",
+                                        report.get("total_claims_checked", 0),
+                                    )
                                 with col2:
-                                    st.metric("Accuracy", f"{report.get('accuracy_rate', 0):.1f}%")
+                                    st.metric(
+                                        "Accuracy",
+                                        f"{report.get('accuracy_rate', 0):.1f}%",
+                                    )
                                 with col3:
                                     passed = report.get("pass", False)
-                                    st.metric("Status", "✅ Passed" if passed else "❌ Failed")
-                                
+                                    st.metric(
+                                        "Status", "✅ Passed" if passed else "❌ Failed"
+                                    )
+
                                 if report.get("issues_found"):
                                     st.markdown("#### Issues Found")
                                     for issue in report["issues_found"]:
-                                        st.warning(f"**Claim:** {issue.get('claim', 'Unknown')[:100]}...\n\n**Verdict:** {issue.get('verdict')}")
+                                        claim = issue.get("claim", "Unknown")[:100]
+                                        verdict = issue.get("verdict")
+                                        st.warning(
+                                            f"**Claim:** {claim}...\n\n"
+                                            f"**Verdict:** {verdict}"
+                                        )
                             else:
                                 st.info("No fact-check report available")
-                        
+
                         with tab3:
                             st.markdown("### SEO Analysis")
                             if article["seo_analysis"]:
                                 analysis = article["seo_analysis"]
                                 col1, col2 = st.columns(2)
                                 with col1:
-                                    st.metric("Score", f"{analysis.get('score', 0)}/100")
+                                    st.metric(
+                                        "Score", f"{analysis.get('score', 0)}/100"
+                                    )
                                 with col2:
                                     st.metric("Grade", analysis.get("grade", "N/A"))
-                                
+
                                 if analysis.get("issues"):
                                     st.markdown("#### Issues")
                                     for issue in analysis["issues"][:5]:
                                         st.warning(issue)
-                                
+
                                 if analysis.get("suggestions"):
                                     st.markdown("#### Suggestions")
                                     for suggestion in analysis["suggestions"][:5]:
                                         st.info(suggestion)
                             else:
                                 st.info("No SEO analysis available")
-                        
+
                         with tab4:
                             st.markdown("### Make Decision")
-                            
+
                             feedback = st.text_area(
                                 "Feedback (optional)",
                                 key=f"feedback_{article['id']}",
-                                placeholder="Enter any feedback or revision notes..."
+                                placeholder="Enter any feedback or revision notes...",
                             )
-                            
+
                             col1, col2, col3 = st.columns(3)
                             with col1:
-                                if st.button("✅ Approve", key=f"approve_{article['id']}", type="primary", use_container_width=True):
-                                    if update_article_status(article["id"], "approved", feedback):
+                                if st.button(
+                                    "✅ Approve",
+                                    key=f"approve_{article['id']}",
+                                    type="primary",
+                                    use_container_width=True,
+                                ):
+                                    if update_article_status(
+                                        article["id"], "approved", feedback
+                                    ):
                                         st.success("Article approved!")
                                         st.rerun()
                             with col2:
-                                if st.button("📝 Request Revision", key=f"revise_{article['id']}", use_container_width=True):
-                                    if update_article_status(article["id"], "revision_requested", feedback):
+                                if st.button(
+                                    "📝 Request Revision",
+                                    key=f"revise_{article['id']}",
+                                    use_container_width=True,
+                                ):
+                                    if update_article_status(
+                                        article["id"], "revision_requested", feedback
+                                    ):
                                         st.warning("Revision requested")
                                         st.rerun()
                             with col3:
-                                if st.button("❌ Reject", key=f"reject_{article['id']}", use_container_width=True):
-                                    if update_article_status(article["id"], "rejected", feedback):
+                                if st.button(
+                                    "❌ Reject",
+                                    key=f"reject_{article['id']}",
+                                    use_container_width=True,
+                                ):
+                                    if update_article_status(
+                                        article["id"], "rejected", feedback
+                                    ):
                                         st.error("Article rejected")
                                         st.rerun()
-        
+
         except Exception as e:
             st.error(f"Error loading articles: {e}")
 
@@ -360,36 +598,47 @@ elif page == "📋 Review Queue":
 # ============================================================================
 elif page == "📄 All Articles":
     st.title("📄 All Articles")
-    
+
     if not db_connected:
         st.error("Database not connected")
     else:
         try:
             articles = get_articles()
-            
+
             # Filters
             col1, col2 = st.columns(2)
             with col1:
                 status_filter = st.selectbox(
                     "Filter by Status",
-                    ["All", "draft", "pending_review", "approved", "published", "rejected"]
+                    [
+                        "All",
+                        "draft",
+                        "pending_review",
+                        "approved",
+                        "published",
+                        "rejected",
+                    ],
                 )
             with col2:
                 search = st.text_input("Search by keyword")
-            
+
             # Apply filters
             if status_filter != "All":
                 articles = [a for a in articles if a["status"] == status_filter]
             if search:
-                articles = [a for a in articles if search.lower() in (a["keyword"] or "").lower()]
-            
+                articles = [
+                    a
+                    for a in articles
+                    if search.lower() in (a["keyword"] or "").lower()
+                ]
+
             st.markdown(f"**{len(articles)} article(s) found**")
-            
+
             # Show article details if one is selected
             if "selected_article" in st.session_state:
                 selected_id = st.session_state["selected_article"]
                 article = next((a for a in articles if a["id"] == selected_id), None)
-                
+
                 if article:
                     st.markdown("---")
                     col1, col2 = st.columns([5, 1])
@@ -399,7 +648,7 @@ elif page == "📄 All Articles":
                         if st.button("⬅️ Back to List"):
                             del st.session_state["selected_article"]
                             st.rerun()
-                    
+
                     # Article Info Metrics
                     m1, m2, m3, m4 = st.columns(4)
                     m1.metric("Status", article["status"])
@@ -411,41 +660,69 @@ elif page == "📄 All Articles":
                     st.markdown("### 🛠️ Article Actions")
                     col_act1, col_act2 = st.columns(2)
                     with col_act1:
-                        if st.button("📄 Export to Static HTML", use_container_width=True):
+                        if st.button(
+                            "📄 Export to Static HTML", use_container_width=True
+                        ):
                             import subprocess
+
                             try:
                                 # Run the export script
-                                subprocess.run(["python", "scripts/export_static.py", str(article["id"])], check=True)
-                                st.success(f"Successfully exported to dist/{article['keyword'].replace(' ', '-')}.html")
-                                st.info(f"View at: file://{Path(__file__).parent.parent}/dist/{article['keyword'].replace(' ', '-')}.html")
+                                subprocess.run(
+                                    [
+                                        "python",
+                                        "scripts/export_static.py",
+                                        str(article["id"]),
+                                    ],
+                                    check=True,
+                                )
+                                slug = article["keyword"].replace(" ", "-")
+                                st.success(f"Successfully exported to dist/{slug}.html")
+                                dist_dir = Path(__file__).parent.parent / "dist"
+                                st.info(f"View at: file://{dist_dir / f'{slug}.html'}")
                             except Exception as e:
                                 st.error(f"Export failed: {e}")
-                    
-                    with col_act2:
-                        st.button("🚀 Publish to WordPress", disabled=True, use_container_width=True, help="Configure WordPress API keys to enable")
 
-                    tab1, tab2, tab3 = st.tabs(["📝 Content", "✅ Fact-Check", "📊 SEO"])
-                    
+                    with col_act2:
+                        st.button(
+                            "🚀 Publish to WordPress",
+                            disabled=True,
+                            use_container_width=True,
+                            help="Configure WordPress API keys to enable",
+                        )
+
+                    tab1, tab2, tab3 = st.tabs(
+                        ["📝 Content", "✅ Fact-Check", "📊 SEO"]
+                    )
+
                     with tab1:
                         st.markdown("### Content Preview")
                         if article["meta_title"]:
                             st.markdown(f"**Meta Title:** {article['meta_title']}")
                         if article["meta_description"]:
-                            st.markdown(f"**Meta Description:** {article['meta_description']}")
+                            st.markdown(
+                                f"**Meta Description:** {article['meta_description']}"
+                            )
                         st.markdown("---")
                         st.markdown(article["content_draft"] or "No content yet")
-                    
+
                     with tab2:
                         st.markdown("### Fact-Check Report")
                         if article["fact_check_report"]:
                             report = article["fact_check_report"]
                             c1, c2, c3 = st.columns(3)
-                            c1.metric("Claims Checked", report.get("total_claims_checked", 0))
-                            c2.metric("Accuracy", f"{report.get('accuracy_rate', 0):.1f}%")
-                            c3.metric("Status", "✅ Passed" if report.get("pass") else "❌ Failed")
+                            c1.metric(
+                                "Claims Checked", report.get("total_claims_checked", 0)
+                            )
+                            c2.metric(
+                                "Accuracy", f"{report.get('accuracy_rate', 0):.1f}%"
+                            )
+                            c3.metric(
+                                "Status",
+                                "✅ Passed" if report.get("pass") else "❌ Failed",
+                            )
                         else:
                             st.info("No fact-check report available")
-                    
+
                     with tab3:
                         st.markdown("### SEO Analysis")
                         if article["seo_analysis"]:
@@ -456,7 +733,7 @@ elif page == "📄 All Articles":
                                     st.info(sug)
                         else:
                             st.info("No SEO analysis available")
-                    
+
                     st.markdown("---")
 
             # Articles table
@@ -474,10 +751,10 @@ elif page == "📄 All Articles":
                         with col4:
                             status_emoji = {
                                 "draft": "🟡",
-                                "pending_review": "🟠", 
+                                "pending_review": "🟠",
                                 "approved": "🟢",
                                 "published": "✅",
-                                "rejected": "🔴"
+                                "rejected": "🔴",
                             }.get(article["status"], "⚪")
                             st.markdown(f"{status_emoji} {article['status']}")
                         with col5:
@@ -487,7 +764,7 @@ elif page == "📄 All Articles":
                         st.markdown("---")
             else:
                 st.info("No articles found")
-                
+
         except Exception as e:
             st.error(f"Error: {e}")
 
@@ -498,9 +775,9 @@ elif page == "📄 All Articles":
 elif page == "📅 Content Calendar":
     st.title("📅 Content Calendar")
     st.markdown("Plan and schedule your content")
-    
+
     from blog_automation.models import ContentCalendar, get_session
-    
+
     # Add new keyword
     st.subheader("➕ Add New Keyword")
     with st.form("new_keyword"):
@@ -508,11 +785,13 @@ elif page == "📅 Content Calendar":
         with col1:
             kw_input = st.text_input("Keyword")
         with col2:
-            date_input = st.date_input("Scheduled Date", datetime.now() + timedelta(days=7))
-        
+            date_input = st.date_input(
+                "Scheduled Date", datetime.now() + timedelta(days=7)
+            )
+
         prio_input = st.selectbox("Priority", ["high", "medium", "low"])
         notes_input = st.text_area("Notes (optional)")
-        
+
         if st.form_submit_button("Add to Calendar"):
             if kw_input:
                 with get_session() as session:
@@ -521,7 +800,7 @@ elif page == "📅 Content Calendar":
                         scheduled_date=date_input,
                         priority=prio_input,
                         notes=notes_input,
-                        status="planned"
+                        status="planned",
                     )
                     session.add(new_entry)
                     session.commit()
@@ -529,14 +808,18 @@ elif page == "📅 Content Calendar":
                 st.rerun()
             else:
                 st.error("Please enter a keyword")
-    
+
     st.markdown("---")
-    
+
     # Calendar view
     st.subheader("📆 Upcoming Content")
     with get_session() as session:
-        entries = session.query(ContentCalendar).order_by(ContentCalendar.scheduled_date.asc()).all()
-        
+        entries = (
+            session.query(ContentCalendar)
+            .order_by(ContentCalendar.scheduled_date.asc())
+            .all()
+        )
+
         if not entries:
             st.info("No planned content yet.")
         else:
@@ -546,11 +829,19 @@ elif page == "📅 Content Calendar":
                     c1.markdown(f"**{entry.keyword}**")
                     c2.markdown(f"📅 {entry.scheduled_date.strftime('%Y-%m-%d')}")
                     c3.markdown(f"[{entry.priority.upper()}]")
-                    
+
                     if entry.status == "planned":
                         if c4.button("🚀 Start Automation", key=f"start_{entry.id}"):
                             import subprocess
-                            subprocess.Popen(["python", "scripts/run_pipeline.py", "full", entry.keyword])
+
+                            subprocess.Popen(
+                                [
+                                    "python",
+                                    "scripts/run_pipeline.py",
+                                    "full",
+                                    entry.keyword,
+                                ]
+                            )
                             # Update status in DB
                             db_entry = session.query(ContentCalendar).get(entry.id)
                             db_entry.status = "in_progress"
@@ -567,32 +858,34 @@ elif page == "📅 Content Calendar":
 # ============================================================================
 elif page == "⚙️ Settings":
     st.title("⚙️ Settings")
-    
+
     st.subheader("🔑 API Keys")
     st.info("API keys are configured via environment variables or .env file")
-    
+
     with st.expander("View Required API Keys"):
         st.code("""
 # Required API Keys (.env file)
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
+OPENROUTER_API_KEY=sk-or-...
+OPENROUTER_DEFAULT_MODEL=openai/gpt-4o
+OPENROUTER_SEARCH_MODEL=perplexity/llama-3.1-sonar-large-128k-online
 AHREFS_API_KEY=...
-PERPLEXITY_API_KEY=...
 COPYSCAPE_API_KEY=...
 WORDPRESS_URL=https://your-site.com
 WORDPRESS_USERNAME=...
 WORDPRESS_APP_PASSWORD=...
         """)
-    
+
     st.subheader("🗄️ Database")
-    st.code(f"DATABASE_URL: {st.session_state.get('db_url', 'sqlite:///./blog_automation.db')}")
-    
+    from blog_automation.config import get_settings
+
+    st.code(f"DATABASE_URL: {get_settings().database_url}")
+
     st.subheader("📚 Documentation")
     st.markdown("""
     - [QUICKSTART.md](./QUICKSTART.md) - Setup guide
     - [ARTICLE_FLOW.md](./docs/ARTICLE_FLOW.md) - Pipeline documentation
     """)
-    
+
     st.subheader("🔧 Commands")
     st.code("""
 # Run the full pipeline

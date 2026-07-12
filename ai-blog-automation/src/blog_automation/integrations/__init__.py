@@ -2,10 +2,8 @@
 
 from blog_automation.integrations.base_client import HTTPClient, RateLimitHandler
 from blog_automation.integrations.cache import CacheManager, get_cache
-from blog_automation.integrations.openai_client import OpenAIClient
-from blog_automation.integrations.claude_client import ClaudeClient
+from blog_automation.integrations.openrouter_client import OpenRouterClient
 from blog_automation.integrations.ahrefs_client import AhrefsClient
-from blog_automation.integrations.perplexity_client import PerplexityClient
 from blog_automation.integrations.copyscape_client import CopyscapeClient
 from blog_automation.integrations.rankmath_client import RankMathClient
 from blog_automation.integrations.wordpress_client import WordPressClient
@@ -19,10 +17,8 @@ __all__ = [
     "RateLimitHandler",
     "CacheManager",
     "get_cache",
-    "OpenAIClient",
-    "ClaudeClient",
+    "OpenRouterClient",
     "AhrefsClient",
-    "PerplexityClient",
     "CopyscapeClient",
     "RankMathClient",
     "WordPressClient",

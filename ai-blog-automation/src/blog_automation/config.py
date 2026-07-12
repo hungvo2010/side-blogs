@@ -9,15 +9,25 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
+from dotenv import load_dotenv
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Project root = ai-blog-automation/ (this file lives in src/blog_automation/).
+# Load .env once at import time so every entry point (scripts, Streamlit,
+# Alembic) picks up configuration without each caller calling load_dotenv().
+# override=False keeps existing env vars, so tests (which force sqlite in
+# conftest) still take precedence over the .env file.
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+_ENV_FILE = _PROJECT_ROOT / ".env"
+load_dotenv(_ENV_FILE)
 
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(_ENV_FILE),
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
@@ -40,26 +50,26 @@ class Settings(BaseSettings):
         default=10, description="Max overflow connections"
     )
 
-    # OpenAI API
-    openai_api_key: str = Field(default="", description="OpenAI API key")
-    openai_organization_id: str | None = Field(
-        default=None, description="OpenAI organization ID"
+    # OpenRouter API (single LLM gateway for all AI/LLM tasks)
+    openrouter_api_key: str = Field(default="", description="OpenRouter API key")
+    openrouter_base_url: str = Field(
+        default="https://openrouter.ai/api/v1",
+        description="OpenRouter API base URL",
     )
-    openai_default_model: str = Field(
-        default="gpt-4-turbo-preview", description="Default OpenAI model"
+    openrouter_default_model: str = Field(
+        default="openai/gpt-4o",
+        description="Default model slug for generation tasks",
     )
-
-    # Anthropic (Claude) API
-    anthropic_api_key: str = Field(default="", description="Anthropic API key")
-    anthropic_default_model: str = Field(
-        default="claude-3-sonnet-20240229", description="Default Claude model"
+    openrouter_search_model: str = Field(
+        default="perplexity/llama-3.1-sonar-large-128k-online",
+        description="Model slug for web-search/evidence retrieval",
+    )
+    openrouter_site_url: str | None = Field(
+        default=None, description="Site URL sent as HTTP-Referer for rankings"
     )
 
     # Ahrefs API
     ahrefs_api_key: str = Field(default="", description="Ahrefs API key")
-
-    # Perplexity API
-    perplexity_api_key: str = Field(default="", description="Perplexity API key")
 
     # Copyscape API
     copyscape_api_key: str = Field(default="", description="Copyscape API key")
@@ -73,12 +83,8 @@ class Settings(BaseSettings):
     )
 
     # Google APIs
-    google_analytics_property_id: str = Field(
-        default="", description="GA4 property ID"
-    )
-    google_search_console_site_url: str = Field(
-        default="", description="GSC site URL"
-    )
+    google_analytics_property_id: str = Field(default="", description="GA4 property ID")
+    google_search_console_site_url: str = Field(default="", description="GSC site URL")
     google_service_account_json: str = Field(
         default="", description="Path to service account JSON"
     )
@@ -88,9 +94,7 @@ class Settings(BaseSettings):
     log_dir: str = Field(default="logs", description="Log directory")
 
     # Alerts
-    slack_webhook_url: str | None = Field(
-        default=None, description="Slack webhook URL"
-    )
+    slack_webhook_url: str | None = Field(default=None, description="Slack webhook URL")
     alert_email: str | None = Field(default=None, description="Alert email address")
     smtp_host: str | None = Field(default=None, description="SMTP host")
     smtp_port: int = Field(default=587, description="SMTP port")
@@ -141,8 +145,7 @@ class Settings(BaseSettings):
         missing = []
         required = [
             ("database_url", self.database_url),
-            ("openai_api_key", self.openai_api_key),
-            ("anthropic_api_key", self.anthropic_api_key),
+            ("openrouter_api_key", self.openrouter_api_key),
         ]
 
         for name, value in required:

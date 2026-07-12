@@ -4,12 +4,10 @@ Provides command-line tools for reviewing articles.
 """
 
 import argparse
-import sys
-from datetime import datetime
 
 from blog_automation.logging_config import get_logger
-from blog_automation.models import Article, ArticleReview, get_session
-from blog_automation.pipelines.publishing import publish_article
+from blog_automation.models import Article, get_session
+from blog_automation.pipelines.phase_8_publish.publishing import publish_article
 from blog_automation.review.task_queue import (
     assign_task,
     complete_review,

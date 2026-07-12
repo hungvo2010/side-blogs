@@ -1,7 +1,5 @@
 """Unit tests for error classes."""
 
-import pytest
-
 from blog_automation.errors import (
     APIAuthenticationError,
     APIRateLimitError,
@@ -21,7 +19,6 @@ from blog_automation.errors import (
     ProcessingError,
     PublishingFailureError,
     Severity,
-    ValidationError,
     VerificationFailureError,
 )
 
@@ -183,7 +180,7 @@ class TestConfigurationError:
 
     def test_configuration_error(self):
         """Test ConfigurationError."""
-        error = ConfigurationError(missing_vars=["OPENAI_API_KEY", "DATABASE_URL"])
+        error = ConfigurationError(missing_vars=["OPENROUTER_API_KEY", "DATABASE_URL"])
         assert error.error_code == "cfg_001"
         assert len(error.context["missing_vars"]) == 2
 
@@ -195,3 +192,73 @@ class TestErrorCodeUniqueness:
         """Verify all error codes are unique."""
         codes = [code.value for code in ErrorCode]
         assert len(codes) == len(set(codes)), "Duplicate error codes found"
+
+
+class TestDescribeError:
+    """Tests for the describe_error grouping helper."""
+
+    def test_api_authentication_error(self):
+        """APIAuthenticationError maps to the auth-failure message."""
+        from blog_automation.errors import describe_error
+
+        msg = describe_error(APIAuthenticationError(service="ahrefs"))
+        assert "API authentication failed" in msg
+        assert ".env" in msg
+
+    def test_api_rate_limit_error(self):
+        """APIRateLimitError maps to the rate-limit message."""
+        from blog_automation.errors import describe_error
+
+        msg = describe_error(APIRateLimitError(service="ahrefs", retry_after=60))
+        assert "rate limit" in msg.lower()
+
+    def test_api_timeout_error(self):
+        """APITimeoutError maps to the timeout message."""
+        from blog_automation.errors import describe_error
+
+        msg = describe_error(APITimeoutError(service="ahrefs"))
+        assert "timed out" in msg.lower()
+
+    def test_api_connection_error(self):
+        """APIConnectionError maps to the connection message."""
+        from blog_automation.errors import APIConnectionError, describe_error
+
+        msg = describe_error(APIConnectionError(service="ahrefs"))
+        assert "connect" in msg.lower()
+
+    def test_database_error(self):
+        """DatabaseError maps to the database message."""
+        from blog_automation.errors import describe_error
+
+        msg = describe_error(DatabaseConnectionError())
+        assert "database" in msg.lower()
+
+    def test_configuration_error(self):
+        """ConfigurationError maps to the configuration message."""
+        from blog_automation.errors import describe_error
+
+        msg = describe_error(ConfigurationError(missing_vars=["AHREFS_API_KEY"]))
+        assert ".env" in msg
+
+    def test_wrapped_cause_is_unwrapped(self):
+        """A ProcessingError wrapping an APIAuthenticationError is unwrapped."""
+        from blog_automation.errors import describe_error
+
+        try:
+            raise APIAuthenticationError(service="ahrefs")
+        except APIAuthenticationError as e:
+            wrapped = ProcessingError(
+                message=f"Keyword research failed: {str(e)}",
+                step="keyword_research",
+            )
+            wrapped.__cause__ = e
+        msg = describe_error(wrapped)
+        assert "API authentication failed" in msg
+
+    def test_unknown_exception_falls_back(self):
+        """Unknown exceptions fall back to a message including str(exc)."""
+        from blog_automation.errors import describe_error
+
+        msg = describe_error(ValueError("something broke"))
+        assert "Pipeline failed" in msg
+        assert "something broke" in msg

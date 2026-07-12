@@ -61,14 +61,12 @@ class TestSettingsClass:
     def test_validate_required_for_production(self):
         """Test production validation."""
         settings = Settings(
-            openai_api_key="",
-            anthropic_api_key="",
+            openrouter_api_key="",
             database_url="",
         )
 
         missing = settings.validate_required_for_production()
-        assert "openai_api_key" in missing
-        assert "anthropic_api_key" in missing
+        assert "openrouter_api_key" in missing
         assert "database_url" in missing
 
 

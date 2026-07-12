@@ -98,11 +98,11 @@ def sample_brief(session):
 
 
 @pytest.fixture
-def mock_openai(mocker):
-    """Mock OpenAI API responses."""
+def mock_openrouter(mocker):
+    """Mock OpenRouter LLM responses (single gateway for all AI tasks)."""
     mock_response = {
-        "content": "Generated content from OpenAI",
-        "model": "gpt-4-turbo-preview",
+        "content": "Generated content from OpenRouter",
+        "model": "openai/gpt-4o",
         "input_tokens": 100,
         "output_tokens": 500,
         "total_tokens": 600,
@@ -110,38 +110,73 @@ def mock_openai(mocker):
     }
 
     mocker.patch(
-        "blog_automation.integrations.openai_client.OpenAIClient.chat_complete",
+        "blog_automation.integrations.openrouter_client.OpenRouterClient.chat_complete",
         return_value=mock_response,
     )
     mocker.patch(
-        "blog_automation.integrations.openai_client.OpenAIClient.complete",
+        "blog_automation.integrations.openrouter_client.OpenRouterClient.complete",
         return_value=mock_response,
+    )
+    mocker.patch(
+        "blog_automation.integrations.openrouter_client.OpenRouterClient.message",
+        return_value=mock_response,
+    )
+    mocker.patch(
+        "blog_automation.integrations.openrouter_client.OpenRouterClient.extract_json",
+        return_value={"claims": [], "sections": []},
+    )
+    mocker.patch(
+        "blog_automation.integrations.openrouter_client.OpenRouterClient.search",
+        return_value={
+            "query": "test",
+            "answer": "Test answer",
+            "sources": [{"url": "https://example.com", "title": "Example"}],
+            "source_count": 1,
+        },
     )
 
     return mock_response
 
 
 @pytest.fixture
-def mock_claude(mocker):
-    """Mock Claude API responses."""
+def mock_openai(mocker):
+    """Backwards-compatible alias -> patches the OpenRouter gateway."""
     mock_response = {
-        "content": "Generated content from Claude",
-        "model": "claude-3-sonnet-20240229",
+        "content": "Generated content from OpenAI",
+        "model": "openai/gpt-4o",
         "input_tokens": 100,
         "output_tokens": 500,
-        "cost": 0.01,
+        "total_tokens": 600,
+        "cost": 0.02,
     }
-
     mocker.patch(
-        "blog_automation.integrations.claude_client.ClaudeClient.message",
+        "blog_automation.integrations.openrouter_client.OpenRouterClient.chat_complete",
         return_value=mock_response,
     )
     mocker.patch(
-        "blog_automation.integrations.claude_client.ClaudeClient.extract_json",
+        "blog_automation.integrations.openrouter_client.OpenRouterClient.complete",
+        return_value=mock_response,
+    )
+    return mock_response
+
+
+@pytest.fixture
+def mock_claude(mocker):
+    """Backwards-compatible alias -> patches the OpenRouter gateway."""
+    mocker.patch(
+        "blog_automation.integrations.openrouter_client.OpenRouterClient.message",
+        return_value={
+            "content": "Generated content from Claude",
+            "model": "anthropic/claude-3.5-sonnet",
+            "input_tokens": 100,
+            "output_tokens": 500,
+            "cost": 0.01,
+        },
+    )
+    mocker.patch(
+        "blog_automation.integrations.openrouter_client.OpenRouterClient.extract_json",
         return_value={"claims": [], "sections": []},
     )
-
-    return mock_response
 
 
 @pytest.fixture
@@ -167,13 +202,14 @@ def mock_ahrefs(mocker):
 
 @pytest.fixture
 def mock_perplexity(mocker):
-    """Mock Perplexity API responses."""
+    """Backwards-compatible alias -> patches the OpenRouter gateway (search)."""
     mocker.patch(
-        "blog_automation.integrations.perplexity_client.PerplexityClient.search",
+        "blog_automation.integrations.openrouter_client.OpenRouterClient.search",
         return_value={
             "query": "test",
             "answer": "Test answer",
             "sources": [{"url": "https://example.com", "title": "Example"}],
+            "source_count": 1,
         },
     )
 

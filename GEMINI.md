@@ -40,8 +40,7 @@ alembic upgrade head
 
 ### 3. Running the Application
 - **Human Review Dashboard:** `streamlit run streamlit_app/app.py`
-- **Airflow Scheduler:** `airflow scheduler`
-- **Airflow Webserver:** `airflow webserver`
+- **Pipeline (CLI):** `poetry run python scripts/run_pipeline.py full "your keyword"`
 
 ### 4. Testing
 ```bash

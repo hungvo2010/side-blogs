@@ -58,10 +58,8 @@ jobs:
         env:
           ENVIRONMENT: testing
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/blog_db_test
-          OPENAI_API_KEY: sk-test
-          ANTHROPIC_API_KEY: sk-ant-test
+          OPENROUTER_API_KEY: sk-or-test
           AHREFS_API_KEY: test
-          PERPLEXITY_API_KEY: test
         run: |
           poetry run pytest tests/unit tests/integration \
             --cov=src/blog_automation \

@@ -24,50 +24,29 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def test_openai():
-    """Test OpenAI API connection."""
-    print("\n🔵 Testing OpenAI...")
-    api_key = os.getenv("OPENAI_API_KEY", "")
-    
+def test_openrouter():
+    """Test OpenRouter API connection (single LLM gateway)."""
+    print("\n--> Testing OpenRouter...")
+    api_key = os.getenv("OPENROUTER_API_KEY", "")
+
     if not api_key or api_key.startswith("sk-..."):
-        print("   ⚠️  OPENAI_API_KEY not set. Skipping.")
+        print("   [!] OPENROUTER_API_KEY not set. Skipping.")
         return False
-    
+
     try:
-        from blog_automation.integrations import OpenAIClient
-        client = OpenAIClient(api_key=api_key)
+        from blog_automation.integrations import OpenRouterClient
+
+        client = OpenRouterClient(api_key=api_key)
         response = client.chat_complete(
             messages=[{"role": "user", "content": "Say 'Hello' in one word"}],
-            max_tokens=10
+            max_tokens=10,
         )
-        print(f"   ✅ OpenAI working! Response: {response.get('content', '')[:50]}")
+        print(f"   [OK] OpenRouter working! Response: {response.get('content', '')[:50]}")
         return True
     except Exception as e:
-        print(f"   ❌ OpenAI error: {e}")
+        print(f"   [ERR] OpenRouter error: {e}")
         return False
 
-
-def test_anthropic():
-    """Test Anthropic (Claude) API connection."""
-    print("\n🟣 Testing Anthropic (Claude)...")
-    api_key = os.getenv("ANTHROPIC_API_KEY", "")
-    
-    if not api_key or api_key.startswith("sk-..."):
-        print("   ⚠️  ANTHROPIC_API_KEY not set. Skipping.")
-        return False
-    
-    try:
-        from blog_automation.integrations import ClaudeClient
-        client = ClaudeClient(api_key=api_key)
-        response = client.message(
-            prompt="Say 'Hello' in one word",
-            max_tokens=10
-        )
-        print(f"   ✅ Claude working! Response: {response.get('content', '')[:50]}")
-        return True
-    except Exception as e:
-        print(f"   ❌ Claude error: {e}")
-        return False
 
 
 def test_ahrefs():
@@ -88,26 +67,6 @@ def test_ahrefs():
         return True
     except Exception as e:
         print(f"   ❌ Ahrefs error: {e}")
-        return False
-
-
-def test_perplexity():
-    """Test Perplexity API connection."""
-    print("\n🔷 Testing Perplexity...")
-    api_key = os.getenv("PERPLEXITY_API_KEY", "")
-    
-    if not api_key:
-        print("   ⚠️  PERPLEXITY_API_KEY not set. Skipping.")
-        return False
-    
-    try:
-        from blog_automation.integrations import PerplexityClient
-        client = PerplexityClient(api_key=api_key)
-        response = client.search("What is Python?")
-        print(f"   ✅ Perplexity working! Sources: {len(response.get('sources', []))}")
-        return True
-    except Exception as e:
-        print(f"   ❌ Perplexity error: {e}")
         return False
 
 
@@ -216,13 +175,13 @@ def print_env_template():
 # Database (PostgreSQL)
 DATABASE_URL=postgresql://user:password@localhost:5432/blog_db
 
-# AI APIs (Required for content generation)
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
+# AI API (Required for content generation - single LLM gateway)
+OPENROUTER_API_KEY=sk-or-...
+OPENROUTER_DEFAULT_MODEL=openai/gpt-4o
+OPENROUTER_SEARCH_MODEL=perplexity/llama-3.1-sonar-large-128k-online
 
 # SEO & Research (Optional but recommended)
 AHREFS_API_KEY=your_ahrefs_key
-PERPLEXITY_API_KEY=pplx-...
 
 # Quality Checks (Optional)
 COPYSCAPE_API_KEY=your_copyscape_key
@@ -246,10 +205,8 @@ def main():
     print("=" * 60)
     
     results = {
-        "OpenAI": test_openai(),
-        "Anthropic": test_anthropic(),
+        "OpenRouter": test_openrouter(),
         "Ahrefs": test_ahrefs(),
-        "Perplexity": test_perplexity(),
         "Copyscape": test_copyscape(),
         "WordPress": test_wordpress(),
         "Google Analytics": test_google_analytics(),

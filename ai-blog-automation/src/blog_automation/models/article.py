@@ -30,6 +30,9 @@ class Article(BaseModel):
     """Article model representing a blog post.
 
     Tracks the article through all stages:
+    - researching: Keyword research in progress (pipeline run started)
+    - briefing: Content brief generation in progress
+    - drafting: Article draft generation in progress
     - draft: Initial AI-generated content
     - fact_checking: Undergoing fact verification
     - fact_checking_issues: Issues found during fact-check
@@ -39,6 +42,7 @@ class Article(BaseModel):
     - scheduled: Scheduled for future publication
     - published: Live on WordPress
     - rejected: Failed quality gates
+    - failed: A pipeline step failed (see pipeline_error)
     """
 
     __tablename__ = "articles"
@@ -69,6 +73,13 @@ class Article(BaseModel):
         nullable=False,
         index=True,
     )
+
+    # Pipeline Progress Tracking
+    # Per-step state for the `full` pipeline: {step: "done"|"failed"|"pending"}
+    # for steps: research, brief, draft, fact_check, seo, quality_gates.
+    pipeline_progress: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    # Grouped failure note (from describe_error) when status == "failed".
+    pipeline_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Fact-Checking
     fact_check_report: Mapped[dict | None] = mapped_column(JSON, nullable=True)
@@ -152,9 +163,7 @@ class Article(BaseModel):
         """Mark article as approved for publishing."""
         self.status = "approved"
 
-    def mark_as_published(
-        self, wordpress_post_id: int, wordpress_url: str
-    ) -> None:
+    def mark_as_published(self, wordpress_post_id: int, wordpress_url: str) -> None:
         """Mark article as published.
 
         Args:

@@ -482,3 +482,42 @@ class ConfigurationError(AppError):
         if missing_vars:
             ctx["missing_vars"] = missing_vars
         super().__init__(message, ErrorCode.CONFIG_MISSING, Severity.CRITICAL, ctx)
+
+
+# =============================================================================
+# Error Description (human-readable grouping for UI notifications)
+# =============================================================================
+
+
+def describe_error(exc: Exception) -> str:
+    """Return a human-readable, grouped description of a pipeline exception.
+
+    Unwraps one level of ``__cause__`` (to get past ``ProcessingError``
+    wrappers raised by pipeline steps) and classifies the underlying exception
+    by type into a fixed, actionable message. Unknown exceptions fall back to a
+    generic message that includes the exception's string representation.
+
+    Args:
+        exc: The exception raised by a pipeline step (possibly a
+            ``ProcessingError`` wrapping the real cause).
+
+    Returns:
+        A short, human-readable string describing the failure.
+    """
+    target = (
+        exc.__cause__ if isinstance(exc, ProcessingError) and exc.__cause__ else exc
+    )
+
+    if isinstance(target, APIAuthenticationError):
+        return "API authentication failed — check your API keys in .env"
+    if isinstance(target, APIRateLimitError):
+        return "API rate limit reached — wait a moment and retry"
+    if isinstance(target, APITimeoutError):
+        return "Request to the API timed out — check your connection and retry"
+    if isinstance(target, APIConnectionError):
+        return "Could not connect to the API service"
+    if isinstance(target, DatabaseError):
+        return "Database error — check the database is running"
+    if isinstance(target, ConfigurationError):
+        return "Configuration missing — check your .env file"
+    return f"Pipeline failed: {str(exc)}"
