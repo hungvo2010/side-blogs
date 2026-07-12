@@ -23,7 +23,7 @@
 - [x] 4.2 Add a progress view (on the Dashboard) that, for in-progress/recent articles, renders `st.progress(done_count/6)` and a per-step list (done ✅ / failed ❌ / pending ⏳) from `pipeline_progress`
 - [x] 4.3 Call `render_pipeline_toasts()` on the Dashboard and Review Queue pages
 - [x] 4.4 Keep existing inline `st.error`/`st.warning`/`st.info` calls unchanged; verify toasts/progress are additive
-- [ ] 4.5 Manual smoke test: trigger a known API auth failure (bad Ahrefs key) via the "New Article" quick action and confirm a toast + a failed stub `Article` with `pipeline_error` + progress view appear
+- [x] 4.5 Manual smoke test: trigger a known API auth failure (bad Ahrefs key) via the "New Article" quick action and confirm a toast + a failed stub `Article` with `pipeline_error` + progress view appear
 
 ## 5. Validation & wrap-up
 

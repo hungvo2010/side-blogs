@@ -262,3 +262,38 @@ class TestDescribeError:
         msg = describe_error(ValueError("something broke"))
         assert "Pipeline failed" in msg
         assert "something broke" in msg
+
+    def test_auth_error_includes_service_name_and_env_var(self):
+        """A named service produces a service-specific message with env var."""
+        from blog_automation.errors import describe_error
+
+        msg = describe_error(APIAuthenticationError(service="ahrefs"))
+        assert "Ahrefs" in msg
+        assert "AHREFS_API_KEY" in msg
+
+    def test_auth_error_resolves_url_based_service(self):
+        """A base-URL service (from base_client) is resolved to a name."""
+        from blog_automation.errors import describe_error
+
+        msg = describe_error(
+            APIAuthenticationError(service="https://api.ahrefs.com/v3")
+        )
+        assert "Ahrefs" in msg
+        assert "AHREFS_API_KEY" in msg
+
+    def test_auth_error_unknown_service_shows_raw_name(self):
+        """An unrecognised service still names it in the message."""
+        from blog_automation.errors import describe_error
+
+        msg = describe_error(APIAuthenticationError(service="some-unknown-api"))
+        assert "some-unknown-api" in msg
+
+    def test_configuration_error_includes_missing_vars(self):
+        """ConfigurationError lists the missing env vars."""
+        from blog_automation.errors import describe_error
+
+        msg = describe_error(
+            ConfigurationError(missing_vars=["AHREFS_API_KEY", "OPENROUTER_API_KEY"])
+        )
+        assert "AHREFS_API_KEY" in msg
+        assert "OPENROUTER_API_KEY" in msg

@@ -901,6 +901,39 @@ poetry run python scripts/test_local.py
 poetry run pytest tests/unit/ -v
     """)
 
+    st.markdown("---")
+    st.subheader("⚠️ Danger Zone")
+    with st.expander("Delete data — irreversible"):
+        st.warning("These actions permanently delete data and cannot be undone.")
+
+        st.markdown("**Delete a single article (cascade)**")
+        del_id = st.number_input(
+            "Article ID", min_value=1, step=1, key="danger_del_article_id"
+        )
+        if st.button("🗑️ Delete Article", key="danger_del_article_btn"):
+            from blog_automation.models import delete_article_cascade
+
+            if delete_article_cascade(int(del_id)):
+                st.success(f"Article {int(del_id)} deleted.")
+                st.rerun()
+            else:
+                st.error(f"Article {int(del_id)} not found.")
+
+        st.markdown("**Clear ALL rows from ALL tables**")
+        confirm_text = st.text_input(
+            'Type "DELETE ALL" to confirm', key="danger_clear_confirm"
+        )
+        if st.button("💥 Clear All Tables", key="danger_clear_btn"):
+            if confirm_text == "DELETE ALL":
+                from blog_automation.models import clear_all_tables
+
+                counts = clear_all_tables()
+                deleted = ", ".join(f"{k}: {v}" for k, v in counts.items() if v)
+                st.success(f"All tables cleared. Deleted: {deleted or 'nothing'}")
+                st.rerun()
+            else:
+                st.error('You must type "DELETE ALL" exactly to confirm.')
+
 
 # Footer
 st.sidebar.markdown("---")

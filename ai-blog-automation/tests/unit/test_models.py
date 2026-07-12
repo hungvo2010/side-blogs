@@ -1,6 +1,5 @@
 """Unit tests for database models."""
 
-import pytest
 from datetime import datetime
 
 from blog_automation.models import (
@@ -319,3 +318,44 @@ class TestArticleMetricsModel:
         ctr = metrics.calculate_ctr()
         assert ctr == 10.0
         assert metrics.ctr == 10.0
+
+
+class TestClearAllTables:
+    """Tests for clear_all_tables and delete_article_cascade."""
+
+    def test_clear_all_tables_deletes_rows(self, engine, session):
+        """clear_all_tables removes all rows from every table."""
+        from blog_automation.models import Article, clear_all_tables
+
+        session.add(Article(title="A", slug="slug-a", keyword="kw-a", status="draft"))
+        session.commit()
+
+        counts = clear_all_tables(engine=engine)
+        assert counts["articles"] >= 1
+        assert session.query(Article).count() == 0
+
+    def test_clear_all_tables_on_empty_db(self, engine):
+        """clear_all_tables is a no-op (returns 0s) on an empty DB."""
+        from blog_automation.models import clear_all_tables
+
+        counts = clear_all_tables(engine=engine)
+        assert all(v == 0 for v in counts.values())
+
+    def test_delete_article_cascade_removes_article(self, engine, session):
+        """delete_article_cascade deletes the article and returns True."""
+        from blog_automation.models import Article, delete_article_cascade
+
+        art = Article(title="Del Me", slug="del-me", keyword="del", status="draft")
+        session.add(art)
+        session.commit()
+        art_id = art.id
+
+        assert delete_article_cascade(art_id, engine=engine) is True
+        session.expire_all()
+        assert session.query(Article).get(art_id) is None
+
+    def test_delete_article_cascade_missing_returns_false(self, engine):
+        """delete_article_cascade returns False for a non-existent ID."""
+        from blog_automation.models import delete_article_cascade
+
+        assert delete_article_cascade(999999, engine=engine) is False

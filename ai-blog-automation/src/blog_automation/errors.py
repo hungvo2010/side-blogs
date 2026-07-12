@@ -488,13 +488,52 @@ class ConfigurationError(AppError):
 # Error Description (human-readable grouping for UI notifications)
 # =============================================================================
 
+# Maps a service identifier (name or base-URL host) to (display_name, env_var_hint).
+_SERVICE_INFO: dict[str, tuple[str, str]] = {
+    "ahrefs": ("Ahrefs", "AHREFS_API_KEY"),
+    "openrouter": ("OpenRouter", "OPENROUTER_API_KEY"),
+    "copyscape": ("Copyscape", "COPYSCAPE_API_KEY"),
+    "wordpress": (
+        "WordPress",
+        "WORDPRESS_URL, WORDPRESS_USERNAME, WORDPRESS_APP_PASSWORD",
+    ),
+}
+
+# Maps substrings found in base URLs to service keys (base_client passes
+# service=self.base_url, e.g. "https://api.ahrefs.com/v3").
+_URL_TO_SERVICE: dict[str, str] = {
+    "ahrefs.com": "ahrefs",
+    "openrouter.ai": "openrouter",
+    "copyscape.com": "copyscape",
+}
+
+
+def _resolve_service(service: str | None) -> tuple[str, str | None] | None:
+    """Resolve a service identifier to (display_name, env_var_hint).
+
+    Handles both named services (``"ahrefs"``) and base URLs
+    (``"https://api.ahrefs.com/v3"``). Returns ``None`` if the service is
+    unrecognised, in which case the raw string is used for display.
+    """
+    if not service:
+        return None
+    if service in _SERVICE_INFO:
+        return _SERVICE_INFO[service]
+    for host, key in _URL_TO_SERVICE.items():
+        if host in service:
+            return _SERVICE_INFO[key]
+    return (service, None)
+
 
 def describe_error(exc: Exception) -> str:
     """Return a human-readable, grouped description of a pipeline exception.
 
     Unwraps one level of ``__cause__`` (to get past ``ProcessingError``
     wrappers raised by pipeline steps) and classifies the underlying exception
-    by type into a fixed, actionable message. Unknown exceptions fall back to a
+    by type into a fixed, actionable message. For API errors, the ``service``
+    attribute already attached to the exception is used to name the specific
+    service and env var to check (e.g. "Ahrefs API authentication failed —
+    check AHREFS_API_KEY in your .env file"). Unknown exceptions fall back to a
     generic message that includes the exception's string representation.
 
     Args:
@@ -508,16 +547,54 @@ def describe_error(exc: Exception) -> str:
         exc.__cause__ if isinstance(exc, ProcessingError) and exc.__cause__ else exc
     )
 
+    # Resolve service context for API errors (service may be a name or URL).
+    svc_name: str | None = None
+    env_hint: str | None = None
+    if isinstance(target, APIError) and target.service:
+        info = _resolve_service(target.service)
+        if info:
+            svc_name, env_hint = info
+
     if isinstance(target, APIAuthenticationError):
-        return "API authentication failed — check your API keys in .env"
+        base = (
+            f"{svc_name} API authentication failed"
+            if svc_name
+            else "API authentication failed"
+        )
+        hint = (
+            f"check {env_hint} in your .env file"
+            if env_hint
+            else "check your API keys in .env"
+        )
+        return f"{base} — {hint}"
     if isinstance(target, APIRateLimitError):
-        return "API rate limit reached — wait a moment and retry"
+        base = (
+            f"{svc_name} API rate limit reached"
+            if svc_name
+            else "API rate limit reached"
+        )
+        return f"{base} — wait a moment and retry"
     if isinstance(target, APITimeoutError):
-        return "Request to the API timed out — check your connection and retry"
+        base = (
+            f"Request to {svc_name} API timed out"
+            if svc_name
+            else "Request to the API timed out"
+        )
+        return f"{base} — check your connection and retry"
     if isinstance(target, APIConnectionError):
-        return "Could not connect to the API service"
+        base = (
+            f"Could not connect to {svc_name}"
+            if svc_name
+            else "Could not connect to the API service"
+        )
+        return base
     if isinstance(target, DatabaseError):
         return "Database error — check the database is running"
     if isinstance(target, ConfigurationError):
+        missing = target.context.get("missing_vars")
+        if missing:
+            return (
+                f"Configuration missing — check {', '.join(missing)} in your .env file"
+            )
         return "Configuration missing — check your .env file"
     return f"Pipeline failed: {str(exc)}"

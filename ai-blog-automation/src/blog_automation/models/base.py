@@ -182,6 +182,90 @@ def drop_db(engine=None) -> None:
     logger.warning("Database tables dropped")
 
 
+def clear_all_tables(engine=None) -> dict[str, int]:
+    """Delete all rows from every table, keeping table structure intact.
+
+    Deletes child tables first to respect foreign-key constraints. Returns a
+    mapping of table name to the number of rows deleted.
+
+    Args:
+        engine: Optional engine override
+
+    Returns:
+        Dict mapping table name -> deleted row count.
+    """
+    from sqlalchemy import delete, func, select
+
+    eng = engine or get_engine()
+    # Child tables first (depend on articles/briefs), parents last.
+    deletion_order = [
+        "review_tasks",
+        "article_reviews",
+        "article_metrics",
+        "content_calendar",
+        "content_briefs",
+        "articles",
+    ]
+    counts: dict[str, int] = {}
+    with eng.begin() as conn:
+        for table_name in deletion_order:
+            table = Base.metadata.tables.get(table_name)
+            if table is None:
+                continue
+            count = conn.execute(select(func.count()).select_from(table)).scalar() or 0
+            if count:
+                conn.execute(delete(table))
+            counts[table_name] = count
+    logger.warning("All table rows cleared", counts=counts)
+    return counts
+
+
+def delete_article_cascade(article_id: int, engine=None) -> bool:
+    """Delete a single article and all its dependent rows.
+
+    Removes related review_tasks, article_reviews, article_metrics, and the
+    linked content_brief, then the article itself.
+
+    Args:
+        article_id: ID of the article to delete
+        engine: Optional engine override
+
+    Returns:
+        True if the article was found and deleted, False otherwise.
+    """
+    from sqlalchemy import delete, select
+
+    eng = engine or get_engine()
+    with eng.begin() as conn:
+        row = conn.execute(
+            select(Base.metadata.tables["articles"].c.id).where(
+                Base.metadata.tables["articles"].c.id == article_id
+            )
+        ).first()
+        if not row:
+            return False
+
+        articles = Base.metadata.tables["articles"]
+        reviews = Base.metadata.tables.get("article_reviews")
+        metrics = Base.metadata.tables.get("article_metrics")
+        briefs = Base.metadata.tables.get("content_briefs")
+        review_tasks = Base.metadata.tables.get("review_tasks")
+
+        if review_tasks is not None:
+            conn.execute(
+                delete(review_tasks).where(review_tasks.c.article_id == article_id)
+            )
+        if reviews is not None:
+            conn.execute(delete(reviews).where(reviews.c.article_id == article_id))
+        if metrics is not None:
+            conn.execute(delete(metrics).where(metrics.c.article_id == article_id))
+        if briefs is not None:
+            conn.execute(delete(briefs).where(briefs.c.article_id == article_id))
+        conn.execute(delete(articles).where(articles.c.id == article_id))
+    logger.info("Article deleted (cascade)", article_id=article_id)
+    return True
+
+
 def reset_engine() -> None:
     """Reset the global engine and session factory.
 
