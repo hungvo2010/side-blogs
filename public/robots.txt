@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://hungvo2010.github.io/blog/sitemap.xml
