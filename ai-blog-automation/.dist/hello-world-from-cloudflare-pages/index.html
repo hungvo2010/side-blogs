@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello World from Cloudflare Pages — Tien's Blog</title>
+    <meta name="description" content="My first blog post published via GitHub + Cloudflare Pages, zero database required.">
+    <meta name="author" content="Anonymous">
+    <link rel="canonical" href="https://hungvo2010.github.io/blog/hello-world-from-cloudflare-pages">
+    <meta property="og:title" content="Hello World from Cloudflare Pages — Tien's Blog">
+    <meta property="og:description" content="My first blog post published via GitHub + Cloudflare Pages, zero database required.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://hungvo2010.github.io/blog/hello-world-from-cloudflare-pages">
+    <meta property="og:site_name" content="Tien's Blog">
+    <meta property="og:locale" content="en">
+    <meta property="article:published_time" content="2026-07-29T00:48:15Z">
+    
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Hello World from Cloudflare Pages — Tien's Blog">
+    <meta name="twitter:description" content="My first blog post published via GitHub + Cloudflare Pages, zero database required.">
+    
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Hello World from Cloudflare Pages", "description": "My first blog post published via GitHub + Cloudflare Pages, zero database required.", "datePublished": "2026-07-29T00:48:15Z", "author": {"@type": "Person", "name": "Anonymous"}}</script>
+    <link rel="alternate" type="application/rss+xml" title="Tien's Blog RSS" href="/rss.xml">
+    <style>
+        :root{--primary:#1a73e8;--text:#1f2937;--muted:#6b7280;--bg:#fff;--code-bg:#f3f4f6}
+        *{box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.7;color:var(--text);background:#f8fafc;margin:0;padding:0}
+        nav{background:var(--bg);border-bottom:1px solid #e5e7eb;padding:12px 0}
+        nav .inner{max-width:800px;margin:0 auto;padding:0 20px;display:flex;justify-content:space-between;align-items:center}
+        nav a{color:var(--primary);text-decoration:none;font-weight:600}
+        nav a:hover{text-decoration:underline}
+        .container{max-width:800px;margin:32px auto 60px;padding:40px;background:var(--bg);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+        header{margin-bottom:32px;border-bottom:2px solid #e5e7eb;padding-bottom:20px}
+        h1{font-size:2.2rem;line-height:1.25;margin-bottom:8px}
+        .meta{color:var(--muted);font-size:.9rem}
+        .tags{margin-top:8px}
+        .tags span{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.75rem;font-weight:500;background:#dbeafe;color:#1e40af;margin-right:6px}
+        .content{font-size:1.1rem}
+        .content h2{margin-top:2.2rem;font-size:1.5rem;color:#111827}
+        .content h3{margin-top:1.6rem;font-size:1.25rem;color:#374151}
+        .content p{margin:1em 0}
+        .content a{color:var(--primary);text-decoration:underline}
+        .content img{max-width:100%;height:auto;border-radius:6px;margin:1em 0}
+        .content pre{background:var(--code-bg);padding:16px;border-radius:8px;overflow-x:auto;font-size:.9rem;line-height:1.5}
+        .content code{font-family:"SF Mono",Monaco,"Cascadia Code",monospace}
+        .content blockquote{border-left:4px solid var(--primary);padding-left:16px;margin:1em 0;color:#4b5563;font-style:italic}
+        .content table{width:100%;border-collapse:collapse;margin:1em 0}
+        .content th,.content td{padding:8px 12px;border:1px solid #e5e7eb}
+        .content th{background:#f9fafb;font-weight:600}
+        footer{margin-top:48px;padding-top:20px;border-top:1px solid #e5e7eb;text-align:center;color:var(--muted);font-size:.85rem}
+        footer a{color:var(--primary)}
+    </style>
+</head>
+<body>
+<nav><div class="inner"><a href="/">Tien's Blog</a><a href="/">← All posts</a></div></nav>
+<article class="container">
+    <header>
+        <h1>Hello World from Cloudflare Pages — Tien's Blog</h1>
+        <div class="meta"><time datetime="2026-07-29T00:48:15Z">July 29, 2026</time> · 181 words</div>
+        <div class="tags"><span>cloudflare</span><span>static-site</span><span>tutorial</span></div>
+    </header>
+    <div class="content"><h2 id="welcome-to-my-blog">Welcome to my blog</h2>
+
+<p>This is a <strong>static blog</strong> powered by Cloudflare Pages. Every time I write
+a markdown file and run <code>publish.py</code>, it:</p>
+
+<ol>
+<li>Converts markdown to clean HTML with full SEO metadata</li>
+<li>Generates Open Graph tags for social sharing</li>
+<li>Adds Schema.org <code>Article</code> JSON-LD for Google rich results</li>
+<li>Builds <code>sitemap.xml</code> and <code>rss.xml</code></li>
+<li>Regenerates the index page</li>
+<li>Pushes everything to GitHub</li>
+<li>Cloudflare Pages auto-deploys in ~30 seconds</li>
+</ol>
+
+<h3 id="why-cloudflare-pages">Why Cloudflare Pages?</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Feature</th>
+  <th>WordPress</th>
+  <th>Cloudflare Pages</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Speed</td>
+  <td>Depends on hosting + cache</td>
+  <td>Edge network, instant</td>
+</tr>
+<tr>
+  <td>Cost</td>
+  <td>$5-30/mo hosting</td>
+  <td>Free</td>
+</tr>
+<tr>
+  <td>Security</td>
+  <td>Plugin vulnerabilities</td>
+  <td>Static = no attack surface</td>
+</tr>
+<tr>
+  <td>SEO</td>
+  <td>Plugin-dependent</td>
+  <td>Built into the template</td>
+</tr>
+<tr>
+  <td>Maintenance</td>
+  <td>Updates, backups, DB</td>
+  <td>None</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="code-example">Code Example</h3>
+
+<div class="codehilite">
+<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">publish</span><span class="p">(</span><span class="n">markdown_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;One command to publish a post.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;https://myblog.pages.dev/&quot;</span> <span class="o">+</span> <span class="n">slugify</span><span class="p">(</span><span class="n">markdown_file</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>That's it! No database, no WordPress, no 8-phase pipeline.
+Just write markdown and ship.</p>
+
+<hr />
+
+<p><em>Want to try? Run <code>python scripts/publish.py content/hello-world.md</code></em></p>
+</div>
+</article>
+<footer><p>Tien's Blog · Powered by <a href="https://pages.cloudflare.com">Cloudflare Pages</a></p></footer>
+</body>
+</html>
