@@ -64,12 +64,7 @@ from blog_automation.pipelines.phase_7_review import (
     update_task_status,
 )
 from blog_automation.pipelines.phase_8_publish import (
-    create_wordpress_post,
-    format_markdown_to_html,
-    prepare_images,
     publish_article,
-    setup_analytics_tracking,
-    store_acf_metadata,
 )
 
 __all__ = [
@@ -112,11 +107,6 @@ __all__ = [
     "update_task_status",
     "complete_review",
     "get_review_stats",
-    # Phase 8 - Publish
-    "format_markdown_to_html",
-    "prepare_images",
-    "create_wordpress_post",
-    "store_acf_metadata",
-    "setup_analytics_tracking",
+    # Phase 8 - Cloudflare Pages publish
     "publish_article",
 ]

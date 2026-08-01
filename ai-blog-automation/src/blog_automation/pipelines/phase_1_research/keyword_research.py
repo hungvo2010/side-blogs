@@ -1,12 +1,12 @@
 """Keyword research pipeline.
 
-Fetches keyword data from Ahrefs and creates initial content briefs.
+Fetches keyword data from the configured search provider (Ahrefs or Google
+Custom Search) and runs opportunity scoring + backlink analysis.
 """
 
 from typing import Any
 
 from blog_automation.errors import InvalidKeywordError, ProcessingError
-from blog_automation.integrations.ahrefs_client import AhrefsClient
 from blog_automation.logging_config import get_logger
 from blog_automation.models import ContentBrief, ContentCalendar, get_session
 
@@ -18,7 +18,10 @@ def research_keyword(
     article_id: int | None = None,
     country: str = "us",
 ) -> ContentBrief:
-    """Research a keyword and create initial content brief.
+    """Research a keyword, score opportunity, and create initial content brief.
+
+    Uses ``get_search_client()`` so it works with either Ahrefs or Google
+    Custom Search depending on ``SEARCH_PROVIDER`` in .env.
 
     Args:
         keyword: Target keyword to research
@@ -26,7 +29,7 @@ def research_keyword(
         country: Country code for metrics
 
     Returns:
-        ContentBrief with keyword research data
+        ContentBrief with keyword research data + opportunity analysis
 
     Raises:
         InvalidKeywordError: If keyword is invalid
@@ -34,7 +37,6 @@ def research_keyword(
     """
     logger.info("Starting keyword research", keyword=keyword)
 
-    # Validate keyword
     if not keyword or not keyword.strip():
         raise InvalidKeywordError(
             message="Keyword cannot be empty",
@@ -44,35 +46,36 @@ def research_keyword(
     keyword = keyword.strip().lower()
 
     from blog_automation.config import get_settings
+
     settings = get_settings()
 
     if settings.mock_mode:
-        logger.info("MOCK MODE: Skipping keyword research API calls")
+        logger.info("MOCK MODE: Using dummy keyword data")
         metrics = {"volume": 1200, "difficulty": 35}
         serp_features = {"featured_snippet": True, "knowledge_panel": False}
         top_pages = [
-            {"url": "https://example.com/competitor1", "title": "Top Competitor", "word_count": 1800}
+            {
+                "url": "https://example.com/competitor1",
+                "title": "Top Competitor Guide",
+                "snippet": "A comprehensive guide from 2024.",
+            }
         ]
         competitor_analysis = {"avg_word_count": 1800, "avg_domain_rating": 45}
     else:
         try:
-            # Initialize Ahrefs client
-            ahrefs = AhrefsClient()
+            from blog_automation.integrations.search_factory import get_search_client
 
-            # Get keyword metrics
-            logger.info("Fetching keyword metrics", keyword=keyword)
-            metrics = ahrefs.get_keyword_metrics(keyword, country)
+            client = get_search_client()
+            logger.info(
+                "Fetching keyword metrics via %s", type(client).__name__,
+                keyword=keyword,
+            )
 
-            # Get SERP features
-            logger.info("Analyzing SERP features", keyword=keyword)
-            serp_features = ahrefs.serp_features(keyword, country)
+            metrics = client.get_keyword_overview(keyword, country)
+            serp_features = client.serp_features(keyword, country)
+            top_pages = client.top_pages(keyword, country, limit=10)
+            competitor_analysis = client.competitor_analysis(keyword, country)
 
-            # Get top pages for competitor analysis
-            logger.info("Analyzing competitors", keyword=keyword)
-            top_pages = ahrefs.top_pages(keyword, country, limit=10)
-
-            # Analyze competitors
-            competitor_analysis = ahrefs.competitor_analysis(keyword, country)
         except Exception as e:
             raise ProcessingError(
                 message=f"Keyword research failed: {str(e)}",
@@ -81,16 +84,38 @@ def research_keyword(
             ) from e
 
     try:
-        # Determine search intent
+        # ── Phase 1a: Determine intent + word count ──
         intent = _determine_intent(keyword, serp_features)
 
-        # Calculate recommended word count
         recommended_word_count = _recommend_word_count(
             metrics.get("difficulty", 50),
             competitor_analysis.get("avg_word_count", 2000),
         )
 
-        # Create brief data structure
+        # ── Phase 1b: Opportunity scoring + backlink analysis ──
+        from blog_automation.pipelines.phase_1_research.keyword_analyzer import (
+            KeywordAnalyzer,
+        )
+
+        analyzer = KeywordAnalyzer()
+        analysis = analyzer.analyze(
+            {
+                "keyword": keyword,
+                "volume": metrics.get("volume", 0),
+                "difficulty": metrics.get("difficulty", 50),
+                "top_pages": top_pages,
+            }
+        )
+
+        logger.info(
+            "Keyword analysis",
+            keyword=keyword,
+            verdict=analysis.score.verdict,
+            score=analysis.score.opportunity_score,
+            backlinks=len(analysis.backlink_opportunities),
+        )
+
+        # ── Build brief data ──
         brief_data = {
             "keyword": keyword,
             "search_volume": metrics.get("volume", 0),
@@ -104,12 +129,29 @@ def research_keyword(
                     {
                         "url": p.get("url"),
                         "title": p.get("title"),
-                        "word_count": p.get("word_count"),
+                        "snippet": p.get("snippet"),
                     }
                     for p in top_pages[:5]
                 ],
             },
             "serp_features": serp_features,
+            # ── New: opportunity analysis ──
+            "opportunity_analysis": {
+                "verdict": analysis.score.verdict,
+                "score": analysis.score.opportunity_score,
+                "why": analysis.score.why,
+                "summary": analysis.summary,
+                "backlink_opportunities": [
+                    {
+                        "domain": b.domain,
+                        "url": b.url,
+                        "approach": b.approach,
+                        "ease_score": b.ease_score,
+                        "why": b.why,
+                    }
+                    for b in analysis.backlink_opportunities
+                ],
+            },
         }
 
         # Create ContentBrief
@@ -133,6 +175,7 @@ def research_keyword(
                 brief_id=brief.id,
                 volume=metrics.get("volume", 0),
                 difficulty=metrics.get("difficulty", 50),
+                opportunity_verdict=analysis.score.verdict,
             )
 
             return brief
