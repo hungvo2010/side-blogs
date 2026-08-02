@@ -77,11 +77,13 @@ def research_keyword(
             competitor_analysis = client.competitor_analysis(keyword, country)
 
         except Exception as e:
-            raise ProcessingError(
-                message=f"Keyword research failed: {str(e)}",
-                step="keyword_research",
-                context={"keyword": keyword},
-            ) from e
+            logger.warning(
+                "Keyword research API failed, using fallback", error=str(e)[:80]
+            )
+            metrics = {"volume": 500, "difficulty": 50}
+            serp_features = {"featured_snippet": False}
+            top_pages = []
+            competitor_analysis = {"avg_word_count": 1500, "avg_domain_rating": 40}
 
     try:
         # ── Phase 1a: Determine intent + word count ──
