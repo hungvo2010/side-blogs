@@ -330,25 +330,20 @@ def build_site(dist: Path, posts_meta: list[dict], new_slug: str, new_html: str)
 
 
 # ---------------------------------------------------------------------------
-# Git push (into the current repo — no clone)
-# ---------------------------------------------------------------------------
-def git_push(dist: Path, message: str = "Publish new content") -> bool:
-    # Repo root = side-blogs/  (scripts/publish.py → ai-blog-automation/scripts/publish.py)
-    root = Path(__file__).resolve().parents[2]
-    rel = dist.resolve().relative_to(root.resolve())
-    print(f"📦 Adding {rel}/ to git...")
-
-    subprocess.run(["git", "add", str(rel)], cwd=root, check=True)
-
-    r = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=root)
-    if r.returncode == 0:
-        print("📭 No changes to commit.")
-        return False
-
-    subprocess.run(["git", "commit", "-m", message], cwd=root, check=True)
-    subprocess.run(["git", "push"], cwd=root, check=True)
-    print(f"🚀 Pushed! Cloudflare Pages deploys from {rel}/")
-    return True
+# ─── Deploy ────────────────────────────────────────────────────────────
+def _deploy(dist: Path) -> None:
+    """Upload public/ to Cloudflare Pages via wrangler CLI. No git needed."""
+    import shutil
+    if not shutil.which("wrangler"):
+        print("⚠️  wrangler not found. Skipping deploy.")
+        return
+    project = os.environ.get("CLOUDFLARE_PROJECT_NAME", "side-blogs")
+    subprocess.run(
+        ["wrangler", "pages", "deploy", str(dist.resolve()),
+         "--project-name", project, "--branch", "main", "--commit-dirty", "true"],
+        check=False,
+    )
+    print(f"🌍 Live: {DEFAULTS['site_url']}")
 
 
 # ---------------------------------------------------------------------------
@@ -406,7 +401,8 @@ def main():
             (pd / "index.html").write_text(html, encoding="utf-8")
 
         if not args.no_push:
-            git_push(dist)
+            print("📤 Uploading to Cloudflare Pages via wrangler...")
+            _deploy(dist)
         return
 
     # ------------------------------------------------------------------
@@ -434,7 +430,7 @@ def main():
     build_site(dist, posts_meta, slug, html)
 
     if not args.no_push:
-        git_push(dist, message=f"Publish: {meta['title']}")
+        _deploy(dist)
 
     print(f"\n✨ Done! Preview: {dist}/{slug}/index.html")
     print(f"   Live: {DEFAULTS['site_url']}/{slug}")
