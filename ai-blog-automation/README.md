@@ -53,9 +53,6 @@ cp .env.example .env
 ```bash
 # Create PostgreSQL database
 createdb blog_db
-
-# Run migrations
-alembic upgrade head
 ```
 
 ### 5. Run Tests
@@ -80,7 +77,7 @@ ai-blog-automation/
 │   ├── unit/                  # Unit tests
 │   ├── integration/           # Integration tests
 │   └── fixtures/              # Test fixtures
-├── migrations/                # Alembic migrations
+
 ├── airflow_dags/              # Airflow DAG definitions
 └── logs/                      # Application logs
 ```

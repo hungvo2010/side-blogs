@@ -14,12 +14,12 @@ packages = [{include = "blog_automation", from = "src"}]
 [tool.poetry.dependencies]
 python = ">=3.11,<4.0"
 sqlalchemy = "^2.0.23"
-alembic = "^1.13.1"
+
 pydantic = "^2.5.2"
 pydantic-settings = "^2.1.0"
 python-dotenv = "^1.0.0"
 requests = "^2.31.0"
-openai = "^1.50.0"
+openai = ">=1.50.0"
 markdown2 = "^2.4.12"
 httpx = "^0.26.0"
 tenacity = "^8.2.3"
@@ -27,6 +27,7 @@ psycopg2-binary = "^2.9.9"
 structlog = "^23.3.0"
 streamlit = "^1.29.0"
 plotly = "^5.18.0"
+langchain-openai = ">=0.3.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
@@ -57,21 +58,19 @@ exclude = '''
   | buck-out
   | build
   | dist
-  | migrations
 )/
 '''
 
 [tool.isort]
 profile = "black"
 line_length = 88
-skip = ["migrations"]
 
 [tool.ruff]
 # Ruff replaces flake8 + isort + black for linting/formatting validation.
 # Aligned with the existing black config (line-length 88, py311).
 line-length = 88
 target-version = "py311"
-extend-exclude = ["migrations", "dist"]
+extend-exclude = ["dist"]
 
 [tool.ruff.lint]
 # E/W = pycodestyle, F = pyflakes, I = isort (profile-compatible with black).

@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from datetime import datetime, timedelta
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 st.set_page_config(
     page_title="AI Blog Automation",
@@ -44,6 +45,37 @@ st.markdown(
 </style>
 """,
     unsafe_allow_html=True,
+)
+
+# Disable Streamlit's built-in bare "C" -> Clear cache shortcut.
+# Streamlit hardcodes this in its bundled JS with no setting to disable it,
+# so we intercept the keydown in the capture phase on the parent window and
+# swallow it when the user is not typing in an input/textarea/contenteditable.
+components.html(
+    """
+<script>
+(function () {
+  const win = window.parent;
+  if (win.__cClearCacheDisabled) return;
+  win.__cClearCacheDisabled = true;
+  win.addEventListener('keydown', function (e) {
+    if ((e.key === 'c' || e.key === 'C') &&
+        !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+      const t = e.target;
+      const tag = t && t.tagName;
+      const editing = tag === 'INPUT' || tag === 'TEXTAREA' ||
+                      tag === 'SELECT' || (t && t.isContentEditable);
+      if (!editing) {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        e.preventDefault();
+      }
+    }
+  }, true);
+})();
+</script>
+""",
+    height=0,
 )
 
 
@@ -201,15 +233,19 @@ def get_pipeline_progress_articles(limit: int = 10) -> list[dict]:
 def render_pipeline_toasts():
     """Surface failed pipeline runs as non-blocking toast notifications.
 
-    Note: toasts auto-dismiss after a few seconds, so this is a secondary
-    nudge for active users; see render_pipeline_failure_banner for the
-    persistent, always-visible failure display.
+    Each failed article is toasted only once per Streamlit session (tracked
+    via session_state) to avoid repeating on every rerun. The persistent
+    banner (render_pipeline_failure_banner) remains the always-visible display.
     """
     if not db_connected:
         return
     try:
+        toasted = st.session_state.setdefault("_toasted_article_ids", set())
         for a in get_failed_pipeline_articles(limit=5):
+            if a["id"] in toasted:
+                continue
             st.toast(a["pipeline_error"] or "Pipeline failed", icon="❌")
+            toasted.add(a["id"])
     except Exception:
         pass
 

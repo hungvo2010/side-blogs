@@ -18,6 +18,7 @@ from datetime import datetime
 from typing import Any, Generator
 
 import openai
+from langchain_openai import ChatOpenAI
 from openai import OpenAI
 
 from blog_automation.config import get_settings
@@ -146,6 +147,7 @@ class OpenRouterClient:
 
         self.cost_tracker = CostTracker()
         self.total_cost = 0.0
+        self._chat_models: dict[str, ChatOpenAI] = {}
         logger.info(
             "OpenRouter client initialized",
             base_url=self.base_url,
@@ -307,37 +309,64 @@ class OpenRouterClient:
         model: str | None = None,
         **kwargs,
     ) -> dict | list:
-        """Extract JSON from a model response.
+        """Extract structured JSON from a model response.
 
-        Adds a JSON-only instruction to the system prompt and parses the
-        returned content, tolerating markdown code fences or surrounding text.
+        Uses ``ChatOpenAI.with_structured_output()`` so the API itself
+        enforces valid JSON (JSON mode) or a Pydantic schema (function
+        calling). Falls back to regex-based extraction for models that
+        don't support structured output.
 
         Args:
             prompt: User prompt (should request JSON output)
             system_prompt: Optional system prompt
             model: Model to use
-            **kwargs: Additional parameters
+            **kwargs: Additional parameters; accepts optional ``schema``
+                (a Pydantic BaseModel class) for schema-validated output
 
         Returns:
-            Parsed JSON data
+            Parsed JSON data (dict or list)
 
         Raises:
-            GenerationFailureError: If JSON extraction fails
+            GenerationFailureError: If both structured output and regex
+                fallback fail
         """
+        schema = kwargs.pop("schema", None)
         json_system = (system_prompt or "") + (
             "\n\nRespond with valid JSON only. No additional text."
         )
 
+        # Primary path: structured output via the API (no regex needed)
+        try:
+            chat = self._get_chat_model(model)
+            if schema is not None:
+                structured = chat.with_structured_output(schema)
+            else:
+                structured = chat.with_structured_output(method="json_mode")
+
+            messages: list[tuple[str, str]] = []
+            if json_system.strip():
+                messages.append(("system", json_system.strip()))
+            messages.append(("user", prompt))
+
+            result = structured.invoke(messages)
+            if hasattr(result, "model_dump"):
+                return result.model_dump()
+            return result
+        except Exception as e:
+            logger.warning(
+                "Structured output failed, falling back to regex",
+                error=str(e)[:200],
+            )
+
+        # Fallback: regex-based extraction from a plain completion
         response = self.complete(
             prompt=prompt,
             system_prompt=json_system.strip(),
             model=model,
             **kwargs,
         )
-
         content = response["content"]
 
-        # Try to extract JSON from a markdown code block first
         json_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", content)
         if json_match:
             content = json_match.group(1)
@@ -345,7 +374,6 @@ class OpenRouterClient:
         try:
             return json.loads(content)
         except json.JSONDecodeError:
-            # Fall back to finding a raw JSON object/array
             obj_match = re.search(r"(\{[\s\S]*\}|\[[\s\S]*\])", content)
             if obj_match:
                 try:
@@ -357,6 +385,27 @@ class OpenRouterClient:
                 message="Failed to extract JSON from OpenRouter response",
                 context={"response_preview": content[:500]},
             )
+
+    def _get_chat_model(self, model: str | None = None) -> ChatOpenAI:
+        """Get or create a ``ChatOpenAI`` for the given model.
+
+        Reuses the same OpenRouter base URL / API key as the OpenAI client.
+        Instances are cached per model slug.
+        """
+        model = model or self.default_model
+        if model not in self._chat_models:
+            default_headers: dict[str, str] = {"X-Title": "AI Blog Automation"}
+            if self.site_url:
+                default_headers["HTTP-Referer"] = self.site_url
+            self._chat_models[model] = ChatOpenAI(
+                model=model,
+                api_key=self.api_key,
+                base_url=self.base_url,
+                default_headers=default_headers,
+                temperature=0.7,
+                max_tokens=3000,
+            )
+        return self._chat_models[model]
 
     def complete_streaming(
         self,
@@ -393,7 +442,6 @@ class OpenRouterClient:
                 message=f"Streaming failed: {str(e)}",
                 context={"model": model},
             ) from e
-
 
     # ------------------------------------------------------------------
     # Web search / evidence retrieval (replaces PerplexityClient)

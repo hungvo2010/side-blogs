@@ -42,7 +42,6 @@ class ErrorCode(str, Enum):
     DB_CONSTRAINT = "db_002"
     DB_NOT_FOUND = "db_003"
     DB_INTEGRITY = "db_004"
-    DB_MIGRATION = "db_005"
 
     # Review Errors (rev_xxx)
     REVIEW_NOT_FOUND = "rev_001"

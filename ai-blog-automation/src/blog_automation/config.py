@@ -14,8 +14,8 @@ from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Project root = ai-blog-automation/ (this file lives in src/blog_automation/).
-# Load .env once at import time so every entry point (scripts, Streamlit,
-# Alembic) picks up configuration without each caller calling load_dotenv().
+# Load .env once at import time so every entry point (scripts, Streamlit)
+# picks up configuration without each caller calling load_dotenv().
 # override=False keeps existing env vars, so tests (which force sqlite in
 # conftest) still take precedence over the .env file.
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -115,10 +115,6 @@ class Settings(BaseSettings):
         default=3.0, description="Max plagiarism percentage"
     )
 
-    # Paths
-    migrations_dir: Path = Field(
-        default=Path("migrations"), description="Migrations directory"
-    )
 
     @field_validator("log_level")
     @classmethod

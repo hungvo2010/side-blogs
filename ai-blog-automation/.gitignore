@@ -96,3 +96,6 @@ secrets/
 *.pem
 *.key
 service-account*.json
+
+# Throwaway real-API test scripts (not committed)
+_test_real_api.py
