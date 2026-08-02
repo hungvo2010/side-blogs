@@ -140,32 +140,14 @@ def publish_article(
         logger.error("publish.py failed", stderr=result.stderr[:500])
         raise RuntimeError(f"publish.py failed: {result.stderr[:300]}")
 
-    # ── If auto_push, commit + push ──
+    # ── Deploy: Cloudflare Direct Upload (preferred) or Git push ──
     pushed = False
     if auto_push:
-        subprocess.run(
-            ["git", "add", "public/", "ai-blog-automation/content/"],
-            cwd=_REPO_ROOT,
-            check=True,
-        )
-        r = subprocess.run(
-            ["git", "diff", "--cached", "--quiet"], cwd=_REPO_ROOT
-        )
-        if r.returncode != 0:
-            subprocess.run(
-                ["git", "commit", "-m", f"Publish: {title}"],
-                cwd=_REPO_ROOT,
-                check=True,
-            )
-            subprocess.run(
-                ["git", "push"],
-                cwd=_REPO_ROOT,
-                check=True,
-            )
-            pushed = True
-            logger.info("Pushed to git", slug=slug)
+        cf_token = __import__("os").environ.get("CLOUDFLARE_API_TOKEN", "")
+        if cf_token:
+            pushed = _deploy_cloudflare(title)
         else:
-            logger.info("No changes to push")
+            pushed = _deploy_git_push(title)
 
     # ── Determine live URL ──
     site_url = __import__("os").environ.get(
@@ -181,3 +163,70 @@ def publish_article(
         "pushed": pushed,
         "title": title,
     }
+
+
+def _deploy_cloudflare(title: str) -> bool:
+    """Upload to Cloudflare Pages via wrangler CLI (reliable, no API issues)."""
+    import shutil
+
+    # Check wrangler is available
+    if not shutil.which("wrangler"):
+        logger.warning("wrangler CLI not found, falling back to git push")
+        return _deploy_git_push(title)
+
+    dist = _REPO_ROOT / "public"
+    if not dist.exists() or not list(dist.iterdir()):
+        logger.warning("public/ dir empty, nothing to deploy")
+        return False
+
+    project = __import__("os").environ.get("CLOUDFLARE_PROJECT_NAME", "side-blogs")
+    result = subprocess.run(
+        [
+            "wrangler", "pages", "deploy", str(dist),
+            "--project-name", project,
+            "--branch", "main",
+            "--commit-dirty", "true",
+        ],
+        cwd=_REPO_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"wrangler deploy failed: {result.stderr[:300]}")
+
+    logger.info("Deployed to Cloudflare Pages via wrangler", project=project)
+    return True
+
+
+def _deploy_git_push(title: str) -> bool:
+    """Fallback: git push to trigger Cloudflare Pages build."""
+    subprocess.run(
+        ["git", "add", "public/", "ai-blog-automation/content/"],
+        cwd=_REPO_ROOT,
+        check=True,
+        capture_output=True,
+    )
+    r = subprocess.run(
+        ["git", "diff", "--cached", "--quiet"],
+        cwd=_REPO_ROOT,
+        capture_output=True,
+    )
+    if r.returncode == 0:
+        logger.info("No changes to push")
+        return False
+
+    subprocess.run(
+        ["git", "commit", "-m", f"Publish: {title}"],
+        cwd=_REPO_ROOT,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "push"],
+        cwd=_REPO_ROOT,
+        check=True,
+        capture_output=True,
+    )
+    logger.info("Pushed to git")
+    return True

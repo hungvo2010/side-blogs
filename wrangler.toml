@@ -3,4 +3,4 @@
 # Then: wrangler pages deploy ai-blog-automation/.dist --project-name=side-blogs
 name = "side-blogs"
 compatibility_date = "2026-07-29"
-pages_build_output_dir = "ai-blog-automation/.dist"
+pages_build_output_dir = "public"
