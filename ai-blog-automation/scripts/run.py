@@ -34,19 +34,11 @@ print(f"2. Brief ✅  {len(full.get_sections())} sections")
 article = content_brief_to_draft(full)
 print(f"3. Draft ✅  {article.word_count} words")
 
-# Phase 4 - skip on rate limit
-try:
-    fact_check_article(article)
-    print(f"4. Fact check ✅")
-except APIRateLimitError:
-    print(f"4. Fact check ⏭️  rate limit")
+# Phase 4 - skip (rate limit on free model)
+print(f"4. Fact check ⏭️  skipped (free model limit)")
 
 # Phase 5
-try:
-    seo_optimize_article(article)
-    print(f"5. SEO ✅  score={article.seo_score}")
-except APIRateLimitError:
-    print(f"5. SEO ⏭️  rate limit")
+print(f"5. SEO ⏭️  skipped (free model limit)")
 
 # Phase 6
 try:

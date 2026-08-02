@@ -184,13 +184,8 @@ def _run_pipeline_inprocess(keyword: str) -> None:
         article = content_brief_to_draft(full_brief)
         progress.write(f"✅ Draft done — {article.word_count} words")
 
-        progress.write("🔬 Phase 4: Fact checking...")
-        report = fact_check_article(article)
-        progress.write(f"✅ Fact check — {report.get('accuracy_rate', 0):.0f}% accurate")
-
-        progress.write("📈 Phase 5: SEO optimization...")
-        seo_optimize_article(article)
-        progress.write(f"✅ SEO done — score: {article.seo_score}")
+        progress.write("🔬 Phase 4: Fact checking... ⏭️ skipped (free model)")
+        progress.write("📈 Phase 5: SEO optimization... ⏭️ skipped (free model)")
 
         progress.write("🛡️ Phase 6: Quality gates...")
         run_quality_gates(article)

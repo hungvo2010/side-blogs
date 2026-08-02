@@ -351,6 +351,11 @@ def content_brief_to_draft(brief: ContentBrief) -> Article:
 
         # Step 2: Generate draft
         article = generate_article_draft(brief, outline)
+        # Mark initial pipeline progress so dashboard shows correct state
+        article.pipeline_progress = {
+            "research": "done", "brief": "done", "draft": "done",
+            "fact_check": "pending", "seo": "pending", "quality_gates": "pending",
+        }
         logger.info(
             "Draft generated",
             keyword=brief.keyword,
