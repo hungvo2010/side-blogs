@@ -113,7 +113,9 @@ def publish_article(
     publish_script = (
         _REPO_ROOT / "ai-blog-automation" / "scripts" / "publish.py"
     )
-    cmd = ["python3", str(publish_script)]
+    # Use venv python so markdown2 is available
+    venv_python = str(_REPO_ROOT / "ai-blog-automation" / ".venv" / "bin" / "python")
+    cmd = [venv_python, str(publish_script)]
     if not auto_push:
         cmd.append("--no-push")
     result = subprocess.run(

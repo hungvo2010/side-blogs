@@ -1,5 +1,15 @@
 [
   {
+    "title": "Best Budget Coffee Maker 2026: Top Picks for Exceptional Flavor Without the High Price Tag",
+    "slug": "best-budget-coffee-maker-2026-top-picks-for-exceptional-flavor-without-the-high-",
+    "description": "We’ve all been there. It’s 6:30 AM, the house is freezing, and your soul is currently trapped in a state of caffeine-deprived limbo. You stare at your counte…",
+    "tags": [],
+    "author": "Tien Nguyen",
+    "image": "",
+    "date": "2026-08-02T08:27:30Z",
+    "word_count": 1864
+  },
+  {
     "title": "Hello World from Cloudflare Pages",
     "slug": "hello-world-from-cloudflare-pages",
     "description": "My first blog post published via GitHub + Cloudflare Pages, zero database required.",
@@ -8,9 +18,19 @@
       "static-site",
       "tutorial"
     ],
-    "author": "Anonymous",
+    "author": "Tien Nguyen",
     "image": "",
-    "date": "2026-08-02T02:27:55Z",
+    "date": "2026-08-02T08:27:30Z",
     "word_count": 181
+  },
+  {
+    "title": "Robusta vs. Arabica: The Ultimate Guide to Choosing Your Perfect Coffee Bean",
+    "slug": "robusta-vs-arabica-the-ultimate-guide-to-choosing-your-perfect-coffee-bean",
+    "description": "Have you ever stood in the coffee aisle, staring at a bag of beans, wondering why one costs five dollars and another costs fifteen? You might have noticed te…",
+    "tags": [],
+    "author": "Tien Nguyen",
+    "image": "",
+    "date": "2026-08-02T08:27:30Z",
+    "word_count": 2095
   }
 ]
