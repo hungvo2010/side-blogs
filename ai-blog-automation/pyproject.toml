@@ -92,6 +92,15 @@ python_files = ["test_*.py"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
 filterwarnings = ["ignore::DeprecationWarning"]
+markers = [
+    "real_api: tests that hit real external APIs (skipped unless RUN_REAL_API_TESTS=1)",
+    "openrouter: real OpenRouter API tests (needs OPENROUTER_API_KEY)",
+    "ahrefs: real Ahrefs API tests (needs AHREFS_API_KEY)",
+    "copyscape: real Copyscape API tests (needs COPYSCAPE_API_KEY + COPYSCAPE_USERNAME)",
+    "wordpress: real WordPress REST API tests (needs WORDPRESS_URL/USERNAME/APP_PASSWORD)",
+    "google_analytics: real GA4 tests (needs GOOGLE_ANALYTICS_PROPERTY_ID + service account JSON)",
+    "search_console: real GSC tests (needs GOOGLE_SEARCH_CONSOLE_SITE_URL + service account JSON)",
+]
 
 [tool.coverage.run]
 source = ["src/blog_automation"]

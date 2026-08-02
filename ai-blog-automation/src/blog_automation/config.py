@@ -71,6 +71,13 @@ class Settings(BaseSettings):
     # Ahrefs API
     ahrefs_api_key: str = Field(default="", description="Ahrefs API key")
 
+    # Google Custom Search API (free alternative to Ahrefs, 100 queries/day)
+    google_search_api_key: str = Field(default="", description="Google Custom Search API key")
+    google_search_engine_id: str = Field(default="", description="Google Custom Search Engine ID (cx)")
+
+    # Keyword research provider: "ahrefs" or "google"
+    search_provider: str = Field(default="trends", description="Keyword research provider (ahrefs, google, or trends)")
+
     # Copyscape API
     copyscape_api_key: str = Field(default="", description="Copyscape API key")
     copyscape_username: str = Field(default="", description="Copyscape username")

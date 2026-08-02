@@ -164,25 +164,65 @@ class OpenRouterClient:
         model: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 3000,
+        max_retries: int = 3,
         **kwargs,
     ) -> dict[str, Any]:
-        """Generate a chat completion.
+        """Generate a chat completion with auto-retry on failure.
 
         Args:
             messages: List of message dicts with role and content
             model: Model slug to use (defaults to default_model)
             temperature: Sampling temperature (0-2)
             max_tokens: Maximum tokens to generate
+            max_retries: Max retries on transient failures (timeout, rate limit)
             **kwargs: Additional parameters forwarded to the API
 
         Returns:
-            Dict with content, model, input_tokens, output_tokens,
-            total_tokens, and cost
-
-        Raises:
-            GenerationFailureError: If generation fails
+            Dict with content, model, input_tokens, output_tokens, total_tokens, and cost
         """
+        import time as _time
+
         model = model or self.default_model
+        last_error = None
+
+        for attempt in range(max_retries + 1):
+            try:
+                return self._chat_complete_once(messages, model, temperature, max_tokens, **kwargs)
+            except (APIRateLimitError, APITimeoutError) as e:
+                last_error = e
+                if attempt < max_retries:
+                    delay = 2 ** attempt
+                    logger.warning(
+                        f"OpenRouter retry {attempt+1}/{max_retries} in {delay}s",
+                        model=model, error=str(e)[:100],
+                    )
+                    _time.sleep(delay)
+                    continue
+            except APIServerError as e:
+                last_error = e
+                if attempt < max_retries - 1:  # fewer retries for server errors
+                    delay = 5 * (attempt + 1)
+                    logger.warning(
+                        f"OpenRouter server error, retry {attempt+1}/{max_retries-1} in {delay}s",
+                        model=model, error=str(e)[:100],
+                    )
+                    _time.sleep(delay)
+                    continue
+
+        raise last_error or GenerationFailureError(
+            message=f"OpenRouter failed after {max_retries} retries",
+            context={"model": model},
+        )
+
+    def _chat_complete_once(
+        self,
+        messages: list[dict[str, str]],
+        model: str,
+        temperature: float,
+        max_tokens: int,
+        **kwargs,
+    ) -> dict[str, Any]:
+        """Single attempt at chat completion (no retry)."""
 
         try:
             response = self.client.chat.completions.create(

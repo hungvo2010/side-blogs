@@ -1,18 +1,24 @@
-# AI Blog Content Automation Platform
+---
+title: Side Blogs Dashboard
+emoji: 📝
+colorFrom: blue
+colorTo: gray
+sdk: streamlit
+sdk_version: 1.40.0
+app_file: streamlit_app/app.py
+pinned: false
+---
 
-Automated AI content generation, fact-checking, SEO optimization, and publishing platform for blog monetization.
+# Side Blogs — AI Blog Automation Dashboard
 
-## Features
+File-based Streamlit dashboard for the side-blogs static site.
 
-- **Keyword Research**: Automated keyword analysis using Ahrefs API
-- **Content Brief Generation**: AI-powered content briefs with competitor analysis
-- **Article Drafting**: GPT-4 powered article generation with quality controls
-- **Fact-Checking**: Automated claim extraction and verification using Claude
-- **SEO Optimization**: Rank Math integration and meta tag optimization
-- **Quality Gates**: Plagiarism detection, link verification, readability scoring
-- **WordPress Publishing**: Automated publishing with ACF metadata
-- **Human Review**: Mandatory editorial review workflow
-- **Analytics Tracking**: GA4 and Google Search Console integration
+**Features:**
+- 📊 Content overview & stats
+- 📄 Article management (published + drafts)
+- 📅 Content calendar
+- 🚀 Publish workflow overview
+- ⚙️ Setup & deploy guide
 
 ## Requirements
 
@@ -125,3 +131,5 @@ pytest tests/unit/test_errors.py -v
 ## License
 
 MIT License
+=======
+**No database required** — reads directly from `content/*.md` and `public/posts.json`.

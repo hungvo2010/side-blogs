@@ -1,22 +1,9 @@
-"""Phase 8 — Publishing.
+"""Phase 8 — Cloudflare Pages publishing.
 
-Handles content formatting, image uploads, and WordPress publishing.
+No DB. No WordPress. Output is static HTML in ``public/`` served by
+Cloudflare Pages.
 """
 
-from blog_automation.pipelines.phase_8_publish.publishing import (
-    create_wordpress_post,
-    format_markdown_to_html,
-    prepare_images,
-    publish_article,
-    setup_analytics_tracking,
-    store_acf_metadata,
-)
+from blog_automation.pipelines.phase_8_publish.publishing import publish_article
 
-__all__ = [
-    "format_markdown_to_html",
-    "prepare_images",
-    "create_wordpress_post",
-    "store_acf_metadata",
-    "setup_analytics_tracking",
-    "publish_article",
-]
+__all__ = ["publish_article"]
