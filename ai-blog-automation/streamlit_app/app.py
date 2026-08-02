@@ -127,6 +127,61 @@ def update_article_status(article_id: int, new_status: str, feedback: str = None
     return False
 
 
+def _run_pipeline_inprocess(keyword: str) -> None:
+    """Run full pipeline inside Streamlit — no subprocess needed."""
+    import traceback
+    from blog_automation.models import Article, get_session
+    from blog_automation.pipelines import (
+        research_keyword, generate_content_brief, content_brief_to_draft,
+        fact_check_article, seo_optimize_article, run_quality_gates,
+    )
+    from blog_automation.pipelines.phase_8_publish import publish_article
+
+    progress = st.status(f"Running pipeline: **{keyword}**", expanded=True)
+
+    try:
+        progress.write("🔍 Phase 1: Research...")
+        brief = research_keyword(keyword)
+        progress.write(f"✅ Research done — volume: {brief.search_volume}, difficulty: {brief.difficulty}")
+
+        progress.write("📝 Phase 2: Content brief...")
+        full_brief = generate_content_brief(keyword, brief.id)
+        progress.write(f"✅ Brief done — {len(full_brief.get_sections())} sections")
+
+        progress.write("✍️ Phase 3: Drafting...")
+        article = content_brief_to_draft(full_brief)
+        progress.write(f"✅ Draft done — {article.word_count} words")
+
+        progress.write("🔬 Phase 4: Fact checking...")
+        report = fact_check_article(article)
+        progress.write(f"✅ Fact check — {report.get('accuracy_rate', 0):.0f}% accurate")
+
+        progress.write("📈 Phase 5: SEO optimization...")
+        seo_optimize_article(article)
+        progress.write(f"✅ SEO done — score: {article.seo_score}")
+
+        progress.write("🛡️ Phase 6: Quality gates...")
+        run_quality_gates(article)
+        progress.write(f"✅ Quality done — status: {article.status}")
+
+        progress.write("🚀 Phase 8: Publishing...")
+        result = publish_article(
+            title=article.title or keyword,
+            content=article.content_draft or "",
+            keyword=keyword,
+            auto_push=True,
+        )
+        progress.write(f"✅ Published → {result['url']}")
+        progress.write(f"💵 Cost: ~${article.ai_generation_cost:.4f}")
+
+        progress.update(label=f"✅ Pipeline complete: **{keyword}**", state="complete")
+        st.session_state["show_new_article"] = False
+
+    except Exception as e:
+        progress.update(label=f"❌ Failed: {str(e)[:100]}", state="error")
+        st.error(f"```\n{traceback.format_exc()[:1000]}\n```")
+
+
 PIPELINE_STEPS = ["research", "brief", "draft", "fact_check", "seo", "quality_gates"]
 
 _STEP_LABELS = {
@@ -389,10 +444,8 @@ if page == "🏠 Dashboard":
             st.rerun()
     with col2:
         if st.button("🔄 Run Pipeline", use_container_width=True):
-            st.info(
-                "Run: `poetry run python scripts/run_pipeline.py full "
-                "--keyword 'your-keyword'`"
-            )
+            st.session_state["show_new_article"] = True
+            st.rerun()
     with col3:
         if st.button("📅 Plan Content", use_container_width=True):
             st.session_state["page"] = "📅 Content Calendar"
@@ -406,18 +459,7 @@ if page == "🏠 Dashboard":
             with col1:
                 if st.form_submit_button("🚀 Start Automation"):
                     if new_kw:
-                        import subprocess
-
-                        st.info(f"🚀 Launching pipeline for: {new_kw}...")
-                        try:
-                            # Run as background process so it doesn't block UI
-                            subprocess.Popen(
-                                ["python", "scripts/run_pipeline.py", "full", new_kw]
-                            )
-                            st.success("Pipeline started! Check back in a few minutes.")
-                            st.session_state["show_new_article"] = False
-                        except Exception as e:
-                            st.error(f"Failed to start pipeline: {e}")
+                        _run_pipeline_inprocess(new_kw)
                     else:
                         st.error("Please enter a keyword")
             with col2:
