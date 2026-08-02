@@ -78,12 +78,39 @@ def research_keyword(
 
         except Exception as e:
             logger.warning(
-                "Keyword research API failed, using fallback", error=str(e)[:80]
+                "Trends API failed, using OpenRouter", error=str(e)[:60]
             )
-            metrics = {"volume": 500, "difficulty": 50}
-            serp_features = {"featured_snippet": False}
-            top_pages = []
-            competitor_analysis = {"avg_word_count": 1500, "avg_domain_rating": 40}
+            try:
+                from blog_automation.integrations.openrouter_client import (
+                    OpenRouterClient,
+                )
+                llm = OpenRouterClient()
+                prompt = (
+                    f"Research '{keyword}'. Estimate: search volume, "
+                    f"difficulty (1-100), intent "
+                    f"(informational/commercial/transactional), "
+                    f"and top 3 competing URLs with titles."
+                )
+                system = (
+                    "Output JSON: volume (int), difficulty (int), "
+                    "intent (str), top_pages (list of {url, title})."
+                )
+                result = llm.extract_json(
+                    prompt=prompt, system_prompt=system, max_tokens=300,
+                )
+                metrics = {
+                    "volume": result.get("volume", 500),
+                    "difficulty": result.get("difficulty", 50),
+                }
+                serp_features = {}
+                top_pages = result.get("top_pages", [])
+                competitor_analysis = {"avg_word_count": 1500}
+            except Exception:
+                logger.warning("OpenRouter research also failed, using defaults")
+                metrics = {"volume": 500, "difficulty": 50}
+                serp_features = {"featured_snippet": False}
+                top_pages = []
+                competitor_analysis = {"avg_word_count": 1500, "avg_domain_rating": 40}
 
     try:
         # ── Phase 1a: Determine intent + word count ──
