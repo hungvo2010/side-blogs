@@ -1,0 +1,23 @@
+#!/bin/bash
+# Pre-commit: ruff check Python files before commit
+# Fails if ruff not found (requires ruff installed: pip install ruff)
+
+set -e
+
+# Find staged Python files
+files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$' || true)
+
+if [ -z "$files" ]; then
+    exit 0
+fi
+
+# Check if ruff is available
+if ! command -v ruff &>/dev/null; then
+    echo "⚠️  ruff not installed. Run: pip install ruff"
+    exit 1
+fi
+
+echo "🔍 ruff checking ${files}..."
+echo "$files" | while read f; do echo "$f"; done
+
+ruff check $files --select F,E,W,I --ignore E203
