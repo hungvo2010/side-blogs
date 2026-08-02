@@ -18,8 +18,8 @@ from datetime import datetime
 from typing import Any, Generator
 
 import openai
-from langchain_openai import ChatOpenAI
 from openai import OpenAI
+from langchain_openai import ChatOpenAI
 
 from blog_automation.config import get_settings
 from blog_automation.errors import (
