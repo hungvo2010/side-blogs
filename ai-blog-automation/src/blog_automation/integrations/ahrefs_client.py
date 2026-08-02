@@ -37,10 +37,8 @@ class AhrefsClient(HTTPClient):
         self.api_key = api_key or settings.ahrefs_api_key
 
         if not self.api_key:
-            raise APIAuthenticationError(
-                message="Ahrefs API key not configured",
-                service="ahrefs",
-            )
+            logger.warning("Ahrefs API key not set — Ahrefs client will be unavailable")
+            self.api_key = ""
 
         super().__init__(
             base_url=self.BASE_URL,
