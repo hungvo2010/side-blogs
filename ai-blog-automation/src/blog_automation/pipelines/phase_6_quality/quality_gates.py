@@ -19,15 +19,13 @@ logger = get_logger(__name__)
 
 
 def check_plagiarism(article: Article) -> dict[str, Any]:
-    """Check article for plagiarism.
-
-    Args:
-        article: Article to check
-
-    Returns:
-        Plagiarism check results
-    """
+    """Check article for plagiarism. Passes silently if Copyscape not configured."""
     logger.info("Checking plagiarism", article_id=article.id)
+
+    settings = get_settings()
+    if not settings.copyscape_api_key:
+        logger.info("Copyscape not configured — skipping plagiarism check")
+        return {"plagiarism_score": 0, "status": "skipped"}
 
     content = article.content_final or article.content_draft or ""
 
