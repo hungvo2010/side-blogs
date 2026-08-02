@@ -42,6 +42,12 @@ def get_search_client():
         logger.info("Using Google Custom Search for keyword research (free tier)")
         return GoogleSearchClient()
 
+    if provider == "trends":
+        from blog_automation.integrations.trends_client import TrendsClient
+
+        logger.info("Using Google Trends (pytrends) for keyword research (free, no key)")
+        return TrendsClient()
+
     raise ConfigurationError(
-        f"Unknown SEARCH_PROVIDER: {provider}. Use 'ahrefs' or 'google'."
+        f"Unknown SEARCH_PROVIDER: {provider}. Use 'ahrefs', 'google', or 'trends'."
     )

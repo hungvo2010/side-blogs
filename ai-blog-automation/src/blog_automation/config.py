@@ -76,7 +76,7 @@ class Settings(BaseSettings):
     google_search_engine_id: str = Field(default="", description="Google Custom Search Engine ID (cx)")
 
     # Keyword research provider: "ahrefs" or "google"
-    search_provider: str = Field(default="google", description="Keyword research provider (ahrefs or google)")
+    search_provider: str = Field(default="trends", description="Keyword research provider (ahrefs, google, or trends)")
 
     # Copyscape API
     copyscape_api_key: str = Field(default="", description="Copyscape API key")
