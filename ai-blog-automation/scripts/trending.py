@@ -15,7 +15,8 @@ def main():
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
-    geos = GEOS if args.geo == "all" else [args.geo.upper()]
+    geos_raw = args.geo.split(",") if args.geo != "all" else GEOS
+    geos = [g.strip().upper() for g in geos_raw]
 
     print("=" * 60)
     print("🔥 TRENDING TOPICS (pytrends-modern RSS)")
