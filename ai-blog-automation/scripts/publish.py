@@ -109,7 +109,7 @@ PAGE_TEMPLATE = """\
     </header>
     <div class="content">{content_html}</div>
 </article>
-<footer><p>{site_name} · Powered by <a href="https://pages.cloudflare.com">Cloudflare Pages</a></p></footer>
+<footer><p>&copy; 2026 {site_name}.</p></footer>
 </body>
 </html>"""
 
@@ -153,7 +153,7 @@ INDEX_TEMPLATE = """\
     <header><h1>{site_name}</h1><p>{description}</p></header>
     <ul class="posts">{post_items}</ul>
 </main>
-<footer><p>{site_name} · Powered by <a href="https://pages.cloudflare.com">Cloudflare Pages</a></p></footer>
+<footer><p>&copy; 2026 {site_name}.</p></footer>
 </body>
 </html>"""
 
