@@ -88,6 +88,15 @@ PAGE_TEMPLATE = """\
         footer h4{{color:var(--text);margin-bottom:8px}}
         footer ul{{list-style:none;padding:0;margin:0}}
         footer li{{margin-bottom:4px}}
+        @media(max-width:640px){{
+            .container{{padding:20px;margin:16px auto;border-radius:8px}}
+            h1{{font-size:1.5rem}}
+            .content{{font-size:1rem}}
+            .content h2{{font-size:1.25rem}}
+            .content h3{{font-size:1.1rem}}
+            .content pre{{font-size:.8rem;padding:12px}}
+            footer .cols{{flex-direction:column;gap:16px}}
+        }}
     </style>
 </head>
 <body>
