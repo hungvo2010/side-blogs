@@ -133,10 +133,14 @@ def generate_content_brief(
             lsi_keywords = _generate_lsi_keywords(llm, keyword, intent)
             brief_data["lsi_keywords"] = lsi_keywords
 
-            # Collect external sources
-            logger.info("Collecting external sources", keyword=keyword)
-            sources = _collect_sources(llm, keyword)
-            brief_data["sources"] = sources
+            # Collect external sources (soft-fail on free models)
+            try:
+                sources = _collect_sources(llm, keyword)
+                brief_data["sources"] = sources
+                logger.info("Sources collected", count=len(sources))
+            except Exception as e:
+                logger.warning("Source collection skipped", error=str(e)[:80])
+                brief_data["sources"] = []
 
             # Generate unique angle
             logger.info("Generating unique angle", keyword=keyword)

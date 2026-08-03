@@ -47,6 +47,24 @@ try:
 except Exception:
     print(f"6. Quality ⏭️  skipped")
 
+# Phase 7 - Fetch image
+try:
+    from blog_automation.integrations.image_provider import get_image_provider
+    img_provider = get_image_provider()
+    if img_provider.is_configured():
+        images = img_provider.search(kw, count=1)
+        if images:
+            img_url = images[0].url
+            content = article.content_draft or ""
+            article.content_draft = f"![{kw}]({img_url})\n\n{content}"
+            print(f"7. Image ✅  {img_provider.name}: {images[0].author}")
+        else:
+            print(f"7. Image ⏭️  no results")
+    else:
+        print(f"7. Image ⏭️  {img_provider.name} not configured")
+except Exception as e:
+    print(f"7. Image ⏭️  {str(e)[:60]}")
+
 # Phase 8 - Publish
 result = publish_article(
     title=article.title or kw,
