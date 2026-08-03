@@ -73,6 +73,8 @@ try:
                 article.content_draft, img2.url, kw
             )
             print(f"7. Image ✅  {img_provider.name}: {img1.author}, {img2.author}")
+            # Save thumbnail for OG image
+            article._thumbnail = images[0].thumbnail
         elif images:
             content = article.content_draft or ""
             article.content_draft = f"![{kw}]({images[0].url})\n\n{content}"
@@ -87,6 +89,7 @@ result = publish_article(
     title=article.title or kw,
     content=article.content_draft or "",
     keyword=kw,
+    image=getattr(article, "_thumbnail", None) or "",
     auto_push=True,
 )
 print(f"8. Published ✅  {result['url']}")
