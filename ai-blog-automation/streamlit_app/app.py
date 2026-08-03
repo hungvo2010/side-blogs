@@ -159,15 +159,37 @@ def update_article_status(article_id: int, new_status: str, feedback: str = None
     return False
 
 
+def _approve_and_publish(article_id: int) -> bool:
+    """Approve article and deploy to Cloudflare Pages."""
+    from blog_automation.models import Article, get_session
+    from blog_automation.pipelines.phase_8_publish import publish_article
+
+    with get_session() as s:
+        a = s.get(Article, article_id)
+        if not a:
+            return False
+        publish_article(
+            title=a.title or a.keyword,
+            content=a.content_draft or "",
+            keyword=a.keyword or "",
+            auto_push=True,
+        )
+        a.status = "published"
+        s.commit()
+    return True
+
+
 def _run_pipeline_inprocess(keyword: str) -> None:
     """Run full pipeline inside Streamlit — no subprocess needed."""
     import traceback
-    from blog_automation.models import Article, get_session
+
+    from blog_automation.models import get_session
     from blog_automation.pipelines import (
-        research_keyword, generate_content_brief, content_brief_to_draft,
-        fact_check_article, seo_optimize_article, run_quality_gates,
+        content_brief_to_draft,
+        generate_content_brief,
+        research_keyword,
+        run_quality_gates,
     )
-    from blog_automation.pipelines.phase_8_publish import publish_article
 
     progress = st.status(f"Running pipeline: **{keyword}**", expanded=True)
 
@@ -191,17 +213,15 @@ def _run_pipeline_inprocess(keyword: str) -> None:
         run_quality_gates(article)
         progress.write(f"✅ Quality done — status: {article.status}")
 
-        progress.write("🚀 Phase 8: Publishing...")
-        result = publish_article(
-            title=article.title or keyword,
-            content=article.content_draft or "",
-            keyword=keyword,
-            auto_push=True,
-        )
-        progress.write(f"✅ Published → {result['url']}")
-        progress.write(f"💵 Cost: ~${article.ai_generation_cost:.4f}")
+        # Stop here — human must approve in Review Queue before publishing
+        from blog_automation.models import get_session
+        with get_session() as s:
+            a = s.merge(article)
+            a.status = "pending_review"
+            s.commit()
+        progress.write("⏳ Go to Review Queue → Approve to publish")
 
-        progress.update(label=f"✅ Pipeline complete: **{keyword}**", state="complete")
+        progress.update(label=f"✅ Ready for review: **{keyword}**", state="complete")
         st.session_state["show_new_article"] = False
 
     except Exception as e:
@@ -447,7 +467,13 @@ if page == "🏠 Dashboard":
                     with st.container():
                         col1, col2, col3 = st.columns([3, 1, 1])
                         with col1:
-                            st.markdown(f"**{article['title'] or 'Untitled'}**")
+                            title = article['title'] or 'Untitled'
+                            if article['status'] == 'published':
+                                slug = (article.get('keyword', '') or '').replace(' ', '-').lower()
+                                url = f"https://side-blogs.pages.dev/{slug}"
+                                st.markdown(f"**[{title}]({url})**")
+                            else:
+                                st.markdown(f"**{title}**")
                             st.caption(f"Keyword: {article['keyword']}")
                         with col2:
                             status_color = {
@@ -629,15 +655,13 @@ elif page == "📋 Review Queue":
                             col1, col2, col3 = st.columns(3)
                             with col1:
                                 if st.button(
-                                    "✅ Approve",
+                                    "✅ Approve & Publish",
                                     key=f"approve_{article['id']}",
                                     type="primary",
                                     use_container_width=True,
                                 ):
-                                    if update_article_status(
-                                        article["id"], "approved", feedback
-                                    ):
-                                        st.success("Article approved!")
+                                    if _approve_and_publish(article["id"]):
+                                        st.success("Published! 🚀")
                                         st.rerun()
                             with col2:
                                 if st.button(
@@ -815,7 +839,13 @@ elif page == "📄 All Articles":
                     with st.container():
                         col1, col2, col3, col4, col5 = st.columns([3, 1, 1, 1, 1])
                         with col1:
-                            st.markdown(f"**{article['title'] or 'Untitled'}**")
+                            title = article['title'] or 'Untitled'
+                            if article['status'] == 'published':
+                                slug = (article.get('keyword', '') or '').replace(' ', '-').lower()
+                                url = f"https://side-blogs.pages.dev/{slug}"
+                                st.markdown(f"**[{title}]({url})**")
+                            else:
+                                st.markdown(f"**{title}**")
                             st.caption(f"Keyword: {article['keyword']}")
                         with col2:
                             st.markdown(f"📊 {article['word_count'] or 0} words")
