@@ -55,4 +55,12 @@ result = publish_article(
     auto_push=True,
 )
 print(f"8. Published ✅  {result['url']}")
+
+# Update DB status
+from blog_automation.models import get_session, Article
+with get_session() as s:
+    a = s.merge(article)
+    a.status = "published"
+    s.commit()
+
 print(f"\n💰 Cost: ${article.ai_generation_cost:.4f}")
