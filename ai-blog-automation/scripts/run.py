@@ -20,6 +20,15 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 kw = " ".join(sys.argv[1:])
+
+
+def _insert_image_after_h2(content: str, img_url: str, alt: str = "") -> str:
+    """Insert image markdown after the first H2 heading."""
+    import re
+    parts = re.split(r"(\n## .+\n)", content, maxsplit=1)
+    if len(parts) >= 3:
+        return parts[0] + parts[1] + f"![{alt}]({img_url})\n\n" + parts[2]
+    return content + f"\n\n![{alt}]({img_url})\n"
 print(f"🚀 Pipeline: {kw}\n{'='*50}")
 
 # Phase 1
@@ -52,14 +61,22 @@ try:
     from blog_automation.integrations.image_provider import get_image_provider
     img_provider = get_image_provider()
     if img_provider.is_configured():
-        images = img_provider.search(kw, count=1)
-        if images:
-            img_url = images[0].url
+        images = img_provider.search(kw, count=3)
+        if len(images) >= 2:
+            img1 = images[0]
+            img2 = images[1]
             content = article.content_draft or ""
-            article.content_draft = f"![{kw}]({img_url})\n\n{content}"
-            print(f"7. Image ✅  {img_provider.name}: {images[0].author}")
-        else:
-            print(f"7. Image ⏭️  no results")
+            # Hero image at top
+            article.content_draft = f"![{kw}]({img1.url})\n\n{content}"
+            # Second image inserted after first H2
+            article.content_draft = _insert_image_after_h2(
+                article.content_draft, img2.url, kw
+            )
+            print(f"7. Image ✅  {img_provider.name}: {img1.author}, {img2.author}")
+        elif images:
+            content = article.content_draft or ""
+            article.content_draft = f"![{kw}]({images[0].url})\n\n{content}"
+            print(f"7. Image ⚠️  only 1 found")
     else:
         print(f"7. Image ⏭️  {img_provider.name} not configured")
 except Exception as e:
