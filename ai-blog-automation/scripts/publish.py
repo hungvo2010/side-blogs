@@ -84,6 +84,10 @@ PAGE_TEMPLATE = """\
         .content th{{background:#f9fafb;font-weight:600}}
         footer{{margin-top:48px;padding-top:20px;border-top:1px solid #e5e7eb;text-align:center;color:var(--muted);font-size:.85rem}}
         footer a{{color:var(--primary)}}
+        footer .cols{{max-width:800px;margin:0 auto;padding:0 20px;display:flex;flex-wrap:wrap;gap:32px;justify-content:space-between}}
+        footer h4{{color:var(--text);margin-bottom:8px}}
+        footer ul{{list-style:none;padding:0;margin:0}}
+        footer li{{margin-bottom:4px}}
     </style>
 </head>
 <body>
