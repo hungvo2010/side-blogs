@@ -154,23 +154,36 @@ class TrendsClient:
     # ── trends-specific methods ────────────────────────────────────────
 
     def trending_topics(self, geo: str = "VN", limit: int = 20) -> list[dict]:
-        """Get daily trending searches for a country (no keyword input)."""
-        geo_name = _GEO_MAP.get(geo, geo.upper())
+        """Get daily trending searches for a country (no keyword input).
+        Uses pytrends-modern RSS feed — no rate limit, no API key."""
         try:
-            df = self._call(lambda: self._pytrends.trending_searches(pn=geo_name.lower()))
+            from pytrends_modern import TrendsRSS
+            geo_map = {"VN": "vietnam", "US": "united-states", "AU": "australia",
+                       "GB": "united-kingdom", "CA": "canada", "DE": "germany",
+                       "JP": "japan", "SG": "singapore", "IN": "india"}
+            geo_rss = geo_map.get(geo.upper(), geo.lower())
+            rss = TrendsRSS()
+            trends = rss.get_trends(geo=geo_rss)
+            topics = []
+            for t in trends[:limit]:
+                topics.append({
+                    "title": t.get("title", ""),
+                    "traffic": t.get("traffic", ""),
+                    "source": "rss",
+                })
+            return topics
         except Exception:
-            # Fallback: use hardcoded trending for popular geos
+            # Fallback to pytrends
+            geo_name = _GEO_MAP.get(geo, geo.upper())
+            try:
+                df = self._call(lambda: self._pytrends.trending_searches(pn=geo_name.lower()))
+                if not df.empty:
+                    return [{"title": row.get("title", ""), "source": "trends"}
+                            for _, row in df.head(limit).iterrows()]
+            except Exception:
+                pass
             fallback = _TOP_INTERESTS.get(geo_name, _TOP_INTERESTS["US"])
             return [{"title": t, "source": "fallback"} for t in fallback[:limit]]
-
-        if df.empty:
-            fallback = _TOP_INTERESTS.get(geo_name, _TOP_INTERESTS["US"])
-            return [{"title": t, "source": "fallback"} for t in fallback[:limit]]
-
-        topics = []
-        for _, row in df.head(limit).iterrows():
-            topics.append({"title": row.get("title", ""), "source": "trends"})
-        return topics
 
     def compare_keywords(
         self, keywords: list[str], geo: str = "US", timeframe: str = "today 12-m"
