@@ -41,6 +41,7 @@ PAGE_TEMPLATE = """\
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title}</title>
     <meta name="description" content="{description}">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta name="author" content="{author}">
     <link rel="canonical" href="{canonical_url}">
     <meta property="og:title" content="{title}">
@@ -136,6 +137,8 @@ INDEX_TEMPLATE = """\
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{site_name}</title>
     <meta name="description" content="{description}">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="google-site-verification" content="BWPdVOyPoQmHVqgfn8_PMBl7N6F0e5-q1CVNjHuMhOg" />
     <link rel="canonical" href="{site_url}">
     <meta property="og:title" content="{site_name}">
     <meta property="og:description" content="{description}">
@@ -250,7 +253,15 @@ def build_article(
     author = author or fm.get("author") or DEFAULTS["author"]
     image = image or fm.get("image") or ""
 
-    now = datetime.now(timezone.utc)
+    # Use frontmatter date if present, otherwise fall back to now
+    fm_date = fm.get("date")
+    if fm_date:
+        try:
+            now = datetime.fromisoformat(fm_date)
+        except ValueError:
+            now = datetime.now(timezone.utc)
+    else:
+        now = datetime.now(timezone.utc)
     iso = now.strftime("%Y-%m-%dT%H:%M:%SZ")
     display = now.strftime("%B %d, %Y")
 
@@ -345,7 +356,17 @@ def save_meta_index(meta_file: Path, posts: list[dict]) -> None:
 
 
 def build_site(dist: Path, posts_meta: list[dict], new_slug: str, new_html: str) -> None:
+    import shutil
     dist.mkdir(parents=True, exist_ok=True)
+
+    # Copy static assets (favicon, _redirects, etc.)
+    _ROOT = Path(__file__).resolve().parent.parent
+    favicon = _ROOT / "public" / "favicon.svg"
+    if favicon.exists():
+        shutil.copy2(favicon, dist / "favicon.svg")
+    redirects = _ROOT / "public" / "_redirects"
+    if redirects.exists():
+        shutil.copy2(redirects, dist / "_redirects")
 
     (dist / "index.html").write_text(build_index(posts_meta), encoding="utf-8")
     (dist / "sitemap.xml").write_text(build_sitemap(posts_meta), encoding="utf-8")
