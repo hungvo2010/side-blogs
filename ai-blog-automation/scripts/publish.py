@@ -235,7 +235,15 @@ def build_article(
     author = author or fm.get("author") or DEFAULTS["author"]
     image = image or fm.get("image") or ""
 
-    now = datetime.now(timezone.utc)
+    # Use frontmatter date if present, otherwise fall back to now
+    fm_date = fm.get("date")
+    if fm_date:
+        try:
+            now = datetime.fromisoformat(fm_date)
+        except ValueError:
+            now = datetime.now(timezone.utc)
+    else:
+        now = datetime.now(timezone.utc)
     iso = now.strftime("%Y-%m-%dT%H:%M:%SZ")
     display = now.strftime("%B %d, %Y")
 
