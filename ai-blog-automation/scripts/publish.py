@@ -42,6 +42,7 @@ PAGE_TEMPLATE = """\
     <title>{title}</title>
     <meta name="description" content="{description}">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <meta name="author" content="{author}">
     <link rel="canonical" href="{canonical_url}">
     <meta property="og:title" content="{title}">
@@ -135,12 +136,13 @@ INDEX_TEMPLATE = """\
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{site_name}</title>
+    <title>{title}</title>
     <meta name="description" content="{description}">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <meta name="google-site-verification" content="BWPdVOyPoQmHVqgfn8_PMBl7N6F0e5-q1CVNjHuMhOg" />
     <link rel="canonical" href="{site_url}">
-    <meta property="og:title" content="{site_name}">
+    <meta property="og:title" content="{title}">
     <meta property="og:description" content="{description}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{site_url}">
@@ -155,6 +157,7 @@ INDEX_TEMPLATE = """\
         .container{{max-width:800px;margin:40px auto 60px;padding:0 20px}}
         header{{margin-bottom:32px}}
         h1{{font-size:2rem}}
+        .intro{{color:var(--muted);font-size:.95rem;margin-top:8px}}
         .posts{{list-style:none;padding:0}}
         .posts li{{background:var(--bg);padding:16px 20px;border-radius:10px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:box-shadow .15s;display:flex;gap:16px;align-items:flex-start}}
         .posts li:hover{{box-shadow:0 4px 12px rgba(0,0,0,.1)}}
@@ -166,16 +169,34 @@ INDEX_TEMPLATE = """\
         .posts .desc{{color:var(--muted);font-size:.9rem;margin-top:4px}}
         .posts .meta{{color:var(--muted);font-size:.8rem;margin-top:4px}}
         @media(max-width:640px){{.posts li{{flex-direction:column}}.posts .thumb{{width:100%;height:160px}}}}
+        .share{{margin:32px 0;padding:20px 0;border-top:1px solid #e5e7eb;display:flex;flex-wrap:wrap;align-items:center;gap:8px}}
+        .share .share-label{{color:var(--muted);font-size:.9rem;font-weight:600}}
+        .share a,.share button{{display:inline-block;padding:6px 14px;border-radius:999px;font-size:.85rem;font-weight:500;background:#f3f4f6;color:var(--text);text-decoration:none;border:1px solid #e5e7eb;cursor:pointer;font-family:inherit}}
+        .share a:hover,.share button:hover{{background:var(--primary);color:#fff;border-color:var(--primary)}}
         footer{{text-align:center;color:var(--muted);font-size:.85rem;padding:32px 0}}
+        footer .cols{{max-width:800px;margin:0 auto;padding:0 20px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center}}
+        footer a{{color:var(--muted)}}footer a:hover{{color:var(--primary)}}
     </style>
 </head>
 <body>
 <nav><div class="inner"><a href="/">{site_name}</a></div></nav>
 <main class="container">
-    <header><h1>{site_name} — Latest Posts &amp; Articles</h1><p>{description}</p></header>
+    <header><h1>{site_name} — Latest Posts &amp; Articles</h1><p>{description}</p><p class="intro">Welcome to {site_name}. Here you'll find the latest posts and articles about coffee, brewing, and the perfect cup.</p></header>
     <ul class="posts">{post_items}</ul>
+    <div class="share">
+        <span class="share-label">Share this blog:</span>
+        <a href="https://twitter.com/intent/tweet?url={share_url}&text={share_text}" target="_blank" rel="noopener" aria-label="Share on X">X</a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u={share_url}" target="_blank" rel="noopener" aria-label="Share on Facebook">Facebook</a>
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url={share_url}" target="_blank" rel="noopener" aria-label="Share on LinkedIn">LinkedIn</a>
+        <a href="https://wa.me/?text={share_text}%20{share_url}" target="_blank" rel="noopener" aria-label="Share on WhatsApp">WhatsApp</a>
+        <a href="https://t.me/share/url?url={share_url}&text={share_text}" target="_blank" rel="noopener" aria-label="Share on Telegram">Telegram</a>
+        <a href="mailto:?subject={share_text}&body={share_url}" aria-label="Share via email">Email</a>
+        <button type="button" onclick="navigator.clipboard&&navigator.clipboard.writeText('{site_url}').then(()=>{{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy link',1500)}})\">Copy link</button>
+    </div>
 </main>
-<footer><p>&copy; 2026 {site_name}.</p></footer>
+<footer><p>&copy; 2026 {site_name}.</p>
+<div class="cols"><a href="/about">About</a><a href="/privacy">Privacy</a><a href="/sitemap.xml">Sitemap</a><a href="/rss.xml">RSS</a><a href="https://www.sca.coffee" target="_blank" rel="noopener">Specialty Coffee Association</a></div>
+</footer>
 </body>
 </html>"""
 
@@ -328,7 +349,8 @@ def build_index(posts_meta: list[dict]) -> str:
     for p in posts_meta:
         img = p.get("image") or ""
         if img:
-            thumb = f'<img class="thumb" src="{img}" alt="" loading="lazy">'
+            alt = p["title"].replace('"', "&quot;")
+            thumb = f'<img class="thumb" src="{img}" alt="{alt}" loading="lazy">'
         else:
             thumb = '<div class="thumb placeholder">No image</div>'
         items.append(
@@ -337,10 +359,14 @@ def build_index(posts_meta: list[dict]) -> str:
             f'<div class="desc">{p["description"]}</div>'
             f'<div class="meta">{p["date"][:10]}</div></div></li>'
         )
+    from urllib.parse import quote
     return INDEX_TEMPLATE.format(
         lang=DEFAULTS["lang"], site_name=DEFAULTS["site_name"],
+        title=f"{DEFAULTS['site_name']} — Latest Posts & Articles on Coffee, Brewing & Home Barista Tips",
         site_url=DEFAULTS["site_url"],
         description=DEFAULTS["description"],
+        share_url=quote(DEFAULTS["site_url"], safe=""),
+        share_text=quote(DEFAULTS["site_name"]),
         post_items="\n".join(items) if items else "<li>No posts yet.</li>",
     )
 
