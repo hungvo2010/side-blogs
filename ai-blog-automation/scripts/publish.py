@@ -184,6 +184,7 @@ DEFAULTS = {
     "site_name": os.getenv("SITE_NAME", "The Slow Drip"),
     "site_url": os.getenv("SITE_URL", "https://myblog.pages.dev"),
     "author": os.getenv("SITE_AUTHOR", "Anonymous"),
+    "description": os.getenv("SITE_DESCRIPTION", "A blog about coffee, brewing, and the perfect cup."),
     "lang": os.getenv("SITE_LANG", "en"),
     "dist_dir": "../public",  # at repo root — Cloudflare Pages serves from here
     "content_dir": "content",
@@ -329,7 +330,7 @@ def build_index(posts_meta: list[dict]) -> str:
     return INDEX_TEMPLATE.format(
         lang=DEFAULTS["lang"], site_name=DEFAULTS["site_name"],
         site_url=DEFAULTS["site_url"],
-        description=f"Personal blog by {DEFAULTS['author']}",
+        description=DEFAULTS["description"],
         post_items="\n".join(items) if items else "<li>No posts yet.</li>",
     )
 
