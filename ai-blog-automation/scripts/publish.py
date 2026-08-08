@@ -156,12 +156,16 @@ INDEX_TEMPLATE = """\
         header{{margin-bottom:32px}}
         h1{{font-size:2rem}}
         .posts{{list-style:none;padding:0}}
-        .posts li{{background:var(--bg);padding:20px 24px;border-radius:10px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:box-shadow .15s}}
+        .posts li{{background:var(--bg);padding:16px 20px;border-radius:10px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:box-shadow .15s;display:flex;gap:16px;align-items:flex-start}}
         .posts li:hover{{box-shadow:0 4px 12px rgba(0,0,0,.1)}}
+        .posts .thumb{{width:120px;height:90px;object-fit:cover;border-radius:8px;flex-shrink:0}}
+        .posts .thumb.placeholder{{background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--muted)}}
+        .posts .post-body{{flex:1;min-width:0}}
         .posts a{{color:var(--text);text-decoration:none;font-size:1.15rem;font-weight:600}}
         .posts a:hover{{color:var(--primary)}}
         .posts .desc{{color:var(--muted);font-size:.9rem;margin-top:4px}}
         .posts .meta{{color:var(--muted);font-size:.8rem;margin-top:4px}}
+        @media(max-width:640px){{.posts li{{flex-direction:column}}.posts .thumb{{width:100%;height:160px}}}}
         footer{{text-align:center;color:var(--muted);font-size:.85rem;padding:32px 0}}
     </style>
 </head>
@@ -322,10 +326,16 @@ def build_article(
 def build_index(posts_meta: list[dict]) -> str:
     items = []
     for p in posts_meta:
+        img = p.get("image") or ""
+        if img:
+            thumb = f'<img class="thumb" src="{img}" alt="" loading="lazy">'
+        else:
+            thumb = '<div class="thumb placeholder">No image</div>'
         items.append(
-            f'<li><a href="/{p["slug"]}">{p["title"]}</a>'
+            f'<li>{thumb}<div class="post-body">'
+            f'<a href="/{p["slug"]}">{p["title"]}</a>'
             f'<div class="desc">{p["description"]}</div>'
-            f'<div class="meta">{p["date"][:10]}</div></li>'
+            f'<div class="meta">{p["date"][:10]}</div></div></li>'
         )
     return INDEX_TEMPLATE.format(
         lang=DEFAULTS["lang"], site_name=DEFAULTS["site_name"],

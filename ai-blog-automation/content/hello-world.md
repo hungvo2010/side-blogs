@@ -2,6 +2,7 @@
 title: Hello World from Cloudflare Pages
 description: My first blog post published via GitHub + Cloudflare Pages, zero database required.
 tags: cloudflare, static-site, tutorial
+image: https://images.unsplash.com/photo-1498050108023-c5249f4df085?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxsYXB0b3AlMjBjb2RpbmcsJTIwaGVybyUyMHdvcmxkfGVufDB8fHx8MTc4NTc4NTkyNXww&ixlib=rb-4.1.0&q=80&w=200
 ---
 
 ## Welcome to my blog

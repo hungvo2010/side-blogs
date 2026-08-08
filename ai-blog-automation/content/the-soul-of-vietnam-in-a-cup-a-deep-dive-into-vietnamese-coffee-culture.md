@@ -4,6 +4,7 @@ date: 2026-08-03
 description: Close your eyes and imagine the sound of a bustling city. It isn’t just the roar of motorbikes or the chatter of vendors; it is the rhythmic, metallic tink-t…
 keyword: vietnamese coffee culture
 author: Tien Nguyen
+image: https://images.unsplash.com/photo-1622087250339-9295c9ef442b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxUaGUlMjBTb3VsJTIwb2YlMjBWaWV0bmFtJTIwaW4lMjBhJTIwQ3VwJTNBJTIwQSUyMERlZXAlMjBEaXZlJTIwaW50byUyMFZpZXRuYW1lc2UlMjBDb2ZmZWUlMjBDdWx0dXJlfGVufDB8fHx8MTc4NjE3OTU5NHww&ixlib=rb-4.1.0&q=80&w=200
 ---
 
 # The Soul of Vietnam in a Cup: A Deep Dive into Vietnamese Coffee Culture

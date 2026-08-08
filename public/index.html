@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Daily Brew</title>
-    <meta name="description" content="Expert coffee guides, brewing tips, and in-depth reviews to help you make the perfect cup at home — from French press to drip machines and Vietnamese coffee culture.">
+    <title>The Slow Drip</title>
+    <meta name="description" content="A blog about coffee, brewing, and the perfect cup.">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta name="google-site-verification" content="BWPdVOyPoQmHVqgfn8_PMBl7N6F0e5-q1CVNjHuMhOg" />
     <link rel="canonical" href="https://side-blogs.pages.dev">
-    <meta property="og:title" content="The Daily Brew">
-    <meta property="og:description" content="Expert coffee guides, brewing tips, and in-depth reviews to help you make the perfect cup at home — from French press to drip machines and Vietnamese coffee culture.">
+    <meta property="og:title" content="The Slow Drip">
+    <meta property="og:description" content="A blog about coffee, brewing, and the perfect cup.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://side-blogs.pages.dev">
-    <link rel="alternate" type="application/rss+xml" title="The Daily Brew RSS" href="/rss.xml">
+    <link rel="alternate" type="application/rss+xml" title="The Slow Drip RSS" href="/rss.xml">
     <style>
         :root{--primary:#1a73e8;--text:#1f2937;--muted:#6b7280;--bg:#fff}
         *{box-sizing:border-box}
@@ -24,27 +24,31 @@
         header{margin-bottom:32px}
         h1{font-size:2rem}
         .posts{list-style:none;padding:0}
-        .posts li{background:var(--bg);padding:20px 24px;border-radius:10px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:box-shadow .15s}
+        .posts li{background:var(--bg);padding:16px 20px;border-radius:10px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:box-shadow .15s;display:flex;gap:16px;align-items:flex-start}
         .posts li:hover{box-shadow:0 4px 12px rgba(0,0,0,.1)}
+        .posts .thumb{width:120px;height:90px;object-fit:cover;border-radius:8px;flex-shrink:0}
+        .posts .thumb.placeholder{background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--muted)}
+        .posts .post-body{flex:1;min-width:0}
         .posts a{color:var(--text);text-decoration:none;font-size:1.15rem;font-weight:600}
         .posts a:hover{color:var(--primary)}
         .posts .desc{color:var(--muted);font-size:.9rem;margin-top:4px}
         .posts .meta{color:var(--muted);font-size:.8rem;margin-top:4px}
+        @media(max-width:640px){.posts li{flex-direction:column}.posts .thumb{width:100%;height:160px}}
         footer{text-align:center;color:var(--muted);font-size:.85rem;padding:32px 0}
     </style>
 </head>
 <body>
-<nav><div class="inner"><a href="/">The Daily Brew</a></div></nav>
+<nav><div class="inner"><a href="/">The Slow Drip</a></div></nav>
 <main class="container">
-    <header><h1>The Daily Brew</h1><p>Expert coffee guides, brewing tips, and in-depth reviews to help you make the perfect cup at home — from French press to drip machines and Vietnamese coffee culture.</p></header>
-    <ul class="posts"><li><a href="/hello-world-from-cloudflare-pages">Hello World from Cloudflare Pages</a><div class="desc">My first blog post published via GitHub + Cloudflare Pages, zero database required.</div><div class="meta">2026-08-08</div></li>
-<li><a href="/unlocking-the-bold-setting-does-it-actually-make-your-coffee-better">Unlocking the Bold Setting: Does It Actually Make Your Coffee Better?</a><div class="desc">We’ve all been there. You’ve just woken up, the house is quiet, and you’re craving that rich, soul-warming cup of coffee that feels like a hug in a mug. You …</div><div class="meta">2026-08-08</div></li>
-<li><a href="/master-the-french-press-expert-tips-for-a-richer-smoother-brew">Master the French Press: Expert Tips for a Richer, Smoother Brew</a><div class="desc">!french press brewing tips…</div><div class="meta">2026-08-03</div></li>
-<li><a href="/the-soul-of-vietnam-in-a-cup-a-deep-dive-into-vietnamese-coffee-culture">The Soul of Vietnam in a Cup: A Deep Dive into Vietnamese Coffee Culture</a><div class="desc">Close your eyes and imagine the sound of a bustling city. It isn’t just the roar of motorbikes or the chatter of vendors; it is the rhythmic, metallic tink-t…</div><div class="meta">2026-08-03</div></li>
-<li><a href="/the-ultimate-cold-brew-coffee-guide-how-to-make-smooth-cafe-quality-brew-at-home">The Ultimate Cold Brew Coffee Guide: How to Make Smooth, Cafe-Quality Brew at Home</a><div class="desc">!cold brew coffee guide…</div><div class="meta">2026-08-03</div></li>
-<li><a href="/best-budget-coffee-maker-2026-top-picks-for-exceptional-flavor-without-the-high-">Best Budget Coffee Maker 2026: Top Picks for Exceptional Flavor Without the High Price Tag</a><div class="desc">We’ve all been there. It’s 6:30 AM, the house is freezing, and your soul is currently trapped in a state of caffeine-deprived limbo. You stare at your counte…</div><div class="meta">2026-08-02</div></li>
-<li><a href="/robusta-vs-arabica-the-ultimate-guide-to-choosing-your-perfect-coffee-bean">Robusta vs. Arabica: The Ultimate Guide to Choosing Your Perfect Coffee Bean</a><div class="desc">Have you ever stood in the coffee aisle, staring at a bag of beans, wondering why one costs five dollars and another costs fifteen? You might have noticed te…</div><div class="meta">2026-08-02</div></li></ul>
+    <header><h1>The Slow Drip — Latest Posts &amp; Articles</h1><p>A blog about coffee, brewing, and the perfect cup.</p></header>
+    <ul class="posts"><li><img class="thumb" src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxsYXB0b3AlMjBjb2RpbmcsJTIwaGVybyUyMHdvcmxkfGVufDB8fHx8MTc4NTc4NTkyNXww&ixlib=rb-4.1.0&q=80&w=200" alt="" loading="lazy"><div class="post-body"><a href="/hello-world-from-cloudflare-pages">Hello World from Cloudflare Pages</a><div class="desc">My first blog post published via GitHub + Cloudflare Pages, zero database required.</div><div class="meta">2026-08-08</div></div></li>
+<li><img class="thumb" src="https://images.unsplash.com/photo-1630411870702-8f6f8fd80ce2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxVbmxvY2tpbmclMjB0aGUlMjBCb2xkJTIwU2V0dGluZyUzQSUyMERvZXMlMjBJdCUyMEFjdHVhbGx5JTIwTWFrZSUyMFlvdXIlMjBDb2ZmZWUlMjBCZXR0ZXIlM0Z8ZW58MHx8fHwxNzg2MTc5NTk2fDA&ixlib=rb-4.1.0&q=80&w=200" alt="" loading="lazy"><div class="post-body"><a href="/unlocking-the-bold-setting-does-it-actually-make-your-coffee-better">Unlocking the Bold Setting: Does It Actually Make Your Coffee Better?</a><div class="desc">We’ve all been there. You’ve just woken up, the house is quiet, and you’re craving that rich, soul-warming cup of coffee that feels like a hug in a mug. You …</div><div class="meta">2026-08-08</div></div></li>
+<li><img class="thumb" src="https://images.unsplash.com/photo-1639906512494-dd4a536abc4e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxmcmVuY2glMjBwcmVzcyUyMGJyZXdpbmclMjB0aXBzfGVufDB8fHx8MTc4NTc3MTk2OXww&ixlib=rb-4.1.0&q=80&w=200" alt="" loading="lazy"><div class="post-body"><a href="/master-the-french-press-expert-tips-for-a-richer-smoother-brew">Master the French Press: Expert Tips for a Richer, Smoother Brew</a><div class="desc">!french press brewing tips…</div><div class="meta">2026-08-03</div></div></li>
+<li><img class="thumb" src="https://images.unsplash.com/photo-1622087250339-9295c9ef442b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxUaGUlMjBTb3VsJTIwb2YlMjBWaWV0bmFtJTIwaW4lMjBhJTIwQ3VwJTNBJTIwQSUyMERlZXAlMjBEaXZlJTIwaW50byUyMFZpZXRuYW1lc2UlMjBDb2ZmZWUlMjBDdWx0dXJlfGVufDB8fHx8MTc4NjE3OTU5NHww&ixlib=rb-4.1.0&q=80&w=200" alt="" loading="lazy"><div class="post-body"><a href="/the-soul-of-vietnam-in-a-cup-a-deep-dive-into-vietnamese-coffee-culture">The Soul of Vietnam in a Cup: A Deep Dive into Vietnamese Coffee Culture</a><div class="desc">Close your eyes and imagine the sound of a bustling city. It isn’t just the roar of motorbikes or the chatter of vendors; it is the rhythmic, metallic tink-t…</div><div class="meta">2026-08-03</div></div></li>
+<li><img class="thumb" src="https://images.unsplash.com/photo-1522825397800-ddf6405fc258?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxUaGUlMjBVbHRpbWF0ZSUyMENvbGQlMjBCcmV3JTIwQ29mZmVlJTIwR3VpZGUlM0ElMjBIb3clMjB0byUyME1ha2UlMjBTbW9vdGglMkMlMjBDYWZlLVF1YWxpdHklMjBCcmV3JTIwYXQlMjBIb21lfGVufDB8fHx8MTc4NjE3OTU5NXww&ixlib=rb-4.1.0&q=80&w=200" alt="" loading="lazy"><div class="post-body"><a href="/the-ultimate-cold-brew-coffee-guide-how-to-make-smooth-cafe-quality-brew-at-home">The Ultimate Cold Brew Coffee Guide: How to Make Smooth, Cafe-Quality Brew at Home</a><div class="desc">!cold brew coffee guide…</div><div class="meta">2026-08-03</div></div></li>
+<li><img class="thumb" src="https://images.unsplash.com/photo-1565452344518-47faca79dc69?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxCZXN0JTIwQnVkZ2V0JTIwQ29mZmVlJTIwTWFrZXIlMjAyMDI2JTNBJTIwVG9wJTIwUGlja3MlMjBmb3IlMjBFeGNlcHRpb25hbCUyMEZsYXZvciUyMFdpdGhvdXQlMjB0aGUlMjBIaWdoJTIwUHJpY2UlMjBUYWd8ZW58MHx8fHwxNzg2MTc5NTkyfDA&ixlib=rb-4.1.0&q=80&w=200" alt="" loading="lazy"><div class="post-body"><a href="/best-budget-coffee-maker-2026-top-picks-for-exceptional-flavor-without-the-high-">Best Budget Coffee Maker 2026: Top Picks for Exceptional Flavor Without the High Price Tag</a><div class="desc">We’ve all been there. It’s 6:30 AM, the house is freezing, and your soul is currently trapped in a state of caffeine-deprived limbo. You stare at your counte…</div><div class="meta">2026-08-02</div></div></li>
+<li><img class="thumb" src="https://images.unsplash.com/photo-1580933073521-dc49ac0d4e6a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxSb2J1c3RhJTIwdnMuJTIwQXJhYmljYSUzQSUyMFRoZSUyMFVsdGltYXRlJTIwR3VpZGUlMjB0byUyMENob29zaW5nJTIwWW91ciUyMFBlcmZlY3QlMjBDb2ZmZWUlMjBCZWFufGVufDB8fHx8MTc4NjE3OTU5M3ww&ixlib=rb-4.1.0&q=80&w=200" alt="" loading="lazy"><div class="post-body"><a href="/robusta-vs-arabica-the-ultimate-guide-to-choosing-your-perfect-coffee-bean">Robusta vs. Arabica: The Ultimate Guide to Choosing Your Perfect Coffee Bean</a><div class="desc">Have you ever stood in the coffee aisle, staring at a bag of beans, wondering why one costs five dollars and another costs fifteen? You might have noticed te…</div><div class="meta">2026-08-02</div></div></li></ul>
 </main>
-<footer><p>&copy; 2026 The Daily Brew.</p></footer>
+<footer><p>&copy; 2026 The Slow Drip.</p></footer>
 </body>
 </html>
