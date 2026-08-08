@@ -123,6 +123,7 @@ INDEX_TEMPLATE = """\
     <title>{site_name}</title>
     <meta name="description" content="{description}">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="google-site-verification" content="BWPdVOyPoQmHVqgfn8_PMBl7N6F0e5-q1CVNjHuMhOg" />
     <link rel="canonical" href="{site_url}">
     <meta property="og:title" content="{site_name}">
     <meta property="og:description" content="{description}">
