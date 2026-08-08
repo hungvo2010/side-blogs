@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 PUBLIC = Path(__file__).resolve().parents[2] / "public"
-SITE = "Tien's Blog"
+SITE = "The Slow Drip"
 SITE_URL = "https://side-blogs.pages.dev"
 
 ABOUT = f"""<!DOCTYPE html><html lang="en"><head>

@@ -22,6 +22,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 # Add src to path
 _SRC = Path(__file__).resolve().parent.parent / "src"
@@ -88,6 +89,10 @@ PAGE_TEMPLATE = """\
         footer h4{{color:var(--text);margin-bottom:8px}}
         footer ul{{list-style:none;padding:0;margin:0}}
         footer li{{margin-bottom:4px}}
+        .share{{margin-top:40px;padding-top:20px;border-top:1px solid #e5e7eb;display:flex;flex-wrap:wrap;align-items:center;gap:8px}}
+        .share .share-label{{color:var(--muted);font-size:.9rem;font-weight:600}}
+        .share a,.share button{{display:inline-block;padding:6px 14px;border-radius:999px;font-size:.85rem;font-weight:500;background:#f3f4f6;color:var(--text);text-decoration:none;border:1px solid #e5e7eb;cursor:pointer;font-family:inherit}}
+        .share a:hover,.share button:hover{{background:var(--primary);color:#fff;border-color:var(--primary)}}
         @media(max-width:640px){{
             .container{{padding:20px;margin:16px auto;border-radius:8px}}
             h1{{font-size:1.5rem}}
@@ -108,6 +113,16 @@ PAGE_TEMPLATE = """\
         <div class="tags">{tags_html}</div>
     </header>
     <div class="content">{content_html}</div>
+    <div class="share">
+        <span class="share-label">Share this post:</span>
+        <a href="https://twitter.com/intent/tweet?url={share_url}&text={share_text}" target="_blank" rel="noopener" aria-label="Share on X">X</a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u={share_url}" target="_blank" rel="noopener" aria-label="Share on Facebook">Facebook</a>
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url={share_url}" target="_blank" rel="noopener" aria-label="Share on LinkedIn">LinkedIn</a>
+        <a href="https://wa.me/?text={share_text}%20{share_url}" target="_blank" rel="noopener" aria-label="Share on WhatsApp">WhatsApp</a>
+        <a href="https://t.me/share/url?url={share_url}&text={share_text}" target="_blank" rel="noopener" aria-label="Share on Telegram">Telegram</a>
+        <a href="mailto:?subject={share_text}&body={share_url}" aria-label="Share via email">Email</a>
+        <button type="button" onclick="navigator.clipboard&&navigator.clipboard.writeText('{canonical_url}').then(()=>{{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy link',1500)}})">Copy link</button>
+    </div>
 </article>
 <footer><p>&copy; 2026 {site_name}.</p></footer>
 </body>
@@ -150,7 +165,7 @@ INDEX_TEMPLATE = """\
 <body>
 <nav><div class="inner"><a href="/">{site_name}</a></div></nav>
 <main class="container">
-    <header><h1>{site_name}</h1><p>{description}</p></header>
+    <header><h1>{site_name} — Latest Posts &amp; Articles</h1><p>{description}</p></header>
     <ul class="posts">{post_items}</ul>
 </main>
 <footer><p>&copy; 2026 {site_name}.</p></footer>
@@ -163,7 +178,7 @@ SITEMAP_TEMPLATE = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http:
 # Config
 # ---------------------------------------------------------------------------
 DEFAULTS = {
-    "site_name": os.getenv("SITE_NAME", "My Blog"),
+    "site_name": os.getenv("SITE_NAME", "The Slow Drip"),
     "site_url": os.getenv("SITE_URL", "https://myblog.pages.dev"),
     "author": os.getenv("SITE_AUTHOR", "Anonymous"),
     "lang": os.getenv("SITE_LANG", "en"),
@@ -259,13 +274,17 @@ def build_article(
     if image:
         ld["image"] = image
 
+    canonical = f"{DEFAULTS['site_url']}/{slug}"
+
     html = PAGE_TEMPLATE.format(
         lang=DEFAULTS["lang"],
         title=f"{title} — {DEFAULTS['site_name']}",
         description=description,
         author=author,
         site_name=DEFAULTS["site_name"],
-        canonical_url=f"{DEFAULTS['site_url']}/{slug}",
+        canonical_url=canonical,
+        share_url=quote(canonical, safe=""),
+        share_text=quote(title, safe=""),
         published_time=iso,
         iso_date=iso,
         display_date=display,

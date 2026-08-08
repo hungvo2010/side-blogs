@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World from Cloudflare Pages — My Blog</title>
+    <title>Hello World from Cloudflare Pages — The Slow Drip</title>
     <meta name="description" content="My first blog post published via GitHub + Cloudflare Pages, zero database required.">
     <meta name="author" content="Anonymous">
     <link rel="canonical" href="https://side-blogs.pages.dev/hello-world-from-cloudflare-pages">
-    <meta property="og:title" content="Hello World from Cloudflare Pages — My Blog">
+    <meta property="og:title" content="Hello World from Cloudflare Pages — The Slow Drip">
     <meta property="og:description" content="My first blog post published via GitHub + Cloudflare Pages, zero database required.">
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://side-blogs.pages.dev/hello-world-from-cloudflare-pages">
-    <meta property="og:site_name" content="My Blog">
+    <meta property="og:site_name" content="The Slow Drip">
     <meta property="og:locale" content="en">
     <meta property="article:published_time" content="2026-08-03T16:20:29Z">
     
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Hello World from Cloudflare Pages — My Blog">
+    <meta name="twitter:title" content="Hello World from Cloudflare Pages — The Slow Drip">
     <meta name="twitter:description" content="My first blog post published via GitHub + Cloudflare Pages, zero database required.">
     
     <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Hello World from Cloudflare Pages", "description": "My first blog post published via GitHub + Cloudflare Pages, zero database required.", "datePublished": "2026-08-03T16:20:29Z", "author": {"@type": "Person", "name": "Anonymous"}}</script>
-    <link rel="alternate" type="application/rss+xml" title="My Blog RSS" href="/rss.xml">
+    <link rel="alternate" type="application/rss+xml" title="The Slow Drip RSS" href="/rss.xml">
     <style>
         :root{--primary:#1a73e8;--text:#1f2937;--muted:#6b7280;--bg:#fff;--code-bg:#f3f4f6}
         *{box-sizing:border-box}
@@ -53,6 +53,10 @@
         footer h4{color:var(--text);margin-bottom:8px}
         footer ul{list-style:none;padding:0;margin:0}
         footer li{margin-bottom:4px}
+        .share{margin-top:40px;padding-top:20px;border-top:1px solid #e5e7eb;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+        .share .share-label{color:var(--muted);font-size:.9rem;font-weight:600}
+        .share a,.share button{display:inline-block;padding:6px 14px;border-radius:999px;font-size:.85rem;font-weight:500;background:#f3f4f6;color:var(--text);text-decoration:none;border:1px solid #e5e7eb;cursor:pointer;font-family:inherit}
+        .share a:hover,.share button:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
         @media(max-width:640px){
             .container{padding:20px;margin:16px auto;border-radius:8px}
             h1{font-size:1.5rem}
@@ -65,10 +69,10 @@
     </style>
 </head>
 <body>
-<nav><div class="inner"><a href="/">My Blog</a><a href="/">← All posts</a></div></nav>
+<nav><div class="inner"><a href="/">The Slow Drip</a><a href="/">← All posts</a></div></nav>
 <article class="container">
     <header>
-        <h1>Hello World from Cloudflare Pages — My Blog</h1>
+        <h1>Hello World from Cloudflare Pages — The Slow Drip</h1>
         <div class="meta"><time datetime="2026-08-03T16:20:29Z">August 03, 2026</time> · 181 words</div>
         <div class="tags"><span>cloudflare</span><span>static-site</span><span>tutorial</span></div>
     </header>
@@ -142,7 +146,17 @@ Just write markdown and ship.</p>
 
 <p><em>Want to try? Run <code>python scripts/publish.py content/hello-world.md</code></em></p>
 </div>
+    <div class="share">
+        <span class="share-label">Share this post:</span>
+        <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fside-blogs.pages.dev%2Fhello-world-from-cloudflare-pages&text=Hello%20World%20from%20Cloudflare%20Pages" target="_blank" rel="noopener" aria-label="Share on X">X</a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fside-blogs.pages.dev%2Fhello-world-from-cloudflare-pages" target="_blank" rel="noopener" aria-label="Share on Facebook">Facebook</a>
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fside-blogs.pages.dev%2Fhello-world-from-cloudflare-pages" target="_blank" rel="noopener" aria-label="Share on LinkedIn">LinkedIn</a>
+        <a href="https://wa.me/?text=Hello%20World%20from%20Cloudflare%20Pages%20https%3A%2F%2Fside-blogs.pages.dev%2Fhello-world-from-cloudflare-pages" target="_blank" rel="noopener" aria-label="Share on WhatsApp">WhatsApp</a>
+        <a href="https://t.me/share/url?url=https%3A%2F%2Fside-blogs.pages.dev%2Fhello-world-from-cloudflare-pages&text=Hello%20World%20from%20Cloudflare%20Pages" target="_blank" rel="noopener" aria-label="Share on Telegram">Telegram</a>
+        <a href="mailto:?subject=Hello%20World%20from%20Cloudflare%20Pages&body=https%3A%2F%2Fside-blogs.pages.dev%2Fhello-world-from-cloudflare-pages" aria-label="Share via email">Email</a>
+        <button type="button" onclick="navigator.clipboard&&navigator.clipboard.writeText('https://side-blogs.pages.dev/hello-world-from-cloudflare-pages').then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy link',1500)})">Copy link</button>
+    </div>
 </article>
-<footer><p>&copy; 2026 My Blog.</p></footer>
+<footer><p>&copy; 2026 The Slow Drip.</p></footer>
 </body>
 </html>

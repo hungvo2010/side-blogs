@@ -132,7 +132,7 @@ def publish_article(
                 "SITE_URL", "https://side-blogs.pages.dev"
             ),
             "SITE_NAME": __import__("os").environ.get(
-                "SITE_NAME", "Tien's Blog"
+                "SITE_NAME", "The Slow Drip"
             ),
         },
         timeout=120,
