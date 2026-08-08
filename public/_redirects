@@ -1,0 +1,2 @@
+# 301 redirects for www → non-www canonicalization
+https://www.side-blogs.pages.dev/* https://side-blogs.pages.dev/:splat 301!

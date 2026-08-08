@@ -339,11 +339,14 @@ def build_site(dist: Path, posts_meta: list[dict], new_slug: str, new_html: str)
     import shutil
     dist.mkdir(parents=True, exist_ok=True)
 
-    # Copy static assets (favicon, etc.)
+    # Copy static assets (favicon, _redirects, etc.)
     _ROOT = Path(__file__).resolve().parent.parent
     favicon = _ROOT / "public" / "favicon.svg"
     if favicon.exists():
         shutil.copy2(favicon, dist / "favicon.svg")
+    redirects = _ROOT / "public" / "_redirects"
+    if redirects.exists():
+        shutil.copy2(redirects, dist / "_redirects")
 
     (dist / "index.html").write_text(build_index(posts_meta), encoding="utf-8")
     (dist / "sitemap.xml").write_text(build_sitemap(posts_meta), encoding="utf-8")
