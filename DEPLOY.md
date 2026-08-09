@@ -58,13 +58,9 @@ npm install -g wrangler
 # 1. Viết bài trong content/
 nano content/my-new-post.md
 
-# 2. Build static HTML (dùng venv của project)
+# 2. Build + deploy 1 lệnh (publish.py tự gọi wrangler)
 cd ai-blog-automation
-.venv/bin/python scripts/publish.py --no-push
-
-# 3. Deploy lên Cloudflare Pages (bắt buộc — xem warning ở trên)
-cd ..
-wrangler pages deploy public --project-name=side-blogs --branch=main --commit-dirty=true
+SITE_NAME="The Slow Drip" SITE_URL="https://side-blogs.pages.dev" .venv/bin/python scripts/publish.py
 ```
 
 ### Cách 2: Dùng AI pipeline (full auto)
@@ -82,22 +78,33 @@ Cần env: `OPENROUTER_API_KEY`, `DATABASE_URL` (Neon postgres).
 
 ```bash
 cd ai-blog-automation
-.venv/bin/python scripts/publish.py my-post.md -t "Post Title" --tags "coffee,guide" --no-push
-# Sau đó deploy riêng:
-cd ..
-wrangler pages deploy public --project-name=side-blogs --branch=main --commit-dirty=true
+SITE_NAME="The Slow Drip" SITE_URL="https://side-blogs.pages.dev" .venv/bin/python scripts/publish.py my-post.md -t "Post Title" --tags "coffee,guide"
 ```
 
 ## Cách deploy
 
-### Option A: wrangler CLI (cần login 1 lần)
+### Option A: publish.py (build + deploy 1 lệnh, default)
+
+`publish.py` tự gọi `wrangler pages deploy` sau khi build — **không cần git push, không cần bước riêng**.
+
+```bash
+cd ai-blog-automation
+SITE_NAME="The Slow Drip" SITE_URL="https://side-blogs.pages.dev" .venv/bin/python scripts/publish.py
+```
+
+- Bỏ `--no-push` để deploy (default là deploy luôn)
+- `--no-push` = build only, không deploy
+- ⚠️ Luôn pass `SITE_NAME` + `SITE_URL` từ shell — publish.py đọc từ `os.environ`, KHÔNG đọc `.env`
+- Cần `wrangler login` 1 lần (xem Option B)
+
+### Option B: wrangler CLI (deploy riêng sau khi build)
 
 ```bash
 wrangler login
 wrangler pages deploy public --project-name=side-blogs --branch=main --commit-dirty=true
 ```
 
-### Option B: publish_cf.py (dùng API token, ko cần git)
+### Option C: publish_cf.py (dùng API token, ko cần wrangler/git)
 
 ```bash
 export CLOUDFLARE_API_TOKEN="your-token"
@@ -116,13 +123,9 @@ Lấy token tại: https://dash.cloudflare.com/profile/api-tokens → Create Tok
 # 1. Sửa file markdown trong content/
 nano content/my-post.md
 
-# 2. Build lại (ko push)
+# 2. Build + deploy lại
 cd ai-blog-automation
-.venv/bin/python scripts/publish.py --no-push
-
-# 3. Deploy
-cd ..
-wrangler pages deploy public --project-name=side-blogs --branch=main --commit-dirty=true
+SITE_NAME="The Slow Drip" SITE_URL="https://side-blogs.pages.dev" .venv/bin/python scripts/publish.py
 ```
 
 ## Ảnh trên homepage

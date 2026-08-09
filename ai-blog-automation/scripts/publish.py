@@ -381,6 +381,51 @@ def build_sitemap(posts_meta: list[dict]) -> str:
     return SITEMAP_TEMPLATE.format(entries="\n".join(entries))
 
 
+def build_rss(posts_meta: list[dict]) -> str:
+    """Build RSS 2.0 feed from posts_meta."""
+    from xml.sax.saxutils import escape
+
+    site = DEFAULTS["site_name"]
+    site_url = DEFAULTS["site_url"]
+    desc = DEFAULTS["description"]
+
+    items = []
+    for p in posts_meta:
+        items.append(
+            "    <item>\n"
+            f"      <title>{escape(p['title'])}</title>\n"
+            f"      <link>{site_url}/{p['slug']}</link>\n"
+            f"      <guid isPermaLink=\"true\">{site_url}/{p['slug']}</guid>\n"
+            f"      <pubDate>{_rss_date(p['date'])}</pubDate>\n"
+            f"      <description>{escape(p['description'])}</description>\n"
+            + (f"      <enclosure url=\"{escape(p['image'])}\" type=\"image/jpeg\"/>\n" if p.get("image") else "")
+            + "    </item>"
+        )
+
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n'
+        "<channel>\n"
+        f"  <title>{escape(site)}</title>\n"
+        f"  <link>{site_url}</link>\n"
+        f"  <description>{escape(desc)}</description>\n"
+        f"  <atom:link href=\"{site_url}/rss.xml\" rel=\"self\" type=\"application/rss+xml\"/>\n"
+        f"  <lastBuildDate>{_rss_date(posts_meta[0]['date']) if posts_meta else _rss_date('')}</lastBuildDate>\n"
+        + "\n".join(items)
+        + "\n</channel>\n</rss>\n"
+    )
+
+
+def _rss_date(iso: str) -> str:
+    """Convert ISO date (2026-08-08T08:02:15Z) to RFC-822 (Sat, 08 Aug 2026 08:02:15 GMT)."""
+    from datetime import datetime
+    try:
+        dt = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+    except ValueError:
+        return datetime.now().astimezone().strftime("%a, %d %b %Y %H:%M:%S %z")
+    return dt.astimezone().strftime("%a, %d %b %Y %H:%M:%S %z")
+
+
 def load_meta_index(meta_file: Path) -> list[dict]:
     if meta_file.exists():
         return json.loads(meta_file.read_text())
@@ -407,6 +452,7 @@ def build_site(dist: Path, posts_meta: list[dict], new_slug: str, new_html: str)
 
     (dist / "index.html").write_text(build_index(posts_meta), encoding="utf-8")
     (dist / "sitemap.xml").write_text(build_sitemap(posts_meta), encoding="utf-8")
+    (dist / "rss.xml").write_text(build_rss(posts_meta), encoding="utf-8")
     (dist / "robots.txt").write_text(
         f"User-agent: *\nAllow: /\n\nSitemap: {DEFAULTS['site_url']}/sitemap.xml\n"
     )
