@@ -121,45 +121,59 @@ def publish_article(
     site_url = __import__("os").environ.get(
         "SITE_URL", "https://side-blogs.pages.dev"
     )
-    try:
-        result = subprocess.run(
-            cmd,
-            cwd=_REPO_ROOT / "ai-blog-automation",
-            capture_output=True,
-            text=True,
-            env={
-                **__import__("os").environ,
-                "PYTHONPATH": str(
-                    _REPO_ROOT / "ai-blog-automation" / "src"
-                ),
-                "SITE_URL": __import__("os").environ.get(
-                    "SITE_URL", "https://side-blogs.pages.dev"
-                ),
-                "SITE_NAME": __import__("os").environ.get(
-                    "SITE_NAME", "The Slow Drip"
-                ),
-            },
-            timeout=300,
-        )
-    except subprocess.TimeoutExpired:
-        # Markdown was already written to content/ above — the post is safe.
-        # Build may have finished; deploy can be re-run manually afterwards.
-        logger.warning(
-            "publish.py timed out (300s) — markdown already saved, "
-            "run publish.py manually to build+deploy"
-        )
-        return {
-            "slug": slug,
-            "url": f"{site_url}/{slug}",
-            "html_path": "",
-            "md_path": str(md_path),
-            "pushed": False,
-            "title": title,
-        }
 
-    if result.returncode != 0:
-        logger.error("publish.py failed", stderr=result.stderr[:500])
-        raise RuntimeError(f"publish.py failed: {result.stderr[:300]}")
+    # ── Build + deploy with retry loop ──
+    # wrangler deploy can hang/timeout intermittently; retry the whole
+    # build+deploy step until it succeeds (POST is already saved to content/).
+    max_retries = int(__import__("os").environ.get("PUBLISH_RETRIES", "5"))
+    attempt = 0
+    result = None
+    while attempt < max_retries:
+        attempt += 1
+        try:
+            logger.info("Running publish.py", attempt=attempt, max_retries=max_retries)
+            result = subprocess.run(
+                cmd,
+                cwd=_REPO_ROOT / "ai-blog-automation",
+                capture_output=True,
+                text=True,
+                env={
+                    **__import__("os").environ,
+                    "PYTHONPATH": str(
+                        _REPO_ROOT / "ai-blog-automation" / "src"
+                    ),
+                    "SITE_URL": __import__("os").environ.get(
+                        "SITE_URL", "https://side-blogs.pages.dev"
+                    ),
+                    "SITE_NAME": __import__("os").environ.get(
+                        "SITE_NAME", "The Slow Drip"
+                    ),
+                },
+                timeout=300,
+            )
+            if result.returncode == 0:
+                break  # success
+            logger.warning(
+                "publish.py failed (attempt %s/%s)",
+                attempt, max_retries, stderr=result.stderr[:300],
+            )
+        except subprocess.TimeoutExpired:
+            logger.warning(
+                "publish.py timed out (attempt %s/%s) — retrying",
+                attempt, max_retries,
+            )
+        if attempt < max_retries:
+            import time as _time
+            _time.sleep(10 * attempt)  # 10s, 20s, 30s... backoff
+
+    if result is None or result.returncode != 0:
+        # Post is already saved in content/ — surface a clear error instead of
+        # silently dropping the article from the build.
+        raise RuntimeError(
+            f"publish.py failed after {max_retries} attempts — "
+            f"markdown saved at {md_path}, deploy not confirmed. "
+            f"Last stderr: {(result.stderr[:300] if result else '')}"
+        )
 
     # ── Deploy: Cloudflare Direct Upload (preferred) or Git push ──
     pushed = False
