@@ -260,6 +260,19 @@ def count_words(text: str) -> int:
     return len(text.split())
 
 
+def _social_image(url: str) -> str:
+    """Upgrade thumbnail URL to social-card size (1200px wide).
+
+    Unsplash thumbnails are stored as w=200 in frontmatter — fine for the
+    homepage, too small for og:image/twitter:image (social platforms need
+    >= 300px, recommend 1200x630). Rewrite the query param to w=1200.
+    """
+    import re as _re
+    if not url:
+        return url
+    return _re.sub(r"w=\d+", "w=1200", url)
+
+
 def build_article(
     filepath: str,
     title: str | None = None,
@@ -296,8 +309,8 @@ def build_article(
     )
     wc = count_words(body)
 
-    og_img = f'<meta property="og:image" content="{image}">' if image else ""
-    tw_img = f'<meta name="twitter:image" content="{image}">' if image else ""
+    og_img = f'<meta property="og:image" content="{_social_image(image)}">' if image else ""
+    tw_img = f'<meta name="twitter:image" content="{_social_image(image)}">' if image else ""
     tags_html = "".join(f"<span>{t}</span>" for t in tags_list)
 
     ld = {
@@ -309,7 +322,7 @@ def build_article(
         "author": {"@type": "Person", "name": author},
     }
     if image:
-        ld["image"] = image
+        ld["image"] = _social_image(image)
 
     canonical = f"{DEFAULTS['site_url']}/{slug}"
 
