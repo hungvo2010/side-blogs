@@ -118,25 +118,44 @@ def publish_article(
     cmd = [venv_python, str(publish_script)]
     if not auto_push:
         cmd.append("--no-push")
-    result = subprocess.run(
-        cmd,
-        cwd=_REPO_ROOT / "ai-blog-automation",
-        capture_output=True,
-        text=True,
-        env={
-            **__import__("os").environ,
-            "PYTHONPATH": str(
-                _REPO_ROOT / "ai-blog-automation" / "src"
-            ),
-            "SITE_URL": __import__("os").environ.get(
-                "SITE_URL", "https://side-blogs.pages.dev"
-            ),
-            "SITE_NAME": __import__("os").environ.get(
-                "SITE_NAME", "The Slow Drip"
-            ),
-        },
-        timeout=120,
+    site_url = __import__("os").environ.get(
+        "SITE_URL", "https://side-blogs.pages.dev"
     )
+    try:
+        result = subprocess.run(
+            cmd,
+            cwd=_REPO_ROOT / "ai-blog-automation",
+            capture_output=True,
+            text=True,
+            env={
+                **__import__("os").environ,
+                "PYTHONPATH": str(
+                    _REPO_ROOT / "ai-blog-automation" / "src"
+                ),
+                "SITE_URL": __import__("os").environ.get(
+                    "SITE_URL", "https://side-blogs.pages.dev"
+                ),
+                "SITE_NAME": __import__("os").environ.get(
+                    "SITE_NAME", "The Slow Drip"
+                ),
+            },
+            timeout=300,
+        )
+    except subprocess.TimeoutExpired:
+        # Markdown was already written to content/ above — the post is safe.
+        # Build may have finished; deploy can be re-run manually afterwards.
+        logger.warning(
+            "publish.py timed out (300s) — markdown already saved, "
+            "run publish.py manually to build+deploy"
+        )
+        return {
+            "slug": slug,
+            "url": f"{site_url}/{slug}",
+            "html_path": "",
+            "md_path": str(md_path),
+            "pushed": False,
+            "title": title,
+        }
 
     if result.returncode != 0:
         logger.error("publish.py failed", stderr=result.stderr[:500])
@@ -152,9 +171,6 @@ def publish_article(
             pushed = _deploy_git_push(title)
 
     # ── Determine live URL ──
-    site_url = __import__("os").environ.get(
-        "SITE_URL", "https://side-blogs.pages.dev"
-    )
     live_url = f"{site_url}/{slug}"
 
     return {
