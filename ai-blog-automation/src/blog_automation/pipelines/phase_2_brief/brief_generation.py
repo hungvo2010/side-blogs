@@ -115,6 +115,14 @@ def generate_content_brief(
             # Initialize LLM client (single OpenRouter gateway)
             llm = OpenRouterClient()
 
+            # Release the DB connection BEFORE the slow LLM phase. Neon
+            # (serverless Postgres) kills idle connections after ~5 minutes;
+            # brief generation calls the LLM 5+ times (minutes each), so the
+            # session would otherwise hold a dead connection into the final
+            # commit. Commit now → connection returns to pool → pool_pre_ping
+            # validates it fresh at the next checkout.
+            session.commit()
+
             # Get existing brief data
             brief_data = brief.brief_data or {}
             intent = brief.intent or "informational"
@@ -165,7 +173,24 @@ def generate_content_brief(
                     errors=errors,
                 )
 
-            session.commit()
+            # Commit with retry — Neon serverless can still drop the connection
+            # between pool checkout and this write. Retry once on
+            # OperationalError (stale SSL connection) by re-checking out.
+            from sqlalchemy.exc import OperationalError as _OperationalError
+
+            for _attempt in range(2):
+                try:
+                    session.commit()
+                    break
+                except _OperationalError:
+                    session.rollback()
+                    if _attempt == 0:
+                        logger.warning(
+                            "DB connection dropped during brief commit, retrying",
+                            keyword=keyword,
+                        )
+                        continue
+                    raise
 
             logger.info(
                 "Content brief generation complete",

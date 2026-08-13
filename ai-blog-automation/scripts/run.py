@@ -84,21 +84,22 @@ try:
 except Exception as e:
     print(f"7. Image ⏭️  {str(e)[:60]}")
 
-# Phase 8 - Publish
-result = publish_article(
-    title=article.title or kw,
-    content=article.content_draft or "",
-    keyword=kw,
-    image=getattr(article, "_thumbnail", None) or "",
-    auto_push=True,
-)
-print(f"8. Published ✅  {result['url']}")
-
-# Update DB status
+# Phase 8 - Send to review queue (NO auto-publish)
+from blog_automation.review.task_queue import create_review_task
 from blog_automation.models import get_session, Article
+
 with get_session() as s:
     a = s.merge(article)
-    a.status = "published"
+    # Persist thumbnail so approve-from-dashboard keeps the OG image
+    thumb = getattr(article, "_thumbnail", None)
+    if thumb:
+        a.featured_image_url = thumb
+    a.status = "pending_review"
     s.commit()
+    article_id = a.id
+
+create_review_task(article, reviewer="Tien Nguyen", deadline_hours=24)
+print(f"8. Review queue ✅  article_id={article_id} — chờ duyệt trên dashboard")
+print(f"   → {os.environ.get('STREAMLIT_DASHBOARD_URL', 'https://reachnews.streamlit.app')} (Review Queue)")
 
 print(f"\n💰 Cost: ${article.ai_generation_cost:.4f}")

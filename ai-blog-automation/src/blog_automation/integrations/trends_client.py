@@ -263,17 +263,25 @@ class TrendsClient:
         return result
 
     def _call(self, fn, retries: int = 0):
-        """Execute pytrends call with retry on 429."""
+        """Execute pytrends call with retry on 429 AND connection errors.
+
+        Google Trends throttles bursts of rapid requests (blocked IP returns
+        connection resets, not HTTP 429). Retry both cases — connection errors
+        recover after a short cooldown.
+        """
+        import requests as _requests
+
         for attempt in range(len(_RETRY_DELAYS) + 1):
             try:
                 return fn()
             except Exception as e:
                 resp = getattr(e, "response", None)
                 code = resp.status_code if resp else 0
-                if code == 429 and attempt < len(_RETRY_DELAYS):
+                is_conn = isinstance(e, (_requests.exceptions.ConnectionError, _requests.exceptions.Timeout))
+                if (code == 429 or is_conn) and attempt < len(_RETRY_DELAYS):
                     delay = _RETRY_DELAYS[attempt]
                     logger.warning(
-                        f"pytrends 429, retrying in {delay}s (attempt {attempt+1})"
+                        f"pytrends {'429' if code == 429 else 'conn error'}, retrying in {delay}s (attempt {attempt+1})"
                     )
                     time.sleep(delay)
                     self._pytrends = TrendReq(hl="en-US", tz=420)

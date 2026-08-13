@@ -172,6 +172,7 @@ def _approve_and_publish(article_id: int) -> bool:
             title=a.title or a.keyword,
             content=a.content_draft or "",
             keyword=a.keyword or "",
+            image=a.featured_image_url or "",
             auto_push=True,
         )
         a.status = "published"
