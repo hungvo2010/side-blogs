@@ -110,14 +110,14 @@ def publish_article(
     logger.info("Markdown written", path=str(md_path))
 
     # ── Build static site via publish.py ──
+    # publish.py only builds here; deployment is handled below so we have a
+    # single, predictable deploy path (Cloudflare API → wrangler → git push).
     publish_script = (
         _REPO_ROOT / "ai-blog-automation" / "scripts" / "publish.py"
     )
     # Use venv python so markdown2 is available
     venv_python = str(_REPO_ROOT / "ai-blog-automation" / ".venv" / "bin" / "python")
-    cmd = [venv_python, str(publish_script)]
-    if not auto_push:
-        cmd.append("--no-push")
+    cmd = [venv_python, str(publish_script), "--no-push"]
     site_url = __import__("os").environ.get(
         "SITE_URL", "https://side-blogs.pages.dev"
     )
@@ -175,14 +175,11 @@ def publish_article(
             f"Last stderr: {(result.stderr[:300] if result else '')}"
         )
 
-    # ── Deploy: Cloudflare Direct Upload (preferred) or Git push ──
+    # ── Deploy: Cloudflare API → wrangler → git push ──
     pushed = False
+    deploy_method = "none"
     if auto_push:
-        cf_token = __import__("os").environ.get("CLOUDFLARE_API_TOKEN", "")
-        if cf_token:
-            pushed = _deploy_cloudflare(title)
-        else:
-            pushed = _deploy_git_push(title)
+        deploy_method, pushed = _deploy_to_cloudflare(title)
 
     # ── Determine live URL ──
     live_url = f"{site_url}/{slug}"
@@ -193,41 +190,135 @@ def publish_article(
         "html_path": str(_DIST_DIR / slug / "index.html"),
         "md_path": str(md_path),
         "pushed": pushed,
+        "deploy_method": deploy_method,
         "title": title,
     }
 
 
-def _deploy_cloudflare(title: str) -> bool:
-    """Upload to Cloudflare Pages via wrangler CLI (reliable, no API issues)."""
+def _deploy_to_cloudflare(title: str) -> tuple[str, bool]:
+    """Deploy public/ to Cloudflare Pages using the best available method.
+
+    Order of preference:
+      1. Cloudflare Pages API (needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID) —
+         no wrangler login required.
+      2. wrangler CLI (on PATH, or via ``npx wrangler``) — needs ``wrangler login``.
+      3. git push fallback — only stores source; may not trigger a Pages deploy.
+
+    Returns (method, pushed).
+    """
+    import os
     import shutil
 
-    # Check wrangler is available
-    if not shutil.which("wrangler"):
+    # 1. Cloudflare Pages API (most reliable — no interactive auth)
+    if os.environ.get("CLOUDFLARE_API_TOKEN") and os.environ.get("CLOUDFLARE_ACCOUNT_ID"):
+        try:
+            return "cloudflare_api", _deploy_cloudflare_api()
+        except Exception as e:
+            logger.warning("Cloudflare API deploy failed, falling back", error=str(e)[:200])
+
+    # 2. wrangler CLI (on PATH or via npx)
+    wrangler_cmd = None
+    if shutil.which("wrangler"):
+        wrangler_cmd = ["wrangler"]
+    elif shutil.which("npx"):
+        wrangler_cmd = ["npx", "--yes", "wrangler"]
+    if wrangler_cmd is not None:
+        dist = _REPO_ROOT / "public"
+        if dist.exists() and any(dist.iterdir()):
+            project = os.environ.get("CLOUDFLARE_PROJECT_NAME", "side-blogs")
+            result = subprocess.run(
+                [
+                    *wrangler_cmd, "pages", "deploy", str(dist),
+                    "--project-name", project,
+                    "--branch", "main",
+                    "--commit-dirty", "true",
+                ],
+                cwd=_REPO_ROOT,
+                capture_output=True,
+                text=True,
+                timeout=120,
+            )
+            if result.returncode == 0:
+                logger.info("Deployed to Cloudflare Pages via wrangler", project=project)
+                return "wrangler", True
+            logger.warning(
+                "wrangler deploy failed, falling back to git push",
+                stderr=result.stderr[:300],
+            )
+        else:
+            logger.warning("public/ dir empty, nothing to deploy")
+    else:
         logger.warning("wrangler CLI not found, falling back to git push")
-        return _deploy_git_push(title)
+
+    # 3. git push fallback
+    return "git_push", _deploy_git_push(title)
+
+
+def _deploy_cloudflare_api() -> bool:
+    """Upload public/ straight to Cloudflare Pages via the REST API (no wrangler).
+
+    Requires CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID env vars.
+    """
+    import os
+    import tempfile
+    import zipfile
+
+    import requests
+
+    token = os.environ["CLOUDFLARE_API_TOKEN"]
+    account_id = os.environ["CLOUDFLARE_ACCOUNT_ID"]
+    project = os.environ.get("CLOUDFLARE_PROJECT_NAME", "side-blogs")
 
     dist = _REPO_ROOT / "public"
-    if not dist.exists() or not list(dist.iterdir()):
-        logger.warning("public/ dir empty, nothing to deploy")
-        return False
+    if not dist.exists() or not any(dist.iterdir()):
+        raise RuntimeError("public/ dir empty, nothing to deploy")
 
-    project = __import__("os").environ.get("CLOUDFLARE_PROJECT_NAME", "side-blogs")
-    result = subprocess.run(
-        [
-            "wrangler", "pages", "deploy", str(dist),
-            "--project-name", project,
-            "--branch", "main",
-            "--commit-dirty", "true",
-        ],
-        cwd=_REPO_ROOT,
-        capture_output=True,
-        text=True,
-        timeout=120,
+    headers = {"Authorization": f"Bearer {token}"}
+    api_base = (
+        f"https://api.cloudflare.com/client/v4/accounts/"
+        f"{account_id}/pages/projects"
     )
-    if result.returncode != 0:
-        raise RuntimeError(f"wrangler deploy failed: {result.stderr[:300]}")
 
-    logger.info("Deployed to Cloudflare Pages via wrangler", project=project)
+    # 1. Zip public/
+    tmp = tempfile.NamedTemporaryFile(suffix=".zip", delete=False)
+    try:
+        with zipfile.ZipFile(tmp.name, "w", zipfile.ZIP_DEFLATED) as zf:
+            for root, _dirs, files in os.walk(dist):
+                for fname in files:
+                    full = Path(root) / fname
+                    zf.write(full, full.relative_to(dist))
+    finally:
+        tmp.close()
+
+    try:
+        # 2. Create deployment → get upload URL
+        r = requests.post(
+            f"{api_base}/{project}/deployments",
+            headers=headers,
+            json={"branch": "main"},
+            timeout=60,
+        )
+        if r.status_code != 200:
+            raise RuntimeError(f"Cloudflare API deploy failed: {r.status_code} {r.text[:300]}")
+        deployment = r.json()["result"]
+
+        # 3. Upload zip
+        with open(tmp.name, "rb") as f:
+            r2 = requests.post(
+                deployment["upload_url"],
+                headers={"Content-Type": "application/zip"},
+                data=f,
+                timeout=300,
+            )
+        if r2.status_code not in (200, 201, 204):
+            raise RuntimeError(f"Cloudflare upload failed: {r2.status_code} {r2.text[:300]}")
+    finally:
+        try:
+            os.unlink(tmp.name)
+        except OSError:
+            pass
+
+    logger.info("Deployed to Cloudflare Pages via API", project=project, deployment=deployment["id"])
     return True
 
 
