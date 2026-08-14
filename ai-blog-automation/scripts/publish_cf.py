@@ -17,10 +17,13 @@ Get token: https://dash.cloudflare.com/profile/api-tokens
 
 from __future__ import annotations
 
+import base64
+import hashlib
+import json
+import mimetypes
 import os
+import subprocess
 import sys
-import tempfile
-import zipfile
 from pathlib import Path
 
 import requests
@@ -36,9 +39,16 @@ API_TOKEN = os.environ["CLOUDFLARE_API_TOKEN"]
 ACCOUNT_ID = os.environ["CLOUDFLARE_ACCOUNT_ID"]
 PROJECT = os.environ.get("CLOUDFLARE_PROJECT_NAME", "side-blogs")
 SITE_URL = os.environ.get("SITE_URL", "https://side-blogs.pages.dev")
+BRANCH = os.environ.get("CLOUDFLARE_DEPLOY_BRANCH", "main")
 
-API_BASE = f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/pages/projects"
+API = "https://api.cloudflare.com/client/v4"
+PROJECT_URL = f"{API}/accounts/{ACCOUNT_ID}/pages/projects/{PROJECT}"
 HEADERS = {"Authorization": f"Bearer {API_TOKEN}"}
+
+
+def _content_type(path: str) -> str:
+    t, _ = mimetypes.guess_type(path)
+    return t or "application/octet-stream"
 
 
 # ─── Build ───────────────────────────────────────────────────────────────
@@ -47,50 +57,99 @@ def build_site() -> None:
     publish_py = Path(__file__).resolve().parent / "publish.py"
     env = os.environ.copy()
     env["PYTHONPATH"] = str(_SRC)
-    import subprocess
-
-    subprocess.run(["python3", str(publish_py)], env=env, check=True)
+    subprocess.run([sys.executable, str(publish_py)], env=env, check=True)
 
 
 # ─── Upload ──────────────────────────────────────────────────────────────
 def upload() -> str:
-    """Zip public/ and upload to Cloudflare Pages. Returns deployment URL."""
-    # 1. Zip public/
-    tmp = tempfile.NamedTemporaryFile(suffix=".zip", delete=False)
-    try:
-        with zipfile.ZipFile(tmp.name, "w", zipfile.ZIP_DEFLATED) as zf:
-            for root, _dirs, files in os.walk(PUBLIC_DIR):
-                for fname in files:
-                    full = Path(root) / fname
-                    zf.write(full, full.relative_to(PUBLIC_DIR))
-    finally:
-        tmp.close()
+    """Direct Upload public/ to Cloudflare Pages (manifest API). Returns deployment URL.
 
-    # 2. Request deployment upload URL
+    Replicates ``wrangler pages deploy``: upload-token → check-missing →
+    assets/upload → upsert-hashes → create deployment.
+    Manifest keys use leading slashes (``/index.html``) and **MD5** hashes —
+    Cloudflare's asset store rejects SHA1/relative keys (files 404/500).
+    """
+    files: dict[str, bytes] = {}
+    for root, _dirs, fnames in os.walk(PUBLIC_DIR):
+        for fname in fnames:
+            full = Path(root) / fname
+            files[full.relative_to(PUBLIC_DIR).as_posix()] = full.read_bytes()
+    if not files:
+        raise RuntimeError("public/ is empty, nothing to deploy")
+
+    # 1. Upload JWT
+    r = requests.get(f"{PROJECT_URL}/upload-token", headers=HEADERS, timeout=60)
+    r.raise_for_status()
+    jwt = r.json()["result"]["jwt"]
+    uh = {"Authorization": f"Bearer {jwt}", "Content-Type": "application/json"}
+
+    # 2. Manifest (path → md5) + upload payload (base64)
+    manifest = {"/" + p: hashlib.md5(d).hexdigest() for p, d in sorted(files.items())}
+    payload = [
+        {
+            "key": hashlib.md5(d).hexdigest(),
+            "value": base64.b64encode(d).decode(),
+            "metadata": {"contentType": _content_type(p)},
+            "base64": True,
+        }
+        for p, d in sorted(files.items())
+    ]
+
+    # 3. Only upload hashes Cloudflare doesn't already have
+    try:
+        r = requests.post(
+            f"{API}/pages/assets/check-missing",
+            headers=uh,
+            json={"hashes": list(manifest.values())},
+            timeout=60,
+        )
+        r.raise_for_status()
+        missing = set(r.json().get("result") or [])
+    except Exception as e:
+        print(f"check-missing failed ({e}), uploading all")
+        missing = set()
+    to_upload = [p for p in payload if p["key"] in missing] or payload
+    print(f"Uploading {len(to_upload)}/{len(payload)} files")
+
+    # 4. Upload (batched)
+    for i in range(0, len(to_upload), 200):
+        batch = to_upload[i : i + 200]
+        r = requests.post(
+            f"{API}/pages/assets/upload",
+            headers=uh,
+            data=json.dumps(batch),
+            timeout=600,
+        )
+        r.raise_for_status()
+        res = r.json()
+        if not res.get("success") or res.get("result", {}).get("unsuccessful_keys"):
+            raise RuntimeError(f"upload failed: {r.text[:400]}")
+
+    # 5. Register hashes
     r = requests.post(
-        f"{API_BASE}/{PROJECT}/deployments",
-        headers=HEADERS,
-        json={"branch": "main"},
+        f"{API}/pages/assets/upsert-hashes",
+        headers=uh,
+        json={"hashes": list(manifest.values())},
+        timeout=60,
     )
     r.raise_for_status()
+
+    # 6. Create deployment
+    r = requests.post(
+        f"{PROJECT_URL}/deployments",
+        headers=HEADERS,
+        files={
+            "branch": (None, BRANCH),
+            "manifest": (None, json.dumps(manifest), "application/json"),
+        },
+        timeout=120,
+    )
+    if r.status_code != 200:
+        raise RuntimeError(f"Cloudflare deploy failed: {r.status_code} {r.text[:300]}")
     deployment = r.json()["result"]
-    print(f"📦 Cloudflare deployment: {deployment['id'][:8]}...")
-
-    # 3. Upload zip
-    with open(tmp.name, "rb") as f:
-        r2 = requests.post(
-            deployment["upload_url"],
-            headers={"Content-Type": "application/zip"},
-            data=f,
-        )
-    os.unlink(tmp.name)
-
-    if r2.status_code not in (200, 201, 204):
-        print(f"❌ Upload failed: {r2.status_code} {r2.text[:300]}")
-        sys.exit(1)
 
     url = f"https://dash.cloudflare.com/{ACCOUNT_ID}/pages/view/{PROJECT}/{deployment['id']}"
-    print(f"🚀 Deployed! {url}")
+    print(f"🚀 Deployed: https://{deployment['short_id']}.{PROJECT}.pages.dev")
     print(f"🌍 Live: {SITE_URL}")
     return url
 
