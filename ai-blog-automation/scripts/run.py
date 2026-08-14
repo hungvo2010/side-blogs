@@ -84,21 +84,23 @@ try:
 except Exception as e:
     print(f"7. Image ⏭️  {str(e)[:60]}")
 
-# Phase 8 - Publish
+# Phase 8 - Write markdown only (no deploy). Publish later from Review Queue.
 result = publish_article(
     title=article.title or kw,
     content=article.content_draft or "",
     keyword=kw,
     image=getattr(article, "_thumbnail", None) or "",
-    auto_push=True,
+    auto_push=False,
 )
-print(f"8. Published ✅  {result['url']}")
+print(f"8. Markdown saved ✅  {result['md_path']} (not published)")
 
-# Update DB status
+# Update DB status → appears in Review Queue
 from blog_automation.models import get_session, Article
 with get_session() as s:
     a = s.merge(article)
-    a.status = "published"
+    a.status = "pending_review"
+    a.slug = result["slug"]
     s.commit()
 
-print(f"\n💰 Cost: ${article.ai_generation_cost:.4f}")
+print(f"\n🔎 Review & publish at: streamlit run streamlit_app/app.py")
+print(f"💰 Cost: ${article.ai_generation_cost:.4f}")
