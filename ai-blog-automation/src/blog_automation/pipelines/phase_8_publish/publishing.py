@@ -10,8 +10,8 @@ Flow::
 
 from __future__ import annotations
 
+import os
 import subprocess
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -25,16 +25,6 @@ _CONTENT_DIR = Path("content")
 _DIST_DIR = Path("../public")  # at repo root — served by Cloudflare Pages
 # publishing.py → phase_8_publish/ → pipelines/ → blog_automation/ → src/ → ai-blog-automation/ → side-blogs/
 _REPO_ROOT = Path(__file__).resolve().parents[5]  # side-blogs/
-
-# Python interpreter to run scripts/publish.py (needs markdown2).
-# Locally the app runs inside ai-blog-automation/.venv, so sys.executable is
-# already the venv python. On Streamlit Cloud there is no venv — use the
-# current interpreter, which has all requirements.txt packages installed.
-def _python_executable() -> str:
-    local_venv = _REPO_ROOT / "ai-blog-automation" / ".venv" / "bin" / "python"
-    if local_venv.exists() and Path(sys.executable).resolve() != local_venv.resolve():
-        return str(local_venv)
-    return sys.executable
 
 
 def publish_article(
@@ -120,76 +110,17 @@ def publish_article(
 
     logger.info("Markdown written", path=str(md_path))
 
-    # ── Build static site via publish.py ──
-    # publish.py only builds here; deployment is handled below so we have a
-    # single, predictable deploy path (Cloudflare API → wrangler → git push).
-    publish_script = (
-        _REPO_ROOT / "ai-blog-automation" / "scripts" / "publish.py"
-    )
-    # Use the current interpreter so it also works on Streamlit Cloud (no .venv).
-    cmd = [_python_executable(), str(publish_script), "--no-push"]
-    site_url = __import__("os").environ.get(
-        "SITE_URL", "https://side-blogs.pages.dev"
-    )
+    # ── Build the full static site in-process (no subprocess — works on
+    #    Streamlit Cloud where there is no venv / npx / git) ──
+    files = _build_site_files(slug=slug, md_content=md_content)
 
-    # ── Build + deploy with retry loop ──
-    # wrangler deploy can hang/timeout intermittently; retry the whole
-    # build+deploy step until it succeeds (POST is already saved to content/).
-    max_retries = int(__import__("os").environ.get("PUBLISH_RETRIES", "5"))
-    attempt = 0
-    result = None
-    while attempt < max_retries:
-        attempt += 1
-        try:
-            logger.info("Running publish.py", attempt=attempt, max_retries=max_retries)
-            result = subprocess.run(
-                cmd,
-                cwd=_REPO_ROOT / "ai-blog-automation",
-                capture_output=True,
-                text=True,
-                env={
-                    **__import__("os").environ,
-                    "PYTHONPATH": str(
-                        _REPO_ROOT / "ai-blog-automation" / "src"
-                    ),
-                    "SITE_URL": __import__("os").environ.get(
-                        "SITE_URL", "https://side-blogs.pages.dev"
-                    ),
-                    "SITE_NAME": __import__("os").environ.get(
-                        "SITE_NAME", "The Slow Drip"
-                    ),
-                },
-                timeout=300,
-            )
-            if result.returncode == 0:
-                break  # success
-            logger.warning(
-                "publish.py failed (attempt %s/%s)",
-                attempt, max_retries, stderr=result.stderr[:300],
-            )
-        except subprocess.TimeoutExpired:
-            logger.warning(
-                "publish.py timed out (attempt %s/%s) — retrying",
-                attempt, max_retries,
-            )
-        if attempt < max_retries:
-            import time as _time
-            _time.sleep(10 * attempt)  # 10s, 20s, 30s... backoff
+    site_url = os.environ.get("SITE_URL", "https://side-blogs.pages.dev")
 
-    if result is None or result.returncode != 0:
-        # Post is already saved in content/ — surface a clear error instead of
-        # silently dropping the article from the build.
-        raise RuntimeError(
-            f"publish.py failed after {max_retries} attempts — "
-            f"markdown saved at {md_path}, deploy not confirmed. "
-            f"Last stderr: {(result.stderr[:300] if result else '')}"
-        )
-
-    # ── Deploy: Cloudflare API → wrangler → git push ──
+    # ── Deploy: Cloudflare Pages API → wrangler → git push ──
     pushed = False
     deploy_method = "none"
     if auto_push:
-        deploy_method, pushed = _deploy_to_cloudflare(title)
+        deploy_method, pushed = _deploy_to_cloudflare(files, title)
 
     # ── Determine live URL ──
     live_url = f"{site_url}/{slug}"
@@ -205,28 +136,99 @@ def publish_article(
     }
 
 
-def _deploy_to_cloudflare(title: str) -> tuple[str, bool]:
-    """Deploy public/ to Cloudflare Pages using the best available method.
+def _build_site_files(*, slug: str, md_content: str) -> dict[str, bytes]:
+    """Build the complete static site in-process and return {path: bytes}.
+
+    Renders the new article plus every existing post in ``content/`` using the
+    same templates as ``scripts/publish.py`` (imported in-process — no
+    subprocess). Also writes the outputs to ``content/`` and ``public/`` on
+    disk so the repo and the git/wrangler fallback paths stay consistent.
+
+    Returns a map of ``public/``-relative path → file bytes, ready for a
+    Cloudflare Pages Direct Upload.
+    """
+    import importlib.util
+    import json
+
+    content_dir = _REPO_ROOT / "ai-blog-automation" / _CONTENT_DIR
+    dist = _REPO_ROOT / "public"
+    content_dir.mkdir(parents=True, exist_ok=True)
+    dist.mkdir(parents=True, exist_ok=True)
+
+    (content_dir / f"{slug}.md").write_text(md_content, encoding="utf-8")
+
+    # Import scripts/publish.py in-process so we reuse the exact templates.
+    publish_script = _REPO_ROOT / "ai-blog-automation" / "scripts" / "publish.py"
+    spec = importlib.util.spec_from_file_location("sideblog_publish", str(publish_script))
+    pub = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(pub)
+    pub.DEFAULTS.update(
+        {
+            "site_url": os.environ.get(
+                "SITE_URL", pub.DEFAULTS.get("site_url", "https://side-blogs.pages.dev")
+            ),
+            "site_name": os.environ.get(
+                "SITE_NAME", pub.DEFAULTS.get("site_name", "The Slow Drip")
+            ),
+        }
+    )
+
+    posts_meta: list[dict] = []
+    all_slugs: set[str] = set()
+    post_htmls: dict[str, str] = {}
+    for md_file in sorted(content_dir.glob("*.md")):
+        s, html, meta = pub.build_article(str(md_file))
+        if s in all_slugs:
+            continue
+        all_slugs.add(s)
+        posts_meta.append(meta)
+        post_htmls[s] = html
+
+    posts_meta.sort(key=lambda m: m["date"], reverse=True)
+
+    meta_file = dist / "posts.json"
+    meta_file.parent.mkdir(parents=True, exist_ok=True)
+    meta_file.write_text(json.dumps(posts_meta, ensure_ascii=False, indent=2))
+
+    # Write site-level files + the new article page to public/ on disk.
+    pub.build_site(dist, posts_meta, slug, post_htmls.get(slug, ""))
+    for s, html in post_htmls.items():
+        pd = dist / s
+        pd.mkdir(parents=True, exist_ok=True)
+        (pd / "index.html").write_text(html, encoding="utf-8")
+
+    logger.info("Built site in-process", posts=len(posts_meta), dist=str(dist))
+
+    # Collect every file under public/ as {relative_path: bytes}.
+    files: dict[str, bytes] = {}
+    for root, _dirs, fnames in os.walk(dist):
+        for fname in fnames:
+            full = Path(root) / fname
+            files[str(full.relative_to(dist))] = full.read_bytes()
+    return files
+
+
+def _deploy_to_cloudflare(files: dict[str, bytes], title: str) -> tuple[str, bool]:
+    """Deploy a built site to Cloudflare Pages using the best available method.
 
     Order of preference:
-      1. Cloudflare Pages API (needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID) —
-         no wrangler login required.
+      1. Cloudflare Pages Direct Upload API (needs CLOUDFLARE_API_TOKEN +
+         CLOUDFLARE_ACCOUNT_ID) — pure requests, works on Streamlit Cloud.
       2. wrangler CLI (on PATH, or via ``npx wrangler``) — needs ``wrangler login``.
       3. git push fallback — only stores source; may not trigger a Pages deploy.
 
     Returns (method, pushed).
     """
-    import os
     import shutil
 
-    # 1. Cloudflare Pages API (most reliable — no interactive auth)
+    # 1. Cloudflare Pages API (most reliable — no interactive auth, no CLI)
     if os.environ.get("CLOUDFLARE_API_TOKEN") and os.environ.get("CLOUDFLARE_ACCOUNT_ID"):
         try:
-            return "cloudflare_api", _deploy_cloudflare_api()
+            return "cloudflare_api", _deploy_cloudflare_api(files)
         except Exception as e:
-            logger.warning("Cloudflare API deploy failed, falling back", error=str(e)[:200])
+            logger.warning("Cloudflare API deploy failed, falling back", error=str(e)[:300])
 
-    # 2. wrangler CLI (on PATH or via npx)
+    # 2. wrangler CLI (on PATH or via npx) — public/ was written to disk
     wrangler_cmd = None
     if shutil.which("wrangler"):
         wrangler_cmd = ["wrangler"]
@@ -268,14 +270,23 @@ def _deploy_to_cloudflare(title: str) -> tuple[str, bool]:
         return "git_push", False
 
 
-def _deploy_cloudflare_api() -> bool:
-    """Upload public/ straight to Cloudflare Pages via the REST API (no wrangler).
+def _deploy_cloudflare_api(files: dict[str, bytes]) -> bool:
+    """Upload a built site straight to Cloudflare Pages via Direct Upload API.
+
+    Pure ``requests`` — no wrangler, no git, no disk dependency. Replicates the
+    ``wrangler pages deploy`` upload flow:
+
+      1. GET  /accounts/{account}/pages/projects/{project}/upload-token  → JWT
+      2. POST /pages/assets/check-missing                                → hashes to upload
+      3. POST /pages/assets/upload                                       → upload files (base64)
+      4. POST /pages/assets/upsert-hashes                                → register hashes
+      5. POST /accounts/{account}/pages/projects/{project}/deployments   → create deployment
 
     Requires CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID env vars.
     """
-    import os
-    import tempfile
-    import zipfile
+    import base64
+    import hashlib
+    import json
 
     import requests
 
@@ -283,57 +294,115 @@ def _deploy_cloudflare_api() -> bool:
     account_id = os.environ["CLOUDFLARE_ACCOUNT_ID"]
     project = os.environ.get("CLOUDFLARE_PROJECT_NAME", "side-blogs")
 
-    dist = _REPO_ROOT / "public"
-    if not dist.exists() or not any(dist.iterdir()):
-        raise RuntimeError("public/ dir empty, nothing to deploy")
+    if not files:
+        raise RuntimeError("No files to deploy")
 
+    api = "https://api.cloudflare.com/client/v4"
+    project_url = f"{api}/accounts/{account_id}/pages/projects/{project}"
     headers = {"Authorization": f"Bearer {token}"}
-    api_base = (
-        f"https://api.cloudflare.com/client/v4/accounts/"
-        f"{account_id}/pages/projects"
-    )
 
-    # 1. Zip public/
-    tmp = tempfile.NamedTemporaryFile(suffix=".zip", delete=False)
-    try:
-        with zipfile.ZipFile(tmp.name, "w", zipfile.ZIP_DEFLATED) as zf:
-            for root, _dirs, files in os.walk(dist):
-                for fname in files:
-                    full = Path(root) / fname
-                    zf.write(full, full.relative_to(dist))
-    finally:
-        tmp.close()
+    # 1. Upload JWT
+    r = requests.get(f"{project_url}/upload-token", headers=headers, timeout=60)
+    if r.status_code != 200:
+        raise RuntimeError(f"Cloudflare upload-token failed: {r.status_code} {r.text[:200]}")
+    jwt = r.json()["result"]["jwt"]
+    upload_headers = {"Authorization": f"Bearer {jwt}", "Content-Type": "application/json"}
 
+    # Build manifest (path -> sha1 hex) + upload payload (base64)
+    manifest: dict[str, str] = {}
+    payload: list[dict] = []
+    for path, data in sorted(files.items()):
+        h = hashlib.sha1(data).hexdigest()
+        manifest[path] = h
+        payload.append(
+            {
+                "key": h,
+                "value": base64.b64encode(data).decode(),
+                "metadata": {"contentType": _guess_content_type(path)},
+                "base64": True,
+            }
+        )
+
+    # 2. Only upload hashes Cloudflare doesn't already have
     try:
-        # 2. Create deployment → get upload URL
         r = requests.post(
-            f"{api_base}/{project}/deployments",
-            headers=headers,
-            json={"branch": "main"},
+            f"{api}/pages/assets/check-missing",
+            headers=upload_headers,
+            json={"hashes": list(manifest.values())},
             timeout=60,
         )
-        if r.status_code != 200:
-            raise RuntimeError(f"Cloudflare API deploy failed: {r.status_code} {r.text[:300]}")
-        deployment = r.json()["result"]
+        r.raise_for_status()
+        missing = set(r.json().get("result") or [])
+    except Exception:
+        missing = set()
 
-        # 3. Upload zip
-        with open(tmp.name, "rb") as f:
-            r2 = requests.post(
-                deployment["upload_url"],
-                headers={"Content-Type": "application/zip"},
-                data=f,
-                timeout=300,
-            )
-        if r2.status_code not in (200, 201, 204):
-            raise RuntimeError(f"Cloudflare upload failed: {r2.status_code} {r2.text[:300]}")
-    finally:
-        try:
-            os.unlink(tmp.name)
-        except OSError:
-            pass
+    to_upload = [p for p in payload if p["key"] in missing] or payload
 
-    logger.info("Deployed to Cloudflare Pages via API", project=project, deployment=deployment["id"])
+    # 3. Upload files
+    r = requests.post(
+        f"{api}/pages/assets/upload",
+        headers=upload_headers,
+        data=json.dumps(to_upload),
+        timeout=300,
+    )
+    if r.status_code != 200:
+        raise RuntimeError(f"Cloudflare upload failed: {r.status_code} {r.text[:300]}")
+    result = r.json()
+    if not result.get("success") or result.get("result", {}).get("unsuccessful_keys"):
+        raise RuntimeError(f"Cloudflare upload reported errors: {r.text[:300]}")
+
+    # 4. Register hashes
+    try:
+        requests.post(
+            f"{api}/pages/assets/upsert-hashes",
+            headers=upload_headers,
+            json={"hashes": list(manifest.values())},
+            timeout=60,
+        )
+    except Exception:
+        pass
+
+    # 5. Create deployment (multipart form-data, like wrangler)
+    r = requests.post(
+        f"{project_url}/deployments",
+        headers=headers,
+        files={
+            "branch": (None, "main"),
+            "manifest": (None, json.dumps(manifest), "application/json"),
+        },
+        timeout=60,
+    )
+    if r.status_code != 200:
+        raise RuntimeError(f"Cloudflare deploy failed: {r.status_code} {r.text[:300]}")
+
+    logger.info(
+        "Deployed to Cloudflare Pages via API", project=project, files=len(files)
+    )
     return True
+
+
+def _guess_content_type(path: str) -> str:
+    """Best-effort MIME guess for a public/-relative path."""
+    suffix = Path(path).suffix.lower()
+    return {
+        ".html": "text/html",
+        ".htm": "text/html",
+        ".css": "text/css",
+        ".js": "application/javascript",
+        ".json": "application/json",
+        ".xml": "application/xml",
+        ".txt": "text/plain",
+        ".svg": "image/svg+xml",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".gif": "image/gif",
+        ".webp": "image/webp",
+        ".ico": "image/x-icon",
+        ".woff": "font/woff",
+        ".woff2": "font/woff2",
+        ".map": "application/json",
+    }.get(suffix, "application/octet-stream")
 
 
 def _deploy_git_push(title: str) -> bool:
