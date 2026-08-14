@@ -148,40 +148,47 @@ INDEX_TEMPLATE = """\
     <meta property="og:url" content="{site_url}">
     <link rel="alternate" type="application/rss+xml" title="{site_name} RSS" href="/rss.xml">
     <style>
-        :root{{--primary:#1a73e8;--text:#1f2937;--muted:#6b7280;--bg:#fff}}
+        :root{{--primary:#1a73e8;--text:#1f2937;--muted:#6b7280;--bg:#fff;--card-shadow:0 1px 3px rgba(0,0,0,.06)}}
         *{{box-sizing:border-box}}
         body{{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.6;color:var(--text);background:#f8fafc;margin:0}}
         nav{{background:var(--bg);border-bottom:1px solid #e5e7eb;padding:12px 0}}
-        nav .inner{{max-width:800px;margin:0 auto;padding:0 20px}}
+        nav .inner{{max-width:1000px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:24px}}
         nav a{{color:var(--primary);text-decoration:none;font-weight:600}}
-        .container{{max-width:800px;margin:40px auto 60px;padding:0 20px}}
-        header{{margin-bottom:32px}}
-        h1{{font-size:2rem}}
-        .intro{{color:var(--muted);font-size:.95rem;margin-top:8px}}
-        .posts{{list-style:none;padding:0}}
-        .posts li{{background:var(--bg);padding:16px 20px;border-radius:10px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:box-shadow .15s;display:flex;gap:16px;align-items:flex-start}}
-        .posts li:hover{{box-shadow:0 4px 12px rgba(0,0,0,.1)}}
-        .posts .thumb{{width:120px;height:90px;object-fit:cover;border-radius:8px;flex-shrink:0}}
-        .posts .thumb.placeholder{{background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--muted)}}
-        .posts .post-body{{flex:1;min-width:0}}
-        .posts a{{color:var(--text);text-decoration:none;font-size:1.15rem;font-weight:600}}
+        .container{{max-width:1000px;margin:40px auto 60px;padding:0 20px}}
+        .hero{{background:linear-gradient(135deg,#1a73e8,#6d28d9);color:#fff;border-radius:16px;padding:40px 32px;margin-bottom:36px;text-align:center}}
+        .hero h1{{font-size:2.2rem;margin:0 0 8px;color:#fff}}
+        .hero p{{font-size:1.05rem;margin:4px auto;max-width:640px;opacity:.92}}
+        .hero .hero-meta{{display:inline-block;margin-top:14px;padding:6px 16px;border-radius:999px;background:rgba(255,255,255,.18);font-size:.85rem;font-weight:500}}
+        .posts{{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px}}
+        .posts li{{background:var(--bg);border-radius:12px;overflow:hidden;box-shadow:var(--card-shadow);transition:transform .15s,box-shadow .15s;display:flex;flex-direction:column}}
+        .posts li:hover{{transform:translateY(-4px);box-shadow:0 12px 24px rgba(0,0,0,.12)}}
+        .posts .thumb{{width:100%;height:180px;object-fit:cover;flex-shrink:0;display:block}}
+        .posts .thumb.placeholder{{background:linear-gradient(135deg,#e5e7eb,#d1d5db);display:flex;align-items:center;justify-content:center;font-size:.8rem;color:var(--muted)}}
+        .posts .post-body{{flex:1;min-width:0;padding:16px 20px 20px;display:flex;flex-direction:column}}
+        .posts .badge{{align-self:flex-start;background:#fef3c7;color:#92400e;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 10px;border-radius:999px;margin-bottom:10px}}
+        .posts a{{color:var(--text);text-decoration:none;font-size:1.12rem;font-weight:600;line-height:1.35}}
         .posts a:hover{{color:var(--primary)}}
-        .posts .desc{{color:var(--muted);font-size:.9rem;margin-top:4px}}
-        .posts .meta{{color:var(--muted);font-size:.8rem;margin-top:4px}}
-        @media(max-width:640px){{.posts li{{flex-direction:column}}.posts .thumb{{width:100%;height:160px}}}}
+        .posts .desc{{color:var(--muted);font-size:.9rem;margin-top:6px;flex:1}}
+        .posts .meta{{color:var(--muted);font-size:.8rem;margin-top:12px;border-top:1px solid #f1f5f9;padding-top:10px}}
+        @media(max-width:640px){{.posts{{grid-template-columns:1fr}}.posts .thumb{{height:200px}}.hero{{padding:28px 20px}}.hero h1{{font-size:1.6rem}}}}
         .share{{margin:32px 0;padding:20px 0;border-top:1px solid #e5e7eb;display:flex;flex-wrap:wrap;align-items:center;gap:8px}}
         .share .share-label{{color:var(--muted);font-size:.9rem;font-weight:600}}
         .share a,.share button{{display:inline-block;padding:6px 14px;border-radius:999px;font-size:.85rem;font-weight:500;background:#f3f4f6;color:var(--text);text-decoration:none;border:1px solid #e5e7eb;cursor:pointer;font-family:inherit}}
         .share a:hover,.share button:hover{{background:var(--primary);color:#fff;border-color:var(--primary)}}
         footer{{text-align:center;color:var(--muted);font-size:.85rem;padding:32px 0}}
-        footer .cols{{max-width:800px;margin:0 auto;padding:0 20px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center}}
+        footer .cols{{max-width:1000px;margin:0 auto;padding:0 20px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center}}
         footer a{{color:var(--muted)}}footer a:hover{{color:var(--primary)}}
     </style>
 </head>
 <body>
 <nav><div class="inner"><a href="/">{site_name}</a></div></nav>
 <main class="container">
-    <header><h1>{site_name} — Latest Posts &amp; Articles</h1><p>{description}</p><p class="intro">Welcome to {site_name}. Here you'll find the latest posts and articles about coffee, brewing, and the perfect cup.</p></header>
+    <div class="hero">
+        <h1>{site_name}</h1>
+        <p>{description}</p>
+        <p>Welcome to {site_name}. Here you'll find the latest posts and articles about coffee, brewing, and the perfect cup.</p>
+        <span class="hero-meta">{post_count} articles · updated regularly</span>
+    </div>
     <ul class="posts">{post_items}</ul>
     <div class="share">
         <span class="share-label">Share this blog:</span>
@@ -359,18 +366,23 @@ def build_article(
 # ---------------------------------------------------------------------------
 def build_index(posts_meta: list[dict]) -> str:
     items = []
-    for p in posts_meta:
+    for i, p in enumerate(posts_meta):
         img = p.get("image") or ""
+        # Upgrade thumbnail width for card layout (w=200 -> w=600)
         if img:
+            img = re.sub(r"w=\d+", "w=600", img)
             alt = p["title"].replace('"', "&quot;")
             thumb = f'<img class="thumb" src="{img}" alt="{alt}" loading="lazy">'
         else:
             thumb = '<div class="thumb placeholder">No image</div>'
+        badge = '<span class="badge">New</span>' if i == 0 else ""
+        wc = p.get("word_count") or 0
+        read_min = max(1, round(wc / 200))
         items.append(
-            f'<li>{thumb}<div class="post-body">'
+            f'<li>{thumb}<div class="post-body">{badge}'
             f'<a href="/{p["slug"]}">{p["title"]}</a>'
             f'<div class="desc">{p["description"]}</div>'
-            f'<div class="meta">{p["date"][:10]}</div></div></li>'
+            f'<div class="meta">{p["date"][:10]} · {read_min} min read</div></div></li>'
         )
     from urllib.parse import quote
     return INDEX_TEMPLATE.format(
@@ -378,6 +390,7 @@ def build_index(posts_meta: list[dict]) -> str:
         title=f"{DEFAULTS['site_name']} — Latest Posts & Articles on Coffee, Brewing & Home Barista Tips",
         site_url=DEFAULTS["site_url"],
         description=DEFAULTS["description"],
+        post_count=len(posts_meta),
         share_url=quote(DEFAULTS["site_url"], safe=""),
         share_text=quote(DEFAULTS["site_name"]),
         post_items="\n".join(items) if items else "<li>No posts yet.</li>",
