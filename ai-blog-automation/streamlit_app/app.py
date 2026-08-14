@@ -695,10 +695,10 @@ elif page == "📋 Review Queue":
                                             msg = (
                                                 "⚠️ Article saved & marked published, "
                                                 f"but the Cloudflare deploy wasn't confirmed "
-                                                f"(deploy method: {method}). Add "
+                                                f"(deploy method: {method}). Set "
                                                 "`CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` "
-                                                "to `.env`, or run `wrangler login`, then "
-                                                "deploy again."
+                                                "in **Streamlit secrets** (Settings → Secrets) "
+                                                "or `.env`, then deploy again."
                                             )
                                         st.session_state["_review_msg"] = ("success", msg)
                                     except Exception as e:

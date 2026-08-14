@@ -11,6 +11,7 @@ Flow::
 from __future__ import annotations
 
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -24,6 +25,16 @@ _CONTENT_DIR = Path("content")
 _DIST_DIR = Path("../public")  # at repo root — served by Cloudflare Pages
 # publishing.py → phase_8_publish/ → pipelines/ → blog_automation/ → src/ → ai-blog-automation/ → side-blogs/
 _REPO_ROOT = Path(__file__).resolve().parents[5]  # side-blogs/
+
+# Python interpreter to run scripts/publish.py (needs markdown2).
+# Locally the app runs inside ai-blog-automation/.venv, so sys.executable is
+# already the venv python. On Streamlit Cloud there is no venv — use the
+# current interpreter, which has all requirements.txt packages installed.
+def _python_executable() -> str:
+    local_venv = _REPO_ROOT / "ai-blog-automation" / ".venv" / "bin" / "python"
+    if local_venv.exists() and Path(sys.executable).resolve() != local_venv.resolve():
+        return str(local_venv)
+    return sys.executable
 
 
 def publish_article(
@@ -115,9 +126,8 @@ def publish_article(
     publish_script = (
         _REPO_ROOT / "ai-blog-automation" / "scripts" / "publish.py"
     )
-    # Use venv python so markdown2 is available
-    venv_python = str(_REPO_ROOT / "ai-blog-automation" / ".venv" / "bin" / "python")
-    cmd = [venv_python, str(publish_script), "--no-push"]
+    # Use the current interpreter so it also works on Streamlit Cloud (no .venv).
+    cmd = [_python_executable(), str(publish_script), "--no-push"]
     site_url = __import__("os").environ.get(
         "SITE_URL", "https://side-blogs.pages.dev"
     )
@@ -250,8 +260,12 @@ def _deploy_to_cloudflare(title: str) -> tuple[str, bool]:
     else:
         logger.warning("wrangler CLI not found, falling back to git push")
 
-    # 3. git push fallback
-    return "git_push", _deploy_git_push(title)
+    # 3. git push fallback (won't work on Streamlit Cloud — no git credentials)
+    try:
+        return "git_push", _deploy_git_push(title)
+    except Exception as e:
+        logger.warning("git push fallback failed", error=str(e)[:200])
+        return "git_push", False
 
 
 def _deploy_cloudflare_api() -> bool:
