@@ -10,6 +10,7 @@ Flow::
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 from datetime import datetime, timezone
@@ -200,11 +201,14 @@ def _build_site_files(*, slug: str, md_content: str) -> dict[str, bytes]:
     logger.info("Built site in-process", posts=len(posts_meta), dist=str(dist))
 
     # Collect every file under public/ as {relative_path: bytes}.
+    # Keys use a leading "/" — Cloudflare Pages manifest keys are absolute
+    # paths (files without the slash aren't served).
     files: dict[str, bytes] = {}
     for root, _dirs, fnames in os.walk(dist):
         for fname in fnames:
             full = Path(root) / fname
-            files[str(full.relative_to(dist))] = full.read_bytes()
+            rel = str(full.relative_to(dist))
+            files["/" + rel] = full.read_bytes()
     return files
 
 
@@ -285,9 +289,8 @@ def _deploy_cloudflare_api(files: dict[str, bytes]) -> bool:
     Requires CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID env vars.
     """
     import base64
-    import hashlib
-    import json
 
+    import blake3
     import requests
 
     token = os.environ["CLOUDFLARE_API_TOKEN"]
@@ -308,11 +311,14 @@ def _deploy_cloudflare_api(files: dict[str, bytes]) -> bool:
     jwt = r.json()["result"]["jwt"]
     upload_headers = {"Authorization": f"Bearer {jwt}", "Content-Type": "application/json"}
 
-    # Build manifest (path -> sha1 hex) + upload payload (base64)
+    # Build manifest (path -> blake3 hash) + upload payload (base64).
+    # The hash is blake3(base64(content) + file_extension), hex, 32 chars —
+    # this is what wrangler computes and what the Pages asset store keys on.
     manifest: dict[str, str] = {}
     payload: list[dict] = []
     for path, data in sorted(files.items()):
-        h = hashlib.sha1(data).hexdigest()
+        ext = Path(path).suffix[1:]  # extension without the dot ('' if none)
+        h = blake3.blake3((base64.b64encode(data).decode() + ext).encode()).hexdigest()[:32]
         manifest[path] = h
         payload.append(
             {

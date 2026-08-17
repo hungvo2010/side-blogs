@@ -163,9 +163,12 @@ def _approve_and_publish(article_id: int) -> dict:
     """Approve article and deploy to Cloudflare Pages.
 
     Returns the publish result dict (slug/url/deploy_method) and marks the
-    article published in the DB. Raises RuntimeError with an actionable
-    message if anything fails.
+    article published in the DB **only if the deploy was confirmed**. Raises
+    RuntimeError with an actionable message otherwise (article stays pending
+    review so it can be retried).
     """
+    from datetime import datetime, timezone
+
     from blog_automation.models import Article, get_session
     from blog_automation.pipelines.phase_8_publish import publish_article
 
@@ -180,7 +183,16 @@ def _approve_and_publish(article_id: int) -> dict:
             image=a.featured_image_url or "",
             auto_push=True,
         )
+        if not result.get("pushed"):
+            raise RuntimeError(
+                "Article was built but the Cloudflare deploy was NOT confirmed "
+                f"(deploy method: {result.get('deploy_method', 'none')}). "
+                "Add `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` to "
+                "**Streamlit secrets** (Settings → Secrets) or `.env`, then click "
+                "Approve again. The article is still pending review."
+            )
         a.status = "published"
+        a.published_date = datetime.now(timezone.utc)
         s.commit()
         return result
 
