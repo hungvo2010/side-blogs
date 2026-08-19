@@ -10,6 +10,7 @@ Flow::
 
 from __future__ import annotations
 
+import os
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -22,7 +23,8 @@ logger = get_logger(__name__)
 # Repo-relative paths (from ai-blog-automation/)
 _CONTENT_DIR = Path("content")
 _DIST_DIR = Path("../public")  # at repo root — served by Cloudflare Pages
-# publishing.py → phase_8_publish/ → pipelines/ → blog_automation/ → src/ → ai-blog-automation/ → side-blogs/
+# publishing.py -> phase_8_publish/ -> pipelines/ -> blog_automation/ -> src/
+#   -> ai-blog-automation/ -> side-blogs/
 _REPO_ROOT = Path(__file__).resolve().parents[5]  # side-blogs/
 
 
@@ -113,8 +115,13 @@ def publish_article(
     publish_script = (
         _REPO_ROOT / "ai-blog-automation" / "scripts" / "publish.py"
     )
-    # Use venv python so markdown2 is available
+    # Use venv python so markdown2 is available; on Streamlit Cloud there is
+    # no .venv — fall back to the running interpreter (which has all deps
+    # from requirements.txt).
     venv_python = str(_REPO_ROOT / "ai-blog-automation" / ".venv" / "bin" / "python")
+    if not os.path.exists(venv_python):
+        import sys as _sys
+        venv_python = _sys.executable
     cmd = [venv_python, str(publish_script)]
     if not auto_push:
         cmd.append("--no-push")
@@ -198,7 +205,83 @@ def publish_article(
 
 
 def _deploy_cloudflare(title: str) -> bool:
-    """Upload to Cloudflare Pages via wrangler CLI (reliable, no API issues)."""
+    """Upload public/ to Cloudflare Pages via Direct Upload API (no wrangler needed).
+
+    Falls back to wrangler CLI, then git push, if the API path is unavailable.
+    """
+    try:
+        import tempfile
+        import zipfile
+
+        import requests  # noqa: PLC0415
+    except ImportError:
+        logger.warning("requests not available, falling back to wrangler")
+        return _deploy_wrangler(title)
+
+    token = os.environ.get("CLOUDFLARE_API_TOKEN", "")
+    acct = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
+    if not (token and acct):
+        logger.warning(
+            "CLOUDFLARE_API_TOKEN/ACCOUNT_ID missing, falling back to wrangler"
+        )
+        return _deploy_wrangler(title)
+
+    dist = _REPO_ROOT / "public"
+    if not dist.exists() or not list(dist.iterdir()):
+        logger.warning("public/ dir empty, nothing to deploy")
+        return False
+
+    project = os.environ.get("CLOUDFLARE_PROJECT_NAME", "side-blogs")
+    api_base = f"https://api.cloudflare.com/client/v4/accounts/{acct}/pages/projects"
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Zip public/
+    tmp = tempfile.NamedTemporaryFile(suffix=".zip", delete=False)
+    try:
+        with zipfile.ZipFile(tmp.name, "w", zipfile.ZIP_DEFLATED) as zf:
+            for root, _dirs, files in os.walk(dist):
+                for fname in files:
+                    full = Path(root) / fname
+                    zf.write(full, full.relative_to(dist))
+    finally:
+        tmp.close()
+
+    try:
+        r = requests.post(
+            f"{api_base}/{project}/deployments",
+            headers=headers,
+            json={"branch": "main"},
+            timeout=120,
+        )
+        r.raise_for_status()
+        deployment = r.json()["result"]
+        with open(tmp.name, "rb") as f:
+            r2 = requests.post(
+                deployment["upload_url"],
+                headers={"Content-Type": "application/zip"},
+                data=f,
+                timeout=300,
+            )
+        if r2.status_code not in (200, 201, 204):
+            logger.warning(f"Cloudflare upload failed: {r2.status_code}")
+            return False
+        logger.info(
+            "Deployed to Cloudflare Pages via Direct Upload API",
+            project=project,
+        )
+        return True
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"Cloudflare API deploy failed, falling back to wrangler: {e}")
+        return _deploy_wrangler(title)
+    finally:
+        try:
+            os.unlink(tmp.name)
+        except OSError:
+            pass
+
+
+def _deploy_wrangler(title: str) -> bool:
+    """Upload to Cloudflare Pages via wrangler CLI (fallback)."""
     import shutil
 
     # Check wrangler is available
@@ -211,7 +294,7 @@ def _deploy_cloudflare(title: str) -> bool:
         logger.warning("public/ dir empty, nothing to deploy")
         return False
 
-    project = __import__("os").environ.get("CLOUDFLARE_PROJECT_NAME", "side-blogs")
+    project = os.environ.get("CLOUDFLARE_PROJECT_NAME", "side-blogs")
     result = subprocess.run(
         [
             "wrangler", "pages", "deploy", str(dist),
