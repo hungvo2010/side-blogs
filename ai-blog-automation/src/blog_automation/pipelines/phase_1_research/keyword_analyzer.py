@@ -256,25 +256,34 @@ class KeywordAnalyzer:
     def _is_mega_authority(domain: str) -> bool:
         """Sites too big to realistically get links from."""
         mega = {
-            "nytimes.com", "wsj.com", "forbes.com", "wikipedia.org",
-            "amazon.com", "apple.com", "microsoft.com", "google.com",
-            "youtube.com", "facebook.com", "twitter.com", "reddit.com",
-            "bbc.com", "cnn.com", "theguardian.com", "washingtonpost.com",
+            "nytimes.com",
+            "wsj.com",
+            "forbes.com",
+            "wikipedia.org",
+            "amazon.com",
+            "apple.com",
+            "microsoft.com",
+            "google.com",
+            "youtube.com",
+            "facebook.com",
+            "twitter.com",
+            "reddit.com",
+            "bbc.com",
+            "cnn.com",
+            "theguardian.com",
+            "washingtonpost.com",
         }
         return any(domain.endswith(d) for d in mega)
 
     @staticmethod
-    def _classify_page(
-        title: str, snippet: str, domain: str
-    ) -> tuple[str, int, str]:
+    def _classify_page(title: str, snippet: str, domain: str) -> tuple[str, int, str]:
         """Classify a competitor page for backlink opportunity type."""
         tl = title.lower()
         sl = snippet.lower()
 
         # Resource page: "best X of 2026", "top 10 X"
         if any(
-            phrase in tl
-            for phrase in ["best ", "top ", "ultimate guide", "review"]
+            phrase in tl for phrase in ["best ", "top ", "ultimate guide", "review"]
         ):
             return (
                 "resource_page",
@@ -284,10 +293,7 @@ class KeywordAnalyzer:
             )
 
         # Outdated content signal
-        if any(
-            year in sl
-            for year in ["2022", "2023", "2024"]
-        ):
+        if any(year in sl for year in ["2022", "2023", "2024"]):
             return (
                 "broken_link",
                 8,
@@ -296,10 +302,7 @@ class KeywordAnalyzer:
             )
 
         # Blog — potential guest post target
-        if any(
-            word in tl
-            for word in ["how to", "why ", "what is", "guide"]
-        ):
+        if any(word in tl for word in ["how to", "why ", "what is", "guide"]):
             return (
                 "guest_post",
                 5,

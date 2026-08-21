@@ -5,9 +5,8 @@ Generates article outlines and full drafts using GPT-4.
 
 import re
 from datetime import datetime
-from typing import Any
 
-from blog_automation.errors import GenerationFailureError, ProcessingError
+from blog_automation.errors import ProcessingError
 from blog_automation.integrations.openrouter_client import OpenRouterClient
 from blog_automation.logging_config import get_logger
 from blog_automation.models import Article, ContentBrief, get_session
@@ -70,6 +69,7 @@ Requirements:
 def generate_outline(brief: ContentBrief) -> str:
     """Generate article outline from content brief."""
     from blog_automation.config import get_settings
+
     if get_settings().mock_mode:
         return f"# {brief.keyword.title()}\n\n## Introduction\n\n## Section 1\n\n### Sub 1\n\n## Section 2\n\n## Conclusion"
 
@@ -106,6 +106,7 @@ def generate_article_draft(
 ) -> Article:
     """Generate full article draft from brief and outline."""
     from blog_automation.config import get_settings
+
     if get_settings().mock_mode:
         mock_content = f"# {brief.keyword.title()}\n\nThis is a mock article about {brief.keyword}.\n\n## Introduction\nWelcome to our guide about {brief.keyword}.\n\n## Benefits\nThere are many benefits to {brief.keyword}.\n\n## Conclusion\nIn summary, {brief.keyword} is great. [Source: https://wikipedia.org]"
         return Article(
@@ -125,7 +126,9 @@ def generate_article_draft(
     # ... rest of original logic ...
     # Prepare prompt data
     word_count = brief.get_target_word_count()
-    unique_angle = brief.get_unique_angle() or "Provide comprehensive, actionable information"
+    unique_angle = (
+        brief.get_unique_angle() or "Provide comprehensive, actionable information"
+    )
     lsi_keywords = ", ".join(brief.get_lsi_keywords()[:10])
 
     sources_text = ""
@@ -316,7 +319,7 @@ def revise_article_with_feedback(
     article.content_draft = revised_content
     article.status = "draft"  # Reset to draft status for re-validation/review
     article.ai_generation_cost += response.get("cost", 0)
-    
+
     # Update word count
     article.update_word_count()
 
@@ -353,8 +356,12 @@ def content_brief_to_draft(brief: ContentBrief) -> Article:
         article = generate_article_draft(brief, outline)
         # Mark initial pipeline progress so dashboard shows correct state
         article.pipeline_progress = {
-            "research": "done", "brief": "done", "draft": "done",
-            "fact_check": "pending", "seo": "pending", "quality_gates": "pending",
+            "research": "done",
+            "brief": "done",
+            "draft": "done",
+            "fact_check": "pending",
+            "seo": "pending",
+            "quality_gates": "pending",
         }
         logger.info(
             "Draft generated",
@@ -424,6 +431,7 @@ def _extract_title(content: str, keyword: str) -> str:
 def _generate_slug(keyword: str) -> str:
     """Generate URL slug from keyword."""
     import uuid
+
     # Convert to lowercase and replace spaces with hyphens
     slug = keyword.lower().strip()
     slug = re.sub(r"[^\w\s-]", "", slug)

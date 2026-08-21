@@ -67,7 +67,8 @@ def research_keyword(
 
             client = get_search_client()
             logger.info(
-                "Fetching keyword metrics via %s", type(client).__name__,
+                "Fetching keyword metrics via %s",
+                type(client).__name__,
                 keyword=keyword,
             )
 
@@ -77,13 +78,12 @@ def research_keyword(
             competitor_analysis = client.competitor_analysis(keyword, country)
 
         except Exception as e:
-            logger.warning(
-                "Trends API failed, using OpenRouter", error=str(e)[:60]
-            )
+            logger.warning("Trends API failed, using OpenRouter", error=str(e)[:60])
             try:
                 from blog_automation.integrations.openrouter_client import (
                     OpenRouterClient,
                 )
+
                 llm = OpenRouterClient()
                 prompt = (
                     f"Research '{keyword}'. Estimate: search volume, "
@@ -96,7 +96,9 @@ def research_keyword(
                     "intent (str), top_pages (list of {url, title})."
                 )
                 result = llm.extract_json(
-                    prompt=prompt, system_prompt=system, max_tokens=300,
+                    prompt=prompt,
+                    system_prompt=system,
+                    max_tokens=300,
                 )
                 metrics = {
                     "volume": result.get("volume", 500),

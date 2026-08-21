@@ -1,9 +1,9 @@
 """Article Metrics model for tracking daily performance."""
 
-from datetime import date, datetime
+from datetime import date
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Date, Float, ForeignKey, Index, Integer, JSON
+from sqlalchemy import JSON, Date, Float, ForeignKey, Index, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from blog_automation.models.base import BaseModel

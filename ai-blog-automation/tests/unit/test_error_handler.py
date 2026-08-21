@@ -1,7 +1,8 @@
 """Unit tests for error handler decorators."""
 
-import pytest
 import time
+
+import pytest
 
 from blog_automation.error_handler import (
     ErrorContext,

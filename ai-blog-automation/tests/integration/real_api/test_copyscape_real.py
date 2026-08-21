@@ -13,9 +13,7 @@ from . import require_creds, settings
 pytestmark = [
     pytest.mark.real_api,
     pytest.mark.copyscape,
-    require_creds(
-        "copyscape", settings.copyscape_api_key, settings.copyscape_username
-    ),
+    require_creds("copyscape", settings.copyscape_api_key, settings.copyscape_username),
 ]
 
 

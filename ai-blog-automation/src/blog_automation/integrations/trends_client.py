@@ -34,24 +34,60 @@ _GEO_MAP = {
 # Default interests for quick scoring
 _TOP_INTERESTS = {
     "VN": [
-        "bóng đá", "giải trí", "du lịch", "thời trang",
-        "công nghệ", "sức khỏe", "giáo dục", "tài chính",
-        "bất động sản", "ô tô", "game", "phim",
+        "bóng đá",
+        "giải trí",
+        "du lịch",
+        "thời trang",
+        "công nghệ",
+        "sức khỏe",
+        "giáo dục",
+        "tài chính",
+        "bất động sản",
+        "ô tô",
+        "game",
+        "phim",
     ],
     "US": [
-        "ai tools", "crypto", "stocks", "healthy recipes",
-        "workout", "remote jobs", "travel deals", "streaming",
-        "electric car", "house plants", "pet food", "meditation",
+        "ai tools",
+        "crypto",
+        "stocks",
+        "healthy recipes",
+        "workout",
+        "remote jobs",
+        "travel deals",
+        "streaming",
+        "electric car",
+        "house plants",
+        "pet food",
+        "meditation",
     ],
     "AU": [
-        "coffee", "superannuation", "property", "cricket",
-        "vegemite", "netflix", "bunnings", "spotify",
-        "iphone", "tesla", "vegan", "hiking",
+        "coffee",
+        "superannuation",
+        "property",
+        "cricket",
+        "vegemite",
+        "netflix",
+        "bunnings",
+        "spotify",
+        "iphone",
+        "tesla",
+        "vegan",
+        "hiking",
     ],
     "GB": [
-        "premier league", "brexit", "tea", "pub",
-        "weather", "train strikes", "fish and chips", "nhs",
-        "bitcoin", "spotify", "air fryer", "aldi",
+        "premier league",
+        "brexit",
+        "tea",
+        "pub",
+        "weather",
+        "train strikes",
+        "fish and chips",
+        "nhs",
+        "bitcoin",
+        "spotify",
+        "air fryer",
+        "aldi",
     ],
 }
 
@@ -71,14 +107,14 @@ class TrendsClient:
 
     # ── drop-in interface (matches GoogleSearchClient) ─────────────────
 
-    def get_keyword_overview(
-        self, keyword: str, country: str = "us"
-    ) -> dict[str, Any]:
+    def get_keyword_overview(self, keyword: str, country: str = "us") -> dict[str, Any]:
         """Interest-based keyword overview (no real volume, but relative interest)."""
         keyword = self._validate(keyword)
         geo = _GEO_MAP.get(country, country.upper())
         iot = self._interest_over_time([keyword], geo)
-        avg = int(iot[keyword].mean()) if not iot.empty and keyword in iot.columns else 0
+        avg = (
+            int(iot[keyword].mean()) if not iot.empty and keyword in iot.columns else 0
+        )
 
         # Rough difficulty = 100 - avg (higher interest = more competition)
         difficulty = max(10, min(90, 100 - avg))
@@ -120,11 +156,13 @@ class TrendsClient:
         pages = []
         for qtype in ["top", "rising"]:
             for _, row in rq.get(qtype, pd.DataFrame()).head(limit // 2).iterrows():
-                pages.append({
-                    "url": f"https://www.google.com/search?q={row['query']}",
-                    "title": row["query"],
-                    "snippet": f"{qtype} query · value: {row['value']}",
-                })
+                pages.append(
+                    {
+                        "url": f"https://www.google.com/search?q={row['query']}",
+                        "title": row["query"],
+                        "snippet": f"{qtype} query · value: {row['value']}",
+                    }
+                )
         return pages[:limit]
 
     def get_keyword_metrics(self, keyword: str, country: str = "us") -> dict:
@@ -135,9 +173,7 @@ class TrendsClient:
             "top_pages": self.top_pages(keyword, country=country),
         }
 
-    def competitor_analysis(
-        self, keyword: str, country: str = "us"
-    ) -> dict[str, Any]:
+    def competitor_analysis(self, keyword: str, country: str = "us") -> dict[str, Any]:
         """Related queries as competitors."""
         pages = self.top_pages(keyword, country, limit=10)
         queries = [p["title"] for p in pages if p["title"]]
@@ -158,28 +194,43 @@ class TrendsClient:
         Uses pytrends-modern RSS feed — no rate limit, no API key."""
         try:
             from pytrends_modern import TrendsRSS
-            geo_map = {"VN": "vietnam", "US": "united-states", "AU": "australia",
-                       "GB": "united-kingdom", "CA": "canada", "DE": "germany",
-                       "JP": "japan", "SG": "singapore", "IN": "india"}
+
+            geo_map = {
+                "VN": "vietnam",
+                "US": "united-states",
+                "AU": "australia",
+                "GB": "united-kingdom",
+                "CA": "canada",
+                "DE": "germany",
+                "JP": "japan",
+                "SG": "singapore",
+                "IN": "india",
+            }
             geo_rss = geo_map.get(geo.upper(), geo.lower())
             rss = TrendsRSS()
             trends = rss.get_trends(geo=geo_rss)
             topics = []
             for t in trends[:limit]:
-                topics.append({
-                    "title": t.get("title", ""),
-                    "traffic": t.get("traffic", ""),
-                    "source": "rss",
-                })
+                topics.append(
+                    {
+                        "title": t.get("title", ""),
+                        "traffic": t.get("traffic", ""),
+                        "source": "rss",
+                    }
+                )
             return topics
         except Exception:
             # Fallback to pytrends
             geo_name = _GEO_MAP.get(geo, geo.upper())
             try:
-                df = self._call(lambda: self._pytrends.trending_searches(pn=geo_name.lower()))
+                df = self._call(
+                    lambda: self._pytrends.trending_searches(pn=geo_name.lower())
+                )
                 if not df.empty:
-                    return [{"title": row.get("title", ""), "source": "trends"}
-                            for _, row in df.head(limit).iterrows()]
+                    return [
+                        {"title": row.get("title", ""), "source": "trends"}
+                        for _, row in df.head(limit).iterrows()
+                    ]
             except Exception:
                 pass
             fallback = _TOP_INTERESTS.get(geo_name, _TOP_INTERESTS["US"])
@@ -211,16 +262,12 @@ class TrendsClient:
         )
         return self._pytrends.interest_over_time()
 
-    def related_queries(
-        self, keyword: str, geo: str = "US"
-    ) -> dict[str, pd.DataFrame]:
+    def related_queries(self, keyword: str, geo: str = "US") -> dict[str, pd.DataFrame]:
         """Get top + rising related queries."""
         keyword = self._validate(keyword)
         return self._related_queries(keyword, geo)
 
-    def related_topics(
-        self, keyword: str, geo: str = "US"
-    ) -> dict[str, pd.DataFrame]:
+    def related_topics(self, keyword: str, geo: str = "US") -> dict[str, pd.DataFrame]:
         """Get top + rising related topics."""
         keyword = self._validate(keyword)
         self._call(
@@ -234,7 +281,9 @@ class TrendsClient:
 
     def _validate(self, keyword: str) -> str:
         if not keyword or not keyword.strip():
-            raise InvalidKeywordError(message="Keyword cannot be empty", keyword=keyword)
+            raise InvalidKeywordError(
+                message="Keyword cannot be empty", keyword=keyword
+            )
         return keyword.strip()
 
     def _interest_over_time(self, keywords: list[str], geo: str) -> pd.DataFrame:
@@ -245,16 +294,17 @@ class TrendsClient:
         )
         return self._pytrends.interest_over_time()
 
-    def _related_queries(
-        self, keyword: str, geo: str
-    ) -> dict[str, pd.DataFrame]:
+    def _related_queries(self, keyword: str, geo: str) -> dict[str, pd.DataFrame]:
         self._call(
             lambda: self._pytrends.build_payload(
                 kw_list=[keyword], geo=geo, timeframe="today 12-m"
             )
         )
         raw = self._pytrends.related_queries()
-        result: dict[str, pd.DataFrame] = {"top": pd.DataFrame(), "rising": pd.DataFrame()}
+        result: dict[str, pd.DataFrame] = {
+            "top": pd.DataFrame(),
+            "rising": pd.DataFrame(),
+        }
         for _, data in raw.items():
             if data.get("top") is not None:
                 result["top"] = data["top"]
@@ -277,11 +327,17 @@ class TrendsClient:
             except Exception as e:
                 resp = getattr(e, "response", None)
                 code = resp.status_code if resp else 0
-                is_conn = isinstance(e, (_requests.exceptions.ConnectionError, _requests.exceptions.Timeout))
+                is_conn = isinstance(
+                    e,
+                    (
+                        _requests.exceptions.ConnectionError,
+                        _requests.exceptions.Timeout,
+                    ),
+                )
                 if (code == 429 or is_conn) and attempt < len(_RETRY_DELAYS):
                     delay = _RETRY_DELAYS[attempt]
                     logger.warning(
-                        f"pytrends {'429' if code == 429 else 'conn error'}, retrying in {delay}s (attempt {attempt+1})"
+                        f"pytrends {'429' if code == 429 else 'conn error'}, retrying in {delay}s (attempt {attempt + 1})"
                     )
                     time.sleep(delay)
                     self._pytrends = TrendReq(hl="en-US", tz=420)

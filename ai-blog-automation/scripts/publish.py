@@ -216,7 +216,9 @@ DEFAULTS = {
     "site_name": os.getenv("SITE_NAME", "The Slow Drip"),
     "site_url": os.getenv("SITE_URL", "https://myblog.pages.dev"),
     "author": os.getenv("SITE_AUTHOR", "Anonymous"),
-    "description": os.getenv("SITE_DESCRIPTION", "A blog about coffee, brewing, and the perfect cup."),
+    "description": os.getenv(
+        "SITE_DESCRIPTION", "A blog about coffee, brewing, and the perfect cup."
+    ),
     "lang": os.getenv("SITE_LANG", "en"),
     "dist_dir": "../public",  # at repo root — Cloudflare Pages serves from here
     "content_dir": "content",
@@ -275,6 +277,7 @@ def _social_image(url: str) -> str:
     >= 300px, recommend 1200x630). Rewrite the query param to w=1200.
     """
     import re as _re
+
     if not url:
         return url
     return _re.sub(r"w=\d+", "w=1200", url)
@@ -295,7 +298,9 @@ def build_article(
     title = title or fm.get("title") or _guess_title(body) or "Untitled"
     slug = slug or fm.get("slug") or slugify(title or "untitled")
     description = description or fm.get("description") or auto_description(body)
-    tags_list = [t.strip() for t in (tags or fm.get("tags", "")).split(",") if t.strip()]
+    tags_list = [
+        t.strip() for t in (tags or fm.get("tags", "")).split(",") if t.strip()
+    ]
     author = author or fm.get("author") or DEFAULTS["author"]
     image = image or fm.get("image") or ""
 
@@ -312,12 +317,17 @@ def build_article(
     display = now.strftime("%B %d, %Y")
 
     html_body = markdown2.markdown(
-        body, extras=["fenced-code-blocks", "tables", "strike", "task_list", "header-ids"]
+        body,
+        extras=["fenced-code-blocks", "tables", "strike", "task_list", "header-ids"],
     )
     wc = count_words(body)
 
-    og_img = f'<meta property="og:image" content="{_social_image(image)}">' if image else ""
-    tw_img = f'<meta name="twitter:image" content="{_social_image(image)}">' if image else ""
+    og_img = (
+        f'<meta property="og:image" content="{_social_image(image)}">' if image else ""
+    )
+    tw_img = (
+        f'<meta name="twitter:image" content="{_social_image(image)}">' if image else ""
+    )
     tags_html = "".join(f"<span>{t}</span>" for t in tags_list)
 
     ld = {
@@ -354,11 +364,20 @@ def build_article(
         content_html=html_body,
     )
 
-    return slug, html, {
-        "title": title, "slug": slug, "description": description,
-        "tags": tags_list, "author": author, "image": image,
-        "date": iso, "word_count": wc,
-    }
+    return (
+        slug,
+        html,
+        {
+            "title": title,
+            "slug": slug,
+            "description": description,
+            "tags": tags_list,
+            "author": author,
+            "image": image,
+            "date": iso,
+            "word_count": wc,
+        },
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -385,8 +404,10 @@ def build_index(posts_meta: list[dict]) -> str:
             f'<div class="meta">{p["date"][:10]} · {read_min} min read</div></div></li>'
         )
     from urllib.parse import quote
+
     return INDEX_TEMPLATE.format(
-        lang=DEFAULTS["lang"], site_name=DEFAULTS["site_name"],
+        lang=DEFAULTS["lang"],
+        site_name=DEFAULTS["site_name"],
         title=f"{DEFAULTS['site_name']} — Latest Posts & Articles on Coffee, Brewing & Home Barista Tips",
         site_url=DEFAULTS["site_url"],
         description=DEFAULTS["description"],
@@ -398,10 +419,12 @@ def build_index(posts_meta: list[dict]) -> str:
 
 
 def build_sitemap(posts_meta: list[dict]) -> str:
-    entries = [f"  <url><loc>{DEFAULTS['site_url']}/</loc><changefreq>daily</changefreq></url>"]
+    entries = [
+        f"  <url><loc>{DEFAULTS['site_url']}/</loc><changefreq>daily</changefreq></url>"
+    ]
     for p in posts_meta:
         entries.append(
-            f'  <url><loc>{DEFAULTS["site_url"]}/{p["slug"]}</loc>'
+            f"  <url><loc>{DEFAULTS['site_url']}/{p['slug']}</loc>"
             f"<lastmod>{p['date'][:10]}</lastmod></url>"
         )
     return SITEMAP_TEMPLATE.format(entries="\n".join(entries))
@@ -421,10 +444,14 @@ def build_rss(posts_meta: list[dict]) -> str:
             "    <item>\n"
             f"      <title>{escape(p['title'])}</title>\n"
             f"      <link>{site_url}/{p['slug']}</link>\n"
-            f"      <guid isPermaLink=\"true\">{site_url}/{p['slug']}</guid>\n"
+            f'      <guid isPermaLink="true">{site_url}/{p["slug"]}</guid>\n'
             f"      <pubDate>{_rss_date(p['date'])}</pubDate>\n"
             f"      <description>{escape(p['description'])}</description>\n"
-            + (f"      <enclosure url=\"{escape(p['image'])}\" type=\"image/jpeg\"/>\n" if p.get("image") else "")
+            + (
+                f'      <enclosure url="{escape(p["image"])}" type="image/jpeg"/>\n'
+                if p.get("image")
+                else ""
+            )
             + "    </item>"
         )
 
@@ -435,7 +462,7 @@ def build_rss(posts_meta: list[dict]) -> str:
         f"  <title>{escape(site)}</title>\n"
         f"  <link>{site_url}</link>\n"
         f"  <description>{escape(desc)}</description>\n"
-        f"  <atom:link href=\"{site_url}/rss.xml\" rel=\"self\" type=\"application/rss+xml\"/>\n"
+        f'  <atom:link href="{site_url}/rss.xml" rel="self" type="application/rss+xml"/>\n'
         f"  <lastBuildDate>{_rss_date(posts_meta[0]['date']) if posts_meta else _rss_date('')}</lastBuildDate>\n"
         + "\n".join(items)
         + "\n</channel>\n</rss>\n"
@@ -445,6 +472,7 @@ def build_rss(posts_meta: list[dict]) -> str:
 def _rss_date(iso: str) -> str:
     """Convert ISO date (2026-08-08T08:02:15Z) to RFC-822 (Sat, 08 Aug 2026 08:02:15 GMT)."""
     from datetime import datetime
+
     try:
         dt = datetime.fromisoformat(iso.replace("Z", "+00:00"))
     except ValueError:
@@ -463,8 +491,11 @@ def save_meta_index(meta_file: Path, posts: list[dict]) -> None:
     meta_file.write_text(json.dumps(posts, ensure_ascii=False, indent=2))
 
 
-def build_site(dist: Path, posts_meta: list[dict], new_slug: str, new_html: str) -> None:
+def build_site(
+    dist: Path, posts_meta: list[dict], new_slug: str, new_html: str
+) -> None:
     import shutil
+
     dist.mkdir(parents=True, exist_ok=True)
 
     # Copy static assets (favicon, _redirects, etc.)
@@ -494,17 +525,92 @@ def build_site(dist: Path, posts_meta: list[dict], new_slug: str, new_html: str)
 # ---------------------------------------------------------------------------
 # ─── Deploy ────────────────────────────────────────────────────────────
 def _deploy(dist: Path) -> None:
-    """Upload public/ to Cloudflare Pages via wrangler CLI. No git needed."""
+    """Upload public/ to Cloudflare Pages.
+
+    Prefers the wrangler CLI (local dev). Falls back to the Cloudflare Pages
+    Direct Upload API (zip + upload) when wrangler is absent — which is the
+    case on Streamlit Cloud, where only `requests` is available.
+    """
     import shutil
-    if not shutil.which("wrangler"):
-        print("⚠️  wrangler not found. Skipping deploy.")
+
+    if shutil.which("wrangler"):
+        project = os.environ.get("CLOUDFLARE_PROJECT_NAME", "side-blogs")
+        subprocess.run(
+            [
+                "wrangler",
+                "pages",
+                "deploy",
+                str(dist.resolve()),
+                "--project-name",
+                project,
+                "--branch",
+                "main",
+                "--commit-dirty",
+                "true",
+            ],
+            check=False,
+        )
+        print(f"🌍 Live: {DEFAULTS['site_url']}")
         return
+    _deploy_via_api(dist)
+
+
+def _deploy_via_api(dist: Path) -> None:
+    """Cloudflare Pages Direct Upload API — no wrangler binary needed.
+
+    Requires env: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID,
+    CLOUDFLARE_PROJECT_NAME (default side-blogs).
+    """
+    import tempfile
+    import zipfile
+
+    import requests
+
+    token = os.environ.get("CLOUDFLARE_API_TOKEN", "")
+    account = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
     project = os.environ.get("CLOUDFLARE_PROJECT_NAME", "side-blogs")
-    subprocess.run(
-        ["wrangler", "pages", "deploy", str(dist.resolve()),
-         "--project-name", project, "--branch", "main", "--commit-dirty", "true"],
-        check=False,
+    if not token or not account:
+        print("⚠️  No CLOUDFLARE_API_TOKEN/ACCOUNT_ID and no wrangler. Skipping deploy.")
+        return
+
+    api_base = f"https://api.cloudflare.com/client/v4/accounts/{account}/pages/projects"
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. Zip dist/
+    tmp = tempfile.NamedTemporaryFile(suffix=".zip", delete=False)
+    try:
+        with zipfile.ZipFile(tmp.name, "w", zipfile.ZIP_DEFLATED) as zf:
+            for root, _dirs, files in os.walk(dist):
+                for fname in files:
+                    full = Path(root) / fname
+                    zf.write(full, full.relative_to(dist))
+    finally:
+        tmp.close()
+
+    # 2. Request deployment upload URL
+    r = requests.post(
+        f"{api_base}/{project}/deployments",
+        headers=headers,
+        json={"branch": "main"},
+        timeout=60,
     )
+    r.raise_for_status()
+    deployment = r.json()["result"]
+
+    # 3. Upload zip
+    with open(tmp.name, "rb") as f:
+        r2 = requests.post(
+            deployment["upload_url"],
+            headers={"Content-Type": "application/zip"},
+            data=f,
+            timeout=300,
+        )
+    os.unlink(tmp.name)
+
+    if r2.status_code not in (200, 201, 204):
+        print(f"❌ Upload failed: {r2.status_code} {r2.text[:300]}")
+        return
+    print(f"📦 Deployed via API: deployment {deployment['id'][:8]}...")
     print(f"🌍 Live: {DEFAULTS['site_url']}")
 
 
@@ -512,7 +618,9 @@ def _deploy(dist: Path) -> None:
 # CLI
 # ---------------------------------------------------------------------------
 def parse_cli() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Publish markdown → static site → GitHub push")
+    p = argparse.ArgumentParser(
+        description="Publish markdown → static site → GitHub push"
+    )
     p.add_argument("file", nargs="?", help="Markdown file to publish")
     p.add_argument("-t", "--title", help="Post title")
     p.add_argument("-d", "--description", help="Meta description")

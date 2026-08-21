@@ -340,7 +340,9 @@ def get_review_stats() -> dict[str, Any]:
         Statistics dict
     """
     with get_session() as session:
-        pending = session.query(ReviewTask).filter(ReviewTask.status == "pending").count()
+        pending = (
+            session.query(ReviewTask).filter(ReviewTask.status == "pending").count()
+        )
         in_review = (
             session.query(ReviewTask).filter(ReviewTask.status == "in_review").count()
         )
@@ -348,9 +350,8 @@ def get_review_stats() -> dict[str, Any]:
             session.query(ReviewTask)
             .filter(
                 ReviewTask.status == "completed",
-                ReviewTask.completed_at >= datetime.utcnow().replace(
-                    hour=0, minute=0, second=0
-                ),
+                ReviewTask.completed_at
+                >= datetime.utcnow().replace(hour=0, minute=0, second=0),
             )
             .count()
         )

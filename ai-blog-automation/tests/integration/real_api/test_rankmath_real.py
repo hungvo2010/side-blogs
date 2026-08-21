@@ -46,7 +46,7 @@ def test_analyze_strong_content_scores_high(client):
     result = client.analyze_content(
         content=_long_article(keyword),
         keyword=keyword,
-        title=f"Best Espresso Machine: 2026 Buyer's Guide",
+        title="Best Espresso Machine: 2026 Buyer's Guide",
         meta_description=f"Looking for the {keyword}? Our expert guide compares the top models.",
     )
 

@@ -18,8 +18,8 @@ from datetime import datetime
 from typing import Any, Generator
 
 import openai
-from openai import OpenAI
 from langchain_openai import ChatOpenAI
+from openai import OpenAI
 
 from blog_automation.config import get_settings
 from blog_automation.errors import (
@@ -187,14 +187,17 @@ class OpenRouterClient:
 
         for attempt in range(max_retries + 1):
             try:
-                return self._chat_complete_once(messages, model, temperature, max_tokens, **kwargs)
+                return self._chat_complete_once(
+                    messages, model, temperature, max_tokens, **kwargs
+                )
             except (APIRateLimitError, APITimeoutError) as e:
                 last_error = e
                 if attempt < max_retries:
-                    delay = 2 ** attempt
+                    delay = 2**attempt
                     logger.warning(
-                        f"OpenRouter retry {attempt+1}/{max_retries} in {delay}s",
-                        model=model, error=str(e)[:100],
+                        f"OpenRouter retry {attempt + 1}/{max_retries} in {delay}s",
+                        model=model,
+                        error=str(e)[:100],
                     )
                     _time.sleep(delay)
                     continue
@@ -203,8 +206,9 @@ class OpenRouterClient:
                 if attempt < max_retries - 1:  # fewer retries for server errors
                     delay = 5 * (attempt + 1)
                     logger.warning(
-                        f"OpenRouter server error, retry {attempt+1}/{max_retries-1} in {delay}s",
-                        model=model, error=str(e)[:100],
+                        f"OpenRouter server error, retry {attempt + 1}/{max_retries - 1} in {delay}s",
+                        model=model,
+                        error=str(e)[:100],
                     )
                     _time.sleep(delay)
                     continue

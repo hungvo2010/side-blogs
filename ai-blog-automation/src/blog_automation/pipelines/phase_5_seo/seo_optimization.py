@@ -47,6 +47,7 @@ Return only the meta description, nothing else."""
 def analyze_content(article: Article) -> dict[str, Any]:
     """Analyze article content for SEO."""
     from blog_automation.config import get_settings
+
     if get_settings().mock_mode:
         return {
             "score": 85,
@@ -55,10 +56,10 @@ def analyze_content(article: Article) -> dict[str, Any]:
                 "keyword_density": 1.2,
                 "h2_count": 4,
                 "internal_links": 2,
-                "external_links": 3
+                "external_links": 3,
             },
             "issues": ["Add one more internal link"],
-            "suggestions": ["Use keyword in first paragraph"]
+            "suggestions": ["Use keyword in first paragraph"],
         }
 
     logger.info("Analyzing content for SEO", article_id=article.id)
@@ -83,7 +84,9 @@ def analyze_content(article: Article) -> dict[str, Any]:
     return analysis
 
 
-def analyze_competitors(keyword: str, brief: ContentBrief | None = None) -> dict[str, Any]:
+def analyze_competitors(
+    keyword: str, brief: ContentBrief | None = None
+) -> dict[str, Any]:
     """Analyze competitor content for SEO insights.
 
     Args:
@@ -150,7 +153,9 @@ def generate_seo_recommendations(
     # Heading structure
     h2_count = metrics.get("h2_count", 0)
     if h2_count < 3:
-        recommendations.append(f"Add {3 - h2_count} more H2 headings for better structure")
+        recommendations.append(
+            f"Add {3 - h2_count} more H2 headings for better structure"
+        )
 
     # Internal links
     internal_links = metrics.get("internal_links", 0)
@@ -197,6 +202,7 @@ def generate_meta_title(
 ) -> str:
     """Generate SEO-optimized meta title."""
     from blog_automation.config import get_settings
+
     if get_settings().mock_mode:
         return f"{title} | Expert Guide to {keyword}"
 
@@ -228,6 +234,7 @@ def generate_meta_description(
 ) -> str:
     """Generate SEO-optimized meta description."""
     from blog_automation.config import get_settings
+
     if get_settings().mock_mode:
         return f"Discover everything you need to know about {keyword}. Our expert guide covers the best tips, strategies, and insights for success."
 

@@ -112,22 +112,19 @@ def publish_article(
     logger.info("Markdown written", path=str(md_path))
 
     # ── Build static site via publish.py ──
-    publish_script = (
-        _REPO_ROOT / "ai-blog-automation" / "scripts" / "publish.py"
-    )
+    publish_script = _REPO_ROOT / "ai-blog-automation" / "scripts" / "publish.py"
     # Use venv python so markdown2 is available; on Streamlit Cloud there is
     # no .venv — fall back to the running interpreter (which has all deps
     # from requirements.txt).
     venv_python = str(_REPO_ROOT / "ai-blog-automation" / ".venv" / "bin" / "python")
     if not os.path.exists(venv_python):
         import sys as _sys
+
         venv_python = _sys.executable
     cmd = [venv_python, str(publish_script)]
     if not auto_push:
         cmd.append("--no-push")
-    site_url = __import__("os").environ.get(
-        "SITE_URL", "https://side-blogs.pages.dev"
-    )
+    site_url = __import__("os").environ.get("SITE_URL", "https://side-blogs.pages.dev")
 
     # ── Build + deploy with retry loop ──
     # wrangler deploy can hang/timeout intermittently; retry the whole
@@ -146,9 +143,7 @@ def publish_article(
                 text=True,
                 env={
                     **__import__("os").environ,
-                    "PYTHONPATH": str(
-                        _REPO_ROOT / "ai-blog-automation" / "src"
-                    ),
+                    "PYTHONPATH": str(_REPO_ROOT / "ai-blog-automation" / "src"),
                     "SITE_URL": __import__("os").environ.get(
                         "SITE_URL", "https://side-blogs.pages.dev"
                     ),
@@ -162,15 +157,19 @@ def publish_article(
                 break  # success
             logger.warning(
                 "publish.py failed (attempt %s/%s)",
-                attempt, max_retries, stderr=result.stderr[:300],
+                attempt,
+                max_retries,
+                stderr=result.stderr[:300],
             )
         except subprocess.TimeoutExpired:
             logger.warning(
                 "publish.py timed out (attempt %s/%s) — retrying",
-                attempt, max_retries,
+                attempt,
+                max_retries,
             )
         if attempt < max_retries:
             import time as _time
+
             _time.sleep(10 * attempt)  # 10s, 20s, 30s... backoff
 
     if result is None or result.returncode != 0:
@@ -297,10 +296,16 @@ def _deploy_wrangler(title: str) -> bool:
     project = os.environ.get("CLOUDFLARE_PROJECT_NAME", "side-blogs")
     result = subprocess.run(
         [
-            "wrangler", "pages", "deploy", str(dist),
-            "--project-name", project,
-            "--branch", "main",
-            "--commit-dirty", "true",
+            "wrangler",
+            "pages",
+            "deploy",
+            str(dist),
+            "--project-name",
+            project,
+            "--branch",
+            "main",
+            "--commit-dirty",
+            "true",
         ],
         cwd=_REPO_ROOT,
         capture_output=True,

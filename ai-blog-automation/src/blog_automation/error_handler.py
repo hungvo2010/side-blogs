@@ -16,7 +16,6 @@ from blog_automation.errors import (
     APIServerError,
     APITimeoutError,
     AppError,
-    Severity,
 )
 from blog_automation.logging_config import get_logger
 

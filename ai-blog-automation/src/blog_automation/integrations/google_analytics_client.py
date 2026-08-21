@@ -3,11 +3,10 @@
 Provides GA4 integration for retrieving article performance metrics.
 """
 
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import Any
 
 from blog_automation.config import get_settings
-from blog_automation.errors import APIAuthenticationError
 from blog_automation.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -96,8 +95,8 @@ class GoogleAnalyticsClient:
             from google.analytics.data_v1beta.types import (
                 DateRange,
                 Dimension,
-                FilterExpression,
                 Filter,
+                FilterExpression,
                 Metric,
                 RunReportRequest,
             )
@@ -180,8 +179,8 @@ class GoogleAnalyticsClient:
             from google.analytics.data_v1beta.types import (
                 DateRange,
                 Dimension,
-                FilterExpression,
                 Filter,
+                FilterExpression,
                 Metric,
                 RunReportRequest,
             )

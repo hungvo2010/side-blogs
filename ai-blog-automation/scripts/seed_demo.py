@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 import sys
 from pathlib import Path
-from datetime import datetime
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from blog_automation.models import get_session, Article, ContentBrief, ArticleReview
-from blog_automation.models.base import Base, get_engine
+from blog_automation.models import Article, get_session
+
 
 def seed_demo():
     print("🌱 Seeding high-quality demo article...")
-    
+
     with get_session() as session:
         # Create a sample article with full integration data
         article = Article(
@@ -53,7 +52,7 @@ As we look forward, the synergy between human creativity and AI efficiency will 
                 "total_claims_checked": 12,
                 "accuracy_rate": 100.0,
                 "pass": True,
-                "issues_found": []
+                "issues_found": [],
             },
             seo_analysis={
                 "score": 88,
@@ -61,16 +60,17 @@ As we look forward, the synergy between human creativity and AI efficiency will 
                 "issues": ["Add more internal links", "Include a featured image"],
                 "suggestions": [
                     "Add an H3 subheading about 'Claude 3' technical details",
-                    "Increase keyword density slightly in the conclusion"
-                ]
-            }
+                    "Increase keyword density slightly in the conclusion",
+                ],
+            },
         )
-        
+
         session.add(article)
         session.commit()
-        
+
         print(f"✅ Demo article created with ID: {article.id}")
-        print(f"🔗 View it at: http://localhost:8501")
+        print("🔗 View it at: http://localhost:8501")
+
 
 if __name__ == "__main__":
     seed_demo()

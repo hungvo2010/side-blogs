@@ -1,6 +1,7 @@
 """Pytest configuration and fixtures."""
 
 import os
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -26,11 +27,11 @@ def engine():
 def session(engine):
     """Create test database session."""
     from blog_automation.models.base import Base
-    
+
     # Create fresh tables for each test
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
-    
+
     Session = sessionmaker(bind=engine)
     session = Session()
 
@@ -75,12 +76,26 @@ def sample_brief(session):
         intent="informational",
         brief_data={
             "sections": [
-                {"h2": "Section 1", "purpose": "Introduction", "key_points": ["a", "b"]},
-                {"h2": "Section 2", "purpose": "Main content", "key_points": ["c", "d"]},
+                {
+                    "h2": "Section 1",
+                    "purpose": "Introduction",
+                    "key_points": ["a", "b"],
+                },
+                {
+                    "h2": "Section 2",
+                    "purpose": "Main content",
+                    "key_points": ["c", "d"],
+                },
                 {"h2": "Section 3", "purpose": "Examples", "key_points": ["e", "f"]},
                 {"h2": "Section 4", "purpose": "Conclusion", "key_points": ["g", "h"]},
             ],
-            "lsi_keywords": ["related1", "related2", "related3", "related4", "related5"],
+            "lsi_keywords": [
+                "related1",
+                "related2",
+                "related3",
+                "related4",
+                "related5",
+            ],
             "sources": [
                 {"url": "https://example.com/1", "title": "Source 1"},
                 {"url": "https://example.com/2", "title": "Source 2"},

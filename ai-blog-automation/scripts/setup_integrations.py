@@ -41,25 +41,27 @@ def test_openrouter():
             messages=[{"role": "user", "content": "Say 'Hello' in one word"}],
             max_tokens=10,
         )
-        print(f"   [OK] OpenRouter working! Response: {response.get('content', '')[:50]}")
+        print(
+            f"   [OK] OpenRouter working! Response: {response.get('content', '')[:50]}"
+        )
         return True
     except Exception as e:
         print(f"   [ERR] OpenRouter error: {e}")
         return False
 
 
-
 def test_ahrefs():
     """Test Ahrefs API connection."""
     print("\n🟠 Testing Ahrefs...")
     api_key = os.getenv("AHREFS_API_KEY", "")
-    
+
     if not api_key:
         print("   ⚠️  AHREFS_API_KEY not set. Skipping.")
         return False
-    
+
     try:
         from blog_automation.integrations import AhrefsClient
+
         client = AhrefsClient(api_key=api_key)
         # Test with a simple keyword
         response = client.search_volume("python programming")
@@ -75,13 +77,14 @@ def test_copyscape():
     print("\n🟡 Testing Copyscape...")
     api_key = os.getenv("COPYSCAPE_API_KEY", "")
     username = os.getenv("COPYSCAPE_USERNAME", "")
-    
+
     if not api_key or not username:
         print("   ⚠️  COPYSCAPE_API_KEY or COPYSCAPE_USERNAME not set. Skipping.")
         return False
-    
+
     try:
         from blog_automation.integrations import CopyscapeClient
+
         client = CopyscapeClient(api_key=api_key, username=username)
         # Just check balance/credits
         print("   ✅ Copyscape configured (test requires credits)")
@@ -97,21 +100,18 @@ def test_wordpress():
     url = os.getenv("WORDPRESS_URL", "")
     username = os.getenv("WORDPRESS_USERNAME", "")
     password = os.getenv("WORDPRESS_APP_PASSWORD", "")
-    
+
     if not url or not username or not password:
         print("   ⚠️  WordPress credentials not set. Skipping.")
         return False
-    
+
     try:
         from blog_automation.integrations import WordPressClient
-        client = WordPressClient(
-            site_url=url,
-            username=username,
-            app_password=password
-        )
+
+        client = WordPressClient(site_url=url, username=username, app_password=password)
         # Test by getting site info
         response = client.get_post(1)  # Try to get post ID 1
-        print(f"   ✅ WordPress connected!")
+        print("   ✅ WordPress connected!")
         return True
     except Exception as e:
         print(f"   ❌ WordPress error: {e}")
@@ -123,16 +123,15 @@ def test_google_analytics():
     print("\n📊 Testing Google Analytics...")
     property_id = os.getenv("GOOGLE_ANALYTICS_PROPERTY_ID", "")
     service_account = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "")
-    
+
     if not property_id or not service_account:
         print("   ⚠️  GA4 credentials not set. Skipping.")
         return False
-    
+
     try:
         from blog_automation.integrations import GoogleAnalyticsClient
-        client = GoogleAnalyticsClient(
-            property_id=property_id
-        )
+
+        client = GoogleAnalyticsClient(property_id=property_id)
         print("   ✅ Google Analytics configured!")
         return True
     except Exception as e:
@@ -144,13 +143,15 @@ def test_database():
     """Test database connection."""
     print("\n🗄️  Testing Database...")
     db_url = os.getenv("DATABASE_URL", "")
-    
+
     if not db_url or "localhost" in db_url:
         print("   ⚠️  Using default/local database URL")
-    
+
     try:
-        from blog_automation.models import get_engine
         from sqlalchemy import text
+
+        from blog_automation.models import get_engine
+
         engine = get_engine()
         # Test connection
         with engine.connect() as conn:
@@ -203,7 +204,7 @@ def main():
     print("=" * 60)
     print("🚀 AI Blog Automation - Integration Setup Test")
     print("=" * 60)
-    
+
     results = {
         "OpenRouter": test_openrouter(),
         "Ahrefs": test_ahrefs(),
@@ -212,26 +213,26 @@ def main():
         "Google Analytics": test_google_analytics(),
         "Database": test_database(),
     }
-    
+
     print("\n" + "=" * 60)
     print("📋 SUMMARY")
     print("=" * 60)
-    
+
     working = sum(1 for v in results.values() if v)
     total = len(results)
-    
+
     for name, status in results.items():
         icon = "✅" if status else "❌"
         print(f"   {icon} {name}")
-    
+
     print(f"\n   {working}/{total} integrations configured")
-    
+
     if working < total:
         print("\n💡 Need help? Run with --help for environment variable template")
-    
+
     if "--help" in sys.argv or "-h" in sys.argv:
         print_env_template()
-    
+
     return 0 if working > 0 else 1
 
 

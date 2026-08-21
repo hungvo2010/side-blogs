@@ -99,7 +99,9 @@ class CacheManager:
                     with open(cache_file) as f:
                         entry = json.load(f)
 
-                    ttl = self.DEFAULT_TTLS.get(cache_type, self.DEFAULT_TTLS["default"])
+                    ttl = self.DEFAULT_TTLS.get(
+                        cache_type, self.DEFAULT_TTLS["default"]
+                    )
                     if time.time() - entry["timestamp"] < ttl:
                         # Load into memory cache
                         self._memory_cache[key] = entry

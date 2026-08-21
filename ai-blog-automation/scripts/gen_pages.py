@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Generate static pages: about, privacy, terms"""
-import sys
+
 from pathlib import Path
 
 PUBLIC = Path(__file__).resolve().parents[2] / "public"

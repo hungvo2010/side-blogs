@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
 """Test full pipeline: research → brief → draft → factcheck → SEO → quality → publish"""
-import sys, os
+
+import os
+import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 os.environ["MOCK_MODE"] = "false"
 
-from blog_automation.models import get_session, Article
 from blog_automation.pipelines import (
-    research_keyword, generate_content_brief, content_brief_to_draft,
-    fact_check_article, seo_optimize_article, run_quality_gates,
+    content_brief_to_draft,
+    fact_check_article,
+    generate_content_brief,
+    research_keyword,
+    run_quality_gates,
+    seo_optimize_article,
 )
 from blog_automation.pipelines.phase_8_publish import publish_article
 

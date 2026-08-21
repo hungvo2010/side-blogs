@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """POC: pytrends keyword research — multi-geo, trending, comparison"""
-from pytrends.request import TrendReq
+
 import time
+
+from pytrends.request import TrendReq
 
 p = TrendReq(hl="en-US", tz=420)
 
@@ -26,7 +28,13 @@ print("=" * 60)
 
 _TRENDING = {
     "vietnam": ["bóng đá VN", "lịch thi đấu", "du lịch hè", "iPhone", "thời tiết"],
-    "united_states": ["nfl scores", "weather today", "stock market", "taylor swift", "ai tools"],
+    "united_states": [
+        "nfl scores",
+        "weather today",
+        "stock market",
+        "taylor swift",
+        "ai tools",
+    ],
     "australia": ["afl scores", "weather", "tax return", "hoyts", "kfc"],
 }
 
@@ -50,7 +58,9 @@ try:
         for qtype in ["top", "rising"]:
             df = data.get(qtype)
             if df is not None and not df.empty:
-                items = ", ".join(f"{r['query']}({r['value']})" for _, r in df.head(5).iterrows())
+                items = ", ".join(
+                    f"{r['query']}({r['value']})" for _, r in df.head(5).iterrows()
+                )
                 print(f"  [{qtype}] {items}")
 except Exception as e:
     print(f"  ❌ {e}")

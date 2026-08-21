@@ -6,7 +6,9 @@ Provides keyword metrics, SERP analysis, and competitor research using API v3.
 from typing import Any
 
 from blog_automation.config import get_settings
-from blog_automation.errors import APIAuthenticationError, InvalidKeywordError, APIInvalidResponseError
+from blog_automation.errors import (
+    InvalidKeywordError,
+)
 from blog_automation.integrations.base_client import HTTPClient
 from blog_automation.integrations.cache import get_cache
 from blog_automation.logging_config import get_logger
@@ -85,7 +87,7 @@ class AhrefsClient(HTTPClient):
             params={
                 "keywords": keyword,
                 "country": country,
-                "select": "volume,difficulty,cpc,lowest_dr_top10"
+                "select": "volume,difficulty,cpc,lowest_dr_top10",
             },
         )
 
@@ -132,7 +134,7 @@ class AhrefsClient(HTTPClient):
             params={
                 "keyword": keyword,
                 "country": country,
-                "select": "position,url,title,domain_rating,backlinks,word_count,serp_features"
+                "select": "position,url,title,domain_rating,backlinks,word_count,serp_features",
             },
         )
 
@@ -170,34 +172,49 @@ class AhrefsClient(HTTPClient):
             "country": country,
         }
 
-    def top_pages(self, keyword: str, country: str = "us", limit: int = 10) -> list[dict[str, Any]]:
+    def top_pages(
+        self, keyword: str, country: str = "us", limit: int = 10
+    ) -> list[dict[str, Any]]:
         """Backward compatibility for top_pages."""
         serp = self.get_serp_overview(keyword, country)
         pages = []
         for item in serp.get("serp", [])[:limit]:
-            pages.append({
-                "position": item.get("position"),
-                "url": item.get("url"),
-                "title": item.get("title"),
-                "domain_rating": item.get("domain_rating"),
-                "backlinks": item.get("backlinks"),
-                "word_count": item.get("word_count"),
-            })
+            pages.append(
+                {
+                    "position": item.get("position"),
+                    "url": item.get("url"),
+                    "title": item.get("title"),
+                    "domain_rating": item.get("domain_rating"),
+                    "backlinks": item.get("backlinks"),
+                    "word_count": item.get("word_count"),
+                }
+            )
         return pages
 
     def competitor_analysis(self, keyword: str, country: str = "us") -> dict[str, Any]:
         """Analyze competitor content."""
         top_pages = self.top_pages(keyword, country, limit=10)
         if not top_pages:
-            return {"keyword": keyword, "avg_word_count": 2000, "avg_domain_rating": 50, "competitors": []}
+            return {
+                "keyword": keyword,
+                "avg_word_count": 2000,
+                "avg_domain_rating": 50,
+                "competitors": [],
+            }
 
         word_counts = [p.get("word_count", 0) for p in top_pages if p.get("word_count")]
-        domain_ratings = [p.get("domain_rating", 0) for p in top_pages if p.get("domain_rating")]
+        domain_ratings = [
+            p.get("domain_rating", 0) for p in top_pages if p.get("domain_rating")
+        ]
 
         return {
             "keyword": keyword,
-            "avg_word_count": sum(word_counts) // len(word_counts) if word_counts else 2000,
-            "avg_domain_rating": sum(domain_ratings) // len(domain_ratings) if domain_ratings else 50,
+            "avg_word_count": sum(word_counts) // len(word_counts)
+            if word_counts
+            else 2000,
+            "avg_domain_rating": sum(domain_ratings) // len(domain_ratings)
+            if domain_ratings
+            else 50,
             "competitors": top_pages[:5],
         }
 

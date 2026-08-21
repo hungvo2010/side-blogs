@@ -63,10 +63,19 @@ Return JSON:
 def extract_claims(content: str) -> list[dict[str, Any]]:
     """Extract factual claims from article content."""
     from blog_automation.config import get_settings
+
     if get_settings().mock_mode:
         return [
-            {"claim": "The first computer was invented in 1943.", "type": "historical", "confidence": "high"},
-            {"claim": "Python was created by Guido van Rossum.", "type": "historical", "confidence": "high"}
+            {
+                "claim": "The first computer was invented in 1943.",
+                "type": "historical",
+                "confidence": "high",
+            },
+            {
+                "claim": "Python was created by Guido van Rossum.",
+                "type": "historical",
+                "confidence": "high",
+            },
         ]
 
     logger.info("Extracting claims from content")
@@ -115,9 +124,7 @@ def filter_checkworthy_claims(claims: list[dict]) -> list[dict]:
             continue
 
         # Skip common knowledge
-        is_common = any(
-            pattern in claim_text for pattern in common_knowledge_patterns
-        )
+        is_common = any(pattern in claim_text for pattern in common_knowledge_patterns)
         if is_common and claim.get("confidence") != "high":
             continue
 
@@ -134,8 +141,15 @@ def filter_checkworthy_claims(claims: list[dict]) -> list[dict]:
 def retrieve_evidence(claim: str) -> list[dict[str, Any]]:
     """Retrieve evidence for a claim using web search."""
     from blog_automation.config import get_settings
+
     if get_settings().mock_mode:
-        return [{"url": "https://wikipedia.org", "title": "Wikipedia", "snippet": "Evidence supports this claim."}]
+        return [
+            {
+                "url": "https://wikipedia.org",
+                "title": "Wikipedia",
+                "snippet": "Evidence supports this claim.",
+            }
+        ]
 
     llm = OpenRouterClient()
 
@@ -159,8 +173,14 @@ def retrieve_evidence(claim: str) -> list[dict[str, Any]]:
 def verify_claim(claim: str, evidence: list[dict]) -> dict[str, Any]:
     """Verify a claim against evidence."""
     from blog_automation.config import get_settings
+
     if get_settings().mock_mode:
-        return {"verdict": "supported", "confidence": 100, "explanation": "Mock verification.", "suggested_revision": None}
+        return {
+            "verdict": "supported",
+            "confidence": 100,
+            "explanation": "Mock verification.",
+            "suggested_revision": None,
+        }
 
     llm = OpenRouterClient()
 
@@ -265,9 +285,7 @@ def generate_fact_check_report(
         report["accuracy_rate"] = 100.0
 
     # Determine pass/fail
-    report["pass"] = (
-        report["contradicted"] == 0 and report["accuracy_rate"] >= 95
-    )
+    report["pass"] = report["contradicted"] == 0 and report["accuracy_rate"] >= 95
 
     logger.info(
         "Fact-check report generated",

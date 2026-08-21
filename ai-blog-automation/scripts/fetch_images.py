@@ -4,6 +4,7 @@
 Usage: python scripts/fetch_images.py
 Env:   UNSPLASH_ACCESS_KEY (already in .env) or IMAGE_PROVIDER switch
 """
+
 import re
 import sys
 from pathlib import Path

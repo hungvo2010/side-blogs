@@ -159,10 +159,37 @@ def update_article_status(article_id: int, new_status: str, feedback: str = None
     return False
 
 
+def _load_cloudflare_env() -> None:
+    """Load Cloudflare credentials from Streamlit secrets into env.
+
+    On Streamlit Cloud there is no .env file — secrets are configured in the
+    dashboard (Settings → Secrets). This makes them visible to publish.py
+    (wrangler / API deploy both read os.environ).
+    """
+    import os
+
+    for key in (
+        "CLOUDFLARE_API_TOKEN",
+        "CLOUDFLARE_ACCOUNT_ID",
+        "CLOUDFLARE_PROJECT_NAME",
+        "CLOUDFLARE_ZONE_ID",
+    ):
+        if key in os.environ:
+            continue
+        try:
+            val = st.secrets.get(key)
+        except Exception:
+            val = None
+        if val:
+            os.environ[key] = str(val)
+
+
 def _approve_and_publish(article_id: int) -> bool:
     """Approve article and deploy to Cloudflare Pages."""
     from blog_automation.models import Article, get_session
     from blog_automation.pipelines.phase_8_publish import publish_article
+
+    _load_cloudflare_env()
 
     with get_session() as s:
         a = s.get(Article, article_id)
@@ -197,7 +224,9 @@ def _run_pipeline_inprocess(keyword: str) -> None:
     try:
         progress.write("🔍 Phase 1: Research...")
         brief = research_keyword(keyword)
-        progress.write(f"✅ Research done — volume: {brief.search_volume}, difficulty: {brief.difficulty}")
+        progress.write(
+            f"✅ Research done — volume: {brief.search_volume}, difficulty: {brief.difficulty}"
+        )
 
         progress.write("📝 Phase 2: Content brief...")
         full_brief = generate_content_brief(keyword, brief.id)
@@ -216,6 +245,7 @@ def _run_pipeline_inprocess(keyword: str) -> None:
 
         # Stop here — human must approve in Review Queue before publishing
         from blog_automation.models import get_session
+
         with get_session() as s:
             a = s.merge(article)
             a.status = "pending_review"
@@ -468,9 +498,13 @@ if page == "🏠 Dashboard":
                     with st.container():
                         col1, col2, col3 = st.columns([3, 1, 1])
                         with col1:
-                            title = article['title'] or 'Untitled'
-                            if article['status'] == 'published':
-                                slug = (article.get('keyword', '') or '').replace(' ', '-').lower()
+                            title = article["title"] or "Untitled"
+                            if article["status"] == "published":
+                                slug = (
+                                    (article.get("keyword", "") or "")
+                                    .replace(" ", "-")
+                                    .lower()
+                                )
                                 url = f"https://side-blogs.pages.dev/{slug}"
                                 st.markdown(f"**[{title}]({url})**")
                             else:
@@ -840,9 +874,13 @@ elif page == "📄 All Articles":
                     with st.container():
                         col1, col2, col3, col4, col5 = st.columns([3, 1, 1, 1, 1])
                         with col1:
-                            title = article['title'] or 'Untitled'
-                            if article['status'] == 'published':
-                                slug = (article.get('keyword', '') or '').replace(' ', '-').lower()
+                            title = article["title"] or "Untitled"
+                            if article["status"] == "published":
+                                slug = (
+                                    (article.get("keyword", "") or "")
+                                    .replace(" ", "-")
+                                    .lower()
+                                )
                                 url = f"https://side-blogs.pages.dev/{slug}"
                                 st.markdown(f"**[{title}]({url})**")
                             else:

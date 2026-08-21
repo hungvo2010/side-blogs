@@ -1,7 +1,8 @@
 """Test data factories using factory_boy."""
 
-import factory
 from datetime import datetime, timedelta
+
+import factory
 from factory.alchemy import SQLAlchemyModelFactory
 
 from blog_automation.models import (
@@ -54,7 +55,13 @@ class ContentBriefFactory(BaseFactory):
                 {"h2": "Examples", "purpose": "Examples", "key_points": ["e", "f"]},
                 {"h2": "Conclusion", "purpose": "Conclusion", "key_points": ["g", "h"]},
             ],
-            "lsi_keywords": ["related1", "related2", "related3", "related4", "related5"],
+            "lsi_keywords": [
+                "related1",
+                "related2",
+                "related3",
+                "related4",
+                "related5",
+            ],
             "sources": [
                 {"url": f"https://example.com/{i}", "title": f"Source {i}"}
                 for i in range(5)

@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
 """Scan trending keywords — pytrends-modern RSS + TrendsClient."""
-import sys, os, argparse
+
+import argparse
+import os
+import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 os.environ["MOCK_MODE"] = "false"
 
-from blog_automation.integrations.trends_client import TrendsClient, _GEO_MAP
+from blog_automation.integrations.trends_client import _GEO_MAP, TrendsClient
 
 GEOS = ["VN", "US", "AU", "GB", "CA", "JP", "SG", "IN", "DE", "FR"]
+
 
 def main():
     ap = argparse.ArgumentParser(description="Trending keyword scanner")
@@ -38,10 +43,15 @@ def main():
 
     if args.json:
         import json
-        print("\n" + json.dumps(
-            {g: [t["title"] for t in ts] for g, ts in all_topics.items()},
-            indent=2, ensure_ascii=False,
-        ))
+
+        print(
+            "\n"
+            + json.dumps(
+                {g: [t["title"] for t in ts] for g, ts in all_topics.items()},
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
 
 
 if __name__ == "__main__":

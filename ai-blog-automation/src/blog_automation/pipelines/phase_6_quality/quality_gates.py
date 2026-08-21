@@ -184,7 +184,9 @@ def validate_metadata(article: Article) -> dict[str, Any]:
     if not article.meta_description:
         issues.append("Missing meta description")
     elif len(article.meta_description) > 160:
-        issues.append(f"Meta description too long ({len(article.meta_description)} chars)")
+        issues.append(
+            f"Meta description too long ({len(article.meta_description)} chars)"
+        )
     elif article.keyword.lower() not in article.meta_description.lower():
         issues.append("Keyword not in meta description")
 

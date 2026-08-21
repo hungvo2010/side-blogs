@@ -72,11 +72,18 @@ class Settings(BaseSettings):
     ahrefs_api_key: str = Field(default="", description="Ahrefs API key")
 
     # Google Custom Search API (free alternative to Ahrefs, 100 queries/day)
-    google_search_api_key: str = Field(default="", description="Google Custom Search API key")
-    google_search_engine_id: str = Field(default="", description="Google Custom Search Engine ID (cx)")
+    google_search_api_key: str = Field(
+        default="", description="Google Custom Search API key"
+    )
+    google_search_engine_id: str = Field(
+        default="", description="Google Custom Search Engine ID (cx)"
+    )
 
     # Keyword research provider: "ahrefs" or "google"
-    search_provider: str = Field(default="trends", description="Keyword research provider (ahrefs, google, or trends)")
+    search_provider: str = Field(
+        default="trends",
+        description="Keyword research provider (ahrefs, google, or trends)",
+    )
 
     # Copyscape API
     copyscape_api_key: str = Field(default="", description="Copyscape API key")
@@ -121,7 +128,6 @@ class Settings(BaseSettings):
     plagiarism_threshold: float = Field(
         default=3.0, description="Max plagiarism percentage"
     )
-
 
     @field_validator("log_level")
     @classmethod

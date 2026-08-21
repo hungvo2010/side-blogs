@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Test: pytrends → KeywordAnalyzer → publish-ready data"""
-import sys, json
+
+import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -48,18 +49,26 @@ for t in trending[:3]:
     kw = t["title"]
     ov = client.get_keyword_overview(kw, "vn")
     pg = client.top_pages(kw, "vn", limit=5)
-    import time; time.sleep(3)
-    batch_data.append({
-        "keyword": kw,
-        "volume": ov["volume"],
-        "difficulty": ov["difficulty"],
-        "top_pages": pg,
-    })
+    import time
+
+    time.sleep(3)
+    batch_data.append(
+        {
+            "keyword": kw,
+            "volume": ov["volume"],
+            "difficulty": ov["difficulty"],
+            "top_pages": pg,
+        }
+    )
 
 results = analyzer.batch_analyze(batch_data, max_backlinks=2)
 print()
 for r in results:
-    icon = {"high":"🟢","medium":"🟡","low":"🟠","skip":"🔴"}.get(r.score.verdict,"⚪")
-    print(f"  {icon} {r.score.keyword:<25s} score={r.score.opportunity_score:>8,.0f}  {r.score.verdict}")
+    icon = {"high": "🟢", "medium": "🟡", "low": "🟠", "skip": "🔴"}.get(
+        r.score.verdict, "⚪"
+    )
+    print(
+        f"  {icon} {r.score.keyword:<25s} score={r.score.opportunity_score:>8,.0f}  {r.score.verdict}"
+    )
 
 print("\n✅ Full flow: pytrends → analyzer OK")

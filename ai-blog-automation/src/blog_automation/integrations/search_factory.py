@@ -45,7 +45,9 @@ def get_search_client():
     if provider == "trends":
         from blog_automation.integrations.trends_client import TrendsClient
 
-        logger.info("Using Google Trends (pytrends) for keyword research (free, no key)")
+        logger.info(
+            "Using Google Trends (pytrends) for keyword research (free, no key)"
+        )
         return TrendsClient()
 
     raise ConfigurationError(

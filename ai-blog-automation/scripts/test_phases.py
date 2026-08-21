@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Test each pipeline phase independently with real OpenRouter calls."""
-import sys, os
+
+import os
+import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -8,12 +10,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 os.environ["MOCK_MODE"] = "false"  # force real API calls
 
 from blog_automation.config import get_settings
+
 cfg = get_settings()
 print(f"Model: {cfg.openrouter_default_model}")
 print(f"Search model: {cfg.openrouter_search_model}")
 print(f"Key: {'SET' if cfg.openrouter_api_key.startswith('sk-or') else 'MISSING'}")
 
 from blog_automation.integrations.openrouter_client import OpenRouterClient
+
 client = OpenRouterClient()
 
 # ─── Phase 2: Brief ───
@@ -54,7 +58,9 @@ print("\n" + "=" * 60)
 print("PHASE 4: Fact Check — verify claim")
 print("=" * 60)
 try:
-    fact = client.verify_fact("The global coffee maker market was worth $12 billion in 2025.")
+    fact = client.verify_fact(
+        "The global coffee maker market was worth $12 billion in 2025."
+    )
     print(f"  Verified: {fact.get('verified', False)}")
     print(f"  Sources: {len(fact.get('sources', []))}")
     print(f"  Answer preview: {fact.get('answer', '')[:150]}...")

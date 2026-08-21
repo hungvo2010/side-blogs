@@ -63,9 +63,7 @@ def test_ga4_get_metrics_returns_structure(ga_client):
 
 
 @pytest.mark.search_console
-@require_creds(
-    "search_console", settings.google_search_console_site_url, _sa_file
-)
+@require_creds("search_console", settings.google_search_console_site_url, _sa_file)
 def test_gsc_client_initializes(gsc_client):
     """GSC client initializes with real service-account credentials."""
     assert gsc_client._initialized, (
@@ -75,9 +73,7 @@ def test_gsc_client_initializes(gsc_client):
 
 
 @pytest.mark.search_console
-@require_creds(
-    "search_console", settings.google_search_console_site_url, _sa_file
-)
+@require_creds("search_console", settings.google_search_console_site_url, _sa_file)
 def test_gsc_get_search_metrics_returns_structure(gsc_client):
     """Search-metrics query returns a structured dict (may be zero rows)."""
     result = gsc_client.get_search_metrics(settings.google_search_console_site_url)

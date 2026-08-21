@@ -25,7 +25,6 @@ import requests
 from blog_automation.config import get_settings
 from blog_automation.errors import (
     APIAuthenticationError,
-    APIInvalidResponseError,
     InvalidKeywordError,
 )
 from blog_automation.integrations.cache import get_cache
@@ -50,9 +49,7 @@ class GoogleSearchClient:
     ):
         settings = get_settings()
         self.api_key = api_key or settings.google_search_api_key
-        self.search_engine_id = (
-            search_engine_id or settings.google_search_engine_id
-        )
+        self.search_engine_id = search_engine_id or settings.google_search_engine_id
 
         if not self.api_key or not self.search_engine_id:
             raise APIAuthenticationError(
@@ -104,9 +101,7 @@ class GoogleSearchClient:
         self.cache.set_cache(cache_key, data, "google_search", ttl=86400)
         return data
 
-    def get_keyword_overview(
-        self, keyword: str, country: str = "us"
-    ) -> dict[str, Any]:
+    def get_keyword_overview(self, keyword: str, country: str = "us") -> dict[str, Any]:
         """Get overview metrics — mix of SERP data + estimates.
 
         Returns dict with: keyword, volume (estimated), difficulty (estimated),
@@ -135,9 +130,7 @@ class GoogleSearchClient:
         # Top domains from first page
         top_domains = list(
             dict.fromkeys(
-                self._extract_domain(item["link"])
-                for item in items
-                if "link" in item
+                self._extract_domain(item["link"]) for item in items if "link" in item
             )
         )[:5]
 
@@ -219,9 +212,7 @@ class GoogleSearchClient:
                     if "description" in tag and len(tag["description"]) > 200:
                         features["featured_snippet"] = True
 
-        features["rich_snippets"] = [
-            k for k, v in features.items() if v
-        ]
+        features["rich_snippets"] = [k for k, v in features.items() if v]
 
         logger.info("Google SERP features", keyword=keyword, features=features)
         return features
@@ -245,9 +236,7 @@ class GoogleSearchClient:
 
         return pages[:limit]
 
-    def competitor_analysis(
-        self, keyword: str, country: str = "us"
-    ) -> dict[str, Any]:
+    def competitor_analysis(self, keyword: str, country: str = "us") -> dict[str, Any]:
         """Competitor overview from SERP."""
         pages = self.top_pages(keyword, country, limit=10)
         domains = list(

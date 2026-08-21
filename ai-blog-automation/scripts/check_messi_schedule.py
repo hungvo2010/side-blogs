@@ -26,9 +26,7 @@ def fetch_schedule() -> list[dict]:
     return data.get("events", [])
 
 
-def upcoming_matches(
-    events: list[dict], days_ahead: int = 14
-) -> list[dict]:
+def upcoming_matches(events: list[dict], days_ahead: int = 14) -> list[dict]:
     """Filter for matches in the next N days (including today)."""
     now = datetime.now(timezone.utc)
     cutoff = now + timedelta(days=days_ahead)
@@ -96,7 +94,8 @@ def main():
     # Also check if there are ANY events beyond the cutoff —
     # we want to know if the schedule just hasn't been published yet
     all_past = all(
-        datetime.fromisoformat(e["date"].replace("Z", "+00:00")) < datetime.now(timezone.utc)
+        datetime.fromisoformat(e["date"].replace("Z", "+00:00"))
+        < datetime.now(timezone.utc)
         for e in events
     )
 
@@ -109,8 +108,8 @@ def main():
         print("\n⚠️ Tất cả các trận trong database đều đã qua.")
         print("MLS có thể chưa công bố lịch phần còn lại của mùa giải.")
 
-    print(f"\n📺 Xem trên: Apple TV")
-    print(f"📊 Nguồn: ESPN API + MLSsoccer.com")
+    print("\n📺 Xem trên: Apple TV")
+    print("📊 Nguồn: ESPN API + MLSsoccer.com")
 
     return 0
 
