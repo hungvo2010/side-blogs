@@ -163,8 +163,9 @@ def _load_cloudflare_env() -> None:
     """Load Cloudflare credentials from Streamlit secrets into env.
 
     On Streamlit Cloud there is no .env file — secrets are configured in the
-    dashboard (Settings → Secrets). This makes them visible to publish.py
-    (wrangler / API deploy both read os.environ).
+    dashboard (Settings → Secrets). Streamlit exposes them via st.secrets, not
+    os.environ, so copy them into env for publish_article (wrangler / Direct
+    Upload API both read os.environ).
     """
     import os
 
@@ -184,27 +185,44 @@ def _load_cloudflare_env() -> None:
             os.environ[key] = str(val)
 
 
-def _approve_and_publish(article_id: int) -> bool:
-    """Approve article and deploy to Cloudflare Pages."""
+def _approve_and_publish(article_id: int) -> dict:
+    """Approve article and deploy to Cloudflare Pages.
+
+    Returns the publish result dict (slug/url/deploy_method) and marks the
+    article published in the DB **only if the deploy was confirmed**. Raises
+    RuntimeError with an actionable message otherwise (article stays pending
+    review so it can be retried).
+    """
+    _load_cloudflare_env()
+
+    from datetime import datetime, timezone
+
     from blog_automation.models import Article, get_session
     from blog_automation.pipelines.phase_8_publish import publish_article
-
-    _load_cloudflare_env()
 
     with get_session() as s:
         a = s.get(Article, article_id)
         if not a:
-            return False
-        publish_article(
+            raise RuntimeError(f"Article {article_id} not found")
+        result = publish_article(
             title=a.title or a.keyword,
             content=a.content_draft or "",
             keyword=a.keyword or "",
             image=a.featured_image_url or "",
             auto_push=True,
         )
+        if not result.get("pushed"):
+            raise RuntimeError(
+                "Article was built but the Cloudflare deploy was NOT confirmed "
+                f"(deploy method: {result.get('deploy_method', 'none')}). "
+                "Add `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` to "
+                "**Streamlit secrets** (Settings → Secrets) or `.env`, then click "
+                "Approve again. The article is still pending review."
+            )
         a.status = "published"
+        a.published_date = datetime.now(timezone.utc)
         s.commit()
-    return True
+        return result
 
 
 def _run_pipeline_inprocess(keyword: str) -> None:
@@ -224,9 +242,7 @@ def _run_pipeline_inprocess(keyword: str) -> None:
     try:
         progress.write("🔍 Phase 1: Research...")
         brief = research_keyword(keyword)
-        progress.write(
-            f"✅ Research done — volume: {brief.search_volume}, difficulty: {brief.difficulty}"
-        )
+        progress.write(f"✅ Research done — volume: {brief.search_volume}, difficulty: {brief.difficulty}")
 
         progress.write("📝 Phase 2: Content brief...")
         full_brief = generate_content_brief(keyword, brief.id)
@@ -245,7 +261,6 @@ def _run_pipeline_inprocess(keyword: str) -> None:
 
         # Stop here — human must approve in Review Queue before publishing
         from blog_automation.models import get_session
-
         with get_session() as s:
             a = s.merge(article)
             a.status = "pending_review"
@@ -498,13 +513,9 @@ if page == "🏠 Dashboard":
                     with st.container():
                         col1, col2, col3 = st.columns([3, 1, 1])
                         with col1:
-                            title = article["title"] or "Untitled"
-                            if article["status"] == "published":
-                                slug = (
-                                    (article.get("keyword", "") or "")
-                                    .replace(" ", "-")
-                                    .lower()
-                                )
+                            title = article['title'] or 'Untitled'
+                            if article['status'] == 'published':
+                                slug = (article.get('keyword', '') or '').replace(' ', '-').lower()
                                 url = f"https://side-blogs.pages.dev/{slug}"
                                 st.markdown(f"**[{title}]({url})**")
                             else:
@@ -565,7 +576,16 @@ if page == "🏠 Dashboard":
 # ============================================================================
 elif page == "📋 Review Queue":
     st.title("📋 Review Queue")
-    st.markdown("Review and approve articles before publishing")
+    st.markdown("Review and approve articles, then push them live to Cloudflare Pages")
+
+    # Surface the result of the last Approve & Publish action across reruns.
+    _review_msg = st.session_state.pop("_review_msg", None)
+    if _review_msg:
+        kind, text = _review_msg
+        if kind == "success":
+            st.success(text)
+        else:
+            st.error(text)
 
     render_pipeline_toasts()
     render_pipeline_failure_banner()
@@ -690,14 +710,43 @@ elif page == "📋 Review Queue":
                             col1, col2, col3 = st.columns(3)
                             with col1:
                                 if st.button(
-                                    "✅ Approve & Publish",
+                                    "🚀 Approve & Publish to Cloudflare",
                                     key=f"approve_{article['id']}",
                                     type="primary",
                                     use_container_width=True,
+                                    help="Build the static site and deploy it to Cloudflare Pages",
                                 ):
-                                    if _approve_and_publish(article["id"]):
-                                        st.success("Published! 🚀")
-                                        st.rerun()
+                                    try:
+                                        with st.spinner(
+                                            "Building site & deploying to Cloudflare Pages…"
+                                        ):
+                                            result = _approve_and_publish(
+                                                article["id"]
+                                            )
+                                        method = result.get("deploy_method", "none")
+                                        url = result.get("url", "")
+                                        if result.get("pushed"):
+                                            msg = (
+                                                f"✅ **Published & pushed live** — "
+                                                f"[{result.get('slug', 'article')}]({url}) "
+                                                f"via {method}"
+                                            )
+                                        else:
+                                            msg = (
+                                                "⚠️ Article saved & marked published, "
+                                                f"but the Cloudflare deploy wasn't confirmed "
+                                                f"(deploy method: {method}). Set "
+                                                "`CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` "
+                                                "in **Streamlit secrets** (Settings → Secrets) "
+                                                "or `.env`, then deploy again."
+                                            )
+                                        st.session_state["_review_msg"] = ("success", msg)
+                                    except Exception as e:
+                                        st.session_state["_review_msg"] = (
+                                            "error",
+                                            f"❌ Publish failed: {e}",
+                                        )
+                                    st.rerun()
                             with col2:
                                 if st.button(
                                     "📝 Request Revision",
@@ -874,13 +923,9 @@ elif page == "📄 All Articles":
                     with st.container():
                         col1, col2, col3, col4, col5 = st.columns([3, 1, 1, 1, 1])
                         with col1:
-                            title = article["title"] or "Untitled"
-                            if article["status"] == "published":
-                                slug = (
-                                    (article.get("keyword", "") or "")
-                                    .replace(" ", "-")
-                                    .lower()
-                                )
+                            title = article['title'] or 'Untitled'
+                            if article['status'] == 'published':
+                                slug = (article.get('keyword', '') or '').replace(' ', '-').lower()
                                 url = f"https://side-blogs.pages.dev/{slug}"
                                 st.markdown(f"**[{title}]({url})**")
                             else:

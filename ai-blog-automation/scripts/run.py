@@ -111,4 +111,5 @@ print(
     f"   → {os.environ.get('STREAMLIT_DASHBOARD_URL', 'https://reachnews.streamlit.app')} (Review Queue)"
 )
 
-print(f"\n💰 Cost: ${article.ai_generation_cost:.4f}")
+print(f"\n🔎 Review & publish at: streamlit run streamlit_app/app.py")
+print(f"💰 Cost: ${article.ai_generation_cost:.4f}")

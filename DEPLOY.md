@@ -21,17 +21,17 @@ side-blogs/
 │   └── *.md
 ├── wrangler.toml            # Cloudflare Pages config
 ├── scripts/
-│   ├── publish.py           # Build static site từ content/*.md
-│   ├── publish_cf.py        # Build + upload thẳng lên Cloudflare API (ko cần git)
+│   ├── publish.py           # Build static site từ content/*.md → public/
+│   ├── publish_cf.py        # Build + Direct Upload lên Cloudflare API (ko cần wrangler/git)
 │   ├── fetch_images.py      # Backfill ảnh Unsplash vào frontmatter content/*.md
 │   ├── gen_pages.py         # Tạo about/privacy pages
-│   ├── run.py               # AI pipeline: research → draft → publish (full auto)
+│   ├── run.py               # AI pipeline: research → draft → review queue (ko deploy)
 │   └── trending.py          # Lấy trending keywords
 └── DEPLOY.md                # File này
 ```
 
 > **⚠️ QUAN TRỌNG — project này KHÔNG auto-deploy từ git push.**
-> Pages project `side-blogs` dùng ad-hoc deploy: phải chạy `wrangler pages deploy` hoặc
+> Pages project `side-blogs` dùng ad-hoc deploy: phải chạy wrangler hoặc
 > `publish_cf.py` sau mỗi lần build. Git push chỉ lưu source, không kích hoạt deploy.
 > Dấu hiệu nhận biết: trong Cloudflare dashboard, deployment type hiển thị "ad_hoc"
 > thay vì "github".
@@ -70,7 +70,8 @@ cd ai-blog-automation
 .venv/bin/python scripts/run.py "your keyword"
 ```
 
-Tự động: research keyword → tạo brief → viết draft → fact check → SEO → fetch ảnh → publish.
+Tự động: research keyword → tạo brief → viết draft → fact check → SEO → fetch ảnh → **thêm vào review queue**.
+Sau đó duyệt trên dashboard Streamlit → **Approve & Publish** để deploy lên Cloudflare Pages.
 
 Cần env: `OPENROUTER_API_KEY`, `DATABASE_URL` (Neon postgres).
 
@@ -83,6 +84,9 @@ SITE_NAME="The Slow Drip" SITE_URL="https://side-blogs.pages.dev" .venv/bin/pyth
 
 ## Cách deploy
 
+Có **2 cách chính** đều đang hoạt động — chọn 1 trong 2. Cả hai deploy từ thư mục
+`public/` đã build sẵn, **không cần git push**.
+
 ### Option A: publish.py (build + deploy 1 lệnh, default)
 
 `publish.py` tự gọi `wrangler pages deploy` sau khi build — **không cần git push, không cần bước riêng**.
@@ -92,30 +96,47 @@ cd ai-blog-automation
 SITE_NAME="The Slow Drip" SITE_URL="https://side-blogs.pages.dev" .venv/bin/python scripts/publish.py
 ```
 
-- Bỏ `--no-push` để deploy (default là deploy luôn)
-- `--no-push` = build only, không deploy
+- Default là deploy luôn; `--no-push` = build only, không deploy
 - ⚠️ Luôn pass `SITE_NAME` + `SITE_URL` từ shell — publish.py đọc từ `os.environ`, KHÔNG đọc `.env`
-- Cần `wrangler login` 1 lần (xem Option B)
+- Cần `wrangler login` 1 lần (xem Option B) — hoặc set `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` trong `.env`
 
 ### Option B: wrangler CLI (deploy riêng sau khi build)
 
 ```bash
-wrangler login
-wrangler pages deploy public --project-name=side-blogs --branch=main --commit-dirty=true
+# Build trước
+cd ai-blog-automation
+SITE_NAME="The Slow Drip" SITE_URL="https://side-blogs.pages.dev" .venv/bin/python scripts/publish.py --no-push
+
+# Deploy
+cd ..  # về repo root
+npx wrangler pages deploy public --project-name side-blogs --branch main --commit-dirty=true
 ```
 
-### Option C: publish_cf.py (dùng API token, ko cần wrangler/git)
+Auth: `wrangler login` (OAuth) **hoặc** set trong `.env` (dùng chung với Option C):
+`CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`.
+
+⚠️ **Account cache gotcha:** nếu wrangler hỏi "create a new project" dù project đã tồn tại,
+xóa cache sau rồi chạy lại (nó giữ account ID cũ từ lần login trước, sai account):
 
 ```bash
-export CLOUDFLARE_API_TOKEN="your-token"
-export CLOUDFLARE_ACCOUNT_ID="your-account-id"
-export CLOUDFLARE_PROJECT_NAME="side-blogs"
-
-cd ai-blog-automation
-.venv/bin/python scripts/publish_cf.py
+rm -f .wrangler/cache/wrangler-account.json .wrangler/cache/pages.json
 ```
 
-Lấy token tại: https://dash.cloudflare.com/profile/api-tokens → Create Token → Custom → Cloudflare Pages:Edit.
+### Option C: publish_cf.py (Direct Upload API — ko cần wrangler/git)
+
+```bash
+# .env phải có CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID
+cd ai-blog-automation
+.venv/bin/python scripts/publish_cf.py          # build + upload
+.venv/bin/python scripts/publish_cf.py --no-build  # chỉ upload public/ đã build sẵn
+```
+
+Lấy token tại: https://dash.cloudflare.com/profile/api-tokens → Create Token → Custom →
+Permissions: **Cloudflare Pages → Edit** → Account Resources: chọn đúng account chứa project
+(`side-blogs` nằm ở account `Hungbarcadp94@gmail.com's Account`).
+
+Script dùng **Direct Upload API** (manifest + MD5 hash + leading `/` keys) — tương đương
+`wrangler pages deploy`, không dùng zip-upload API cũ (đã bị Cloudflare deprecate).
 
 ## Cách update bài viết đã có
 
@@ -173,9 +194,9 @@ Muốn đổi kích thước/kiểu ảnh → sửa CSS `.posts .thumb` trong đ
 | `PEXELS_API_KEY` | No | Pexels API key (200 req/h free) |
 | `OPENROUTER_API_KEY` | Cho AI pipeline | OpenRouter API key |
 | `DATABASE_URL` | Cho AI pipeline | Neon postgres URL |
-| `CLOUDFLARE_API_TOKEN` | Cho publish_cf.py | Cloudflare Pages API token |
-| `CLOUDFLARE_ACCOUNT_ID` | Cho publish_cf.py | Cloudflare account ID |
-| `CLOUDFLARE_PROJECT_NAME` | Cho publish_cf.py | Tên Pages project |
+| `CLOUDFLARE_API_TOKEN` | Cho publish_cf.py / wrangler | Cloudflare API token (cần **Cloudflare Pages:Edit** permission) |
+| `CLOUDFLARE_ACCOUNT_ID` | Cho publish_cf.py / wrangler | Cloudflare account ID (account chứa project `side-blogs`) |
+| `CLOUDFLARE_PROJECT_NAME` | No (default: side-blogs) | Tên Pages project |
 
 ## Static pages (About, Privacy)
 
@@ -193,3 +214,4 @@ Muốn đổi nội dung → sửa trực tiếp trong `gen_pages.py`.
 - Chỉ sửa markdown trong **content/** hoặc script trong **scripts/**.
 - publish.py build toàn bộ content/*.md mỗi lần chạy → xóa bài cũ bằng cách xóa file .md rồi build lại.
 - Không cần database nếu chỉ dùng publish.py (database chỉ cần cho AI pipeline với run.py).
+- Deploy = build trước rồi push `public/` bằng **Option A/B/C** ở trên. Git commit/push **không** tự động deploy.

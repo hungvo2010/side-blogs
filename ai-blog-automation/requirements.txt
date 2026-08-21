@@ -15,5 +15,6 @@ httpx>=0.26.0
 tenacity>=8.2.3
 psycopg2-binary>=2.9.9
 structlog>=23.3.0
+blake3>=1.0.0
 streamlit>=1.29.0
 plotly>=5.18.0
