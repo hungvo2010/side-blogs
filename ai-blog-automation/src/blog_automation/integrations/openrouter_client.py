@@ -133,18 +133,21 @@ class OpenRouterClient:
         oc_key = os.environ.get("OPENCODE_API_KEY") or ""
         oc_model = os.environ.get("OPENCODE_MODEL") or "deepseek-v4-flash"
 
-        self.search_model = search_model or settings.openrouter_search_model
         self.site_url = site_url or settings.openrouter_site_url
 
         if oc_base and oc_key:
             self.api_key = oc_key
             self.base_url = oc_base
             self.default_model = default_model or oc_model
+            # The opencode endpoint only serves OPENCODE_MODEL, so the online
+            # search must use it too (an OpenRouter slug here would 401).
+            self.search_model = oc_model
             self.primary_is_openrouter = False
         else:
             self.api_key = api_key or settings.openrouter_api_key
             self.base_url = base_url or settings.openrouter_base_url or self.BASE_URL
             self.default_model = default_model or settings.openrouter_default_model
+            self.search_model = search_model or settings.openrouter_search_model
             self.primary_is_openrouter = True
 
         if not self.api_key:

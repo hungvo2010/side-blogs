@@ -197,7 +197,7 @@ def generate_content_brief(
                 keyword=keyword,
                 brief_id=brief.id,
                 sections=len(sections),
-                sources=len(sources),
+                sources=len(brief_data.get("sources", [])),
             )
 
             return brief
