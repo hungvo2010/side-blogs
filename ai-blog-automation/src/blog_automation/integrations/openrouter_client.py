@@ -122,17 +122,38 @@ class OpenRouterClient:
             search_model: Model slug used for web-search/evidence tasks
             site_url: Optional site URL sent as HTTP-Referer for rankings
         """
+        import os
+
         settings = get_settings()
-        self.api_key = api_key or settings.openrouter_api_key
-        self.base_url = base_url or settings.openrouter_base_url or self.BASE_URL
-        self.default_model = default_model or settings.openrouter_default_model
+        # Optional primary override → OpenCode/Zen (deepseek-v4-flash).
+        # When OPENCODE_BASE_URL + OPENCODE_API_KEY are set, generation uses
+        # that OpenAI-compatible endpoint as PRIMARY and OpenRouter becomes
+        # the retry fallback on rate-limit. Otherwise OpenRouter is primary.
+        oc_base = os.environ.get("OPENCODE_BASE_URL") or ""
+        oc_key = os.environ.get("OPENCODE_API_KEY") or ""
+        oc_model = os.environ.get("OPENCODE_MODEL") or "deepseek-v4-flash"
+
         self.search_model = search_model or settings.openrouter_search_model
         self.site_url = site_url or settings.openrouter_site_url
 
+        if oc_base and oc_key:
+            self.api_key = oc_key
+            self.base_url = oc_base
+            self.default_model = default_model or oc_model
+            self.primary_is_openrouter = False
+        else:
+            self.api_key = api_key or settings.openrouter_api_key
+            self.base_url = base_url or settings.openrouter_base_url or self.BASE_URL
+            self.default_model = default_model or settings.openrouter_default_model
+            self.primary_is_openrouter = True
+
         if not self.api_key:
             raise APIAuthenticationError(
-                message="OpenRouter API key not configured",
-                service="openrouter",
+                message=(
+                    "LLM API key not configured "
+                    "(set OPENCODE_API_KEY or OPENROUTER_API_KEY)"
+                ),
+                service="llm",
             )
 
         default_headers: dict[str, str] = {"X-Title": "AI Blog Automation"}
@@ -144,6 +165,20 @@ class OpenRouterClient:
             base_url=self.base_url,
             default_headers=default_headers,
         )
+
+        # OpenRouter fallback client (used when primary is rate-limited/429).
+        self._fallback: dict[str, Any] | None = None
+        if not self.primary_is_openrouter:
+            or_key = settings.openrouter_api_key
+            if or_key:
+                self._fallback = {
+                    "client": OpenAI(
+                        api_key=or_key,
+                        base_url=self.BASE_URL,
+                        default_headers=default_headers,
+                    ),
+                    "model": settings.openrouter_default_model,
+                }
 
         self.cost_tracker = CostTracker()
         self.total_cost = 0.0
@@ -178,7 +213,8 @@ class OpenRouterClient:
             **kwargs: Additional parameters forwarded to the API
 
         Returns:
-            Dict with content, model, input_tokens, output_tokens, total_tokens, and cost
+            Dict with content, model, input_tokens, output_tokens, total_tokens,
+            and cost
         """
         import time as _time
 
@@ -192,6 +228,23 @@ class OpenRouterClient:
                 )
             except (APIRateLimitError, APITimeoutError) as e:
                 last_error = e
+                # Primary provider rate-limited → try fallback (OpenRouter) once
+                if self._fallback:
+                    try:
+                        return self._chat_complete_once(
+                            messages,
+                            self._fallback["model"],
+                            temperature,
+                            max_tokens,
+                            client=self._fallback["client"],
+                            **kwargs,
+                        )
+                    except Exception as fe:
+                        last_error = fe
+                        logger.warning(
+                            "Fallback provider also failed",
+                            error=str(fe)[:100],
+                        )
                 if attempt < max_retries:
                     delay = 2**attempt
                     logger.warning(
@@ -206,7 +259,8 @@ class OpenRouterClient:
                 if attempt < max_retries - 1:  # fewer retries for server errors
                     delay = 5 * (attempt + 1)
                     logger.warning(
-                        f"OpenRouter server error, retry {attempt + 1}/{max_retries - 1} in {delay}s",
+                        "OpenRouter server error, "
+                        f"retry {attempt + 1}/{max_retries - 1} in {delay}s",
                         model=model,
                         error=str(e)[:100],
                     )
@@ -224,12 +278,15 @@ class OpenRouterClient:
         model: str,
         temperature: float,
         max_tokens: int,
+        client: Any = None,
         **kwargs,
     ) -> dict[str, Any]:
-        """Single attempt at chat completion (no retry)."""
+        """Single attempt at chat completion (no retry). `client` overrides the
+        primary client (used for the OpenRouter fallback on rate-limit)."""
 
+        client = client or self.client
         try:
-            response = self.client.chat.completions.create(
+            response = client.chat.completions.create(
                 model=model,
                 messages=messages,
                 temperature=temperature,
