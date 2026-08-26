@@ -201,7 +201,7 @@ class OpenRouterClient:
         messages: list[dict[str, str]],
         model: str | None = None,
         temperature: float = 0.7,
-        max_tokens: int = 3000,
+        max_tokens: int = 8000,
         max_retries: int = 3,
         **kwargs,
     ) -> dict[str, Any]:
