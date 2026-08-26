@@ -49,11 +49,33 @@ print(f"2. Brief ✅  {len(full.get_sections())} sections")
 article = content_brief_to_draft(full)
 print(f"3. Draft ✅  {article.word_count} words")
 
-# Phase 4 - skip (rate limit on free model)
-print("4. Fact check ⏭️  skipped (free model limit)")
+# Persist article first so fact-check & SEO (which query by id) can find it
+from blog_automation.models import get_session
+with get_session() as s:
+    s.add(article)
+    s.commit()
 
-# Phase 5
-print("5. SEO ⏭️  skipped (free model limit)")
+# Phase 4 - Fact check (uses opencode/deepseek-v4-flash)
+print("4. Fact check…")
+try:
+    from blog_automation.pipelines.phase_4_fact_check.fact_checking import (
+        fact_check_article,
+    )
+    fact_check_article(article)
+    print("4. Fact check ✅")
+except Exception as e:
+    print(f"4. Fact check ⏭️  {str(e)[:80]}")
+
+# Phase 5 - SEO (uses opencode/deepseek-v4-flash)
+print("5. SEO…")
+try:
+    from blog_automation.pipelines.phase_5_seo.seo_optimization import (
+        seo_optimize_article,
+    )
+    article = seo_optimize_article(article)
+    print(f"5. SEO ✅  score={getattr(article, 'seo_score', '?')}")
+except Exception as e:
+    print(f"5. SEO ⏭️  {str(e)[:80]}")
 
 # Phase 6
 try:
