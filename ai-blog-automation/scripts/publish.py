@@ -316,10 +316,23 @@ def build_article(
     iso = now.strftime("%Y-%m-%dT%H:%M:%SZ")
     display = now.strftime("%B %d, %Y")
 
+    # Multi-layout components: inline directives + frontmatter `blocks`
+    from blog_automation.layouts import (
+        directives_from_markdown,
+        parse_frontmatter_blocks,
+        render_blocks,
+        substitute_tokens,
+    )
+
+    body_clean, block_tokens = directives_from_markdown(body)
     html_body = markdown2.markdown(
-        body,
+        body_clean,
         extras=["fenced-code-blocks", "tables", "strike", "task_list", "header-ids"],
     )
+    html_body = substitute_tokens(html_body, block_tokens)
+    frontmatter_blocks = parse_frontmatter_blocks(fm.get("blocks"))
+    if frontmatter_blocks:
+        html_body += "\n" + render_blocks(frontmatter_blocks)
     wc = count_words(body)
 
     og_img = (
