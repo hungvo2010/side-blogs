@@ -32,7 +32,7 @@ import html
 import json
 import re
 from dataclasses import dataclass, field
-from typing import Callable
+from typing import Any, Callable, Literal
 
 
 @dataclass
@@ -233,6 +233,62 @@ COMPONENTS: dict[str, LayoutComponent] = {
     ),
 }
 
+# ── LangChain structured-output schemas (with_structured_output) ──────
+try:  # pydantic ships with langchain_openai; fall back gracefully if absent
+    from pydantic import BaseModel, Field  # type: ignore
+except Exception:  # noqa: BLE001
+    BaseModel = None  # type: ignore
+    Field = None  # type: ignore
+
+BLOCK_TYPES = Literal[
+    "hero", "image", "callout", "steps", "list", "pros_cons",
+    "comparison_table", "recipe", "faq", "quote", "cards",
+]
+
+
+def _make_schemas():  # build only when pydantic is available
+    if BaseModel is None:
+        return None, None
+
+    class LayoutBlock(BaseModel):  # type: ignore
+        type: BLOCK_TYPES
+        data: dict[str, Any] = Field(
+            default_factory=dict,
+            description="The component's schema fields for this type.",
+        )
+
+    class LayoutBlocks(BaseModel):  # type: ignore
+        blocks: list[LayoutBlock]
+
+    return LayoutBlock, LayoutBlocks
+
+
+BLOCK_SCHEMA, BLOCKS_SCHEMA = _make_schemas()
+
+
+def _blocks_from_validated(resp) -> list[dict]:
+    """Coerce a structured-output result into [{type, ...data}] dicts."""
+    if isinstance(resp, list):
+        items = resp
+    else:
+        items = getattr(resp, "blocks", None) or (
+            resp.get("blocks") if isinstance(resp, dict) else None
+        ) or []
+    out = []
+    for b in items:
+        if isinstance(b, dict):
+            d = b
+        elif hasattr(b, "model_dump"):
+            d = b.model_dump()
+        else:
+            continue
+        blk = {"type": d.get("type")}
+        data = d.get("data") if isinstance(d.get("data"), dict) else {}
+        blk.update(data)
+        out.append(blk)
+    return out
+
+
 # Clockwise: directive regex. Format:
 #   <!-- layout:comparison_table {JSON} -->
 #   <!-- layout:recipe
@@ -307,3 +363,135 @@ def substitute_tokens(html: str, tokens: dict[str, str]) -> str:
     for tok, val in tokens.items():
         html = html.replace(tok, val)
     return html
+
+
+# ── AI block generation + per-block regeneration ──────────────────────
+def directive_matches(md: str) -> list[re.Match]:
+    """All inline ``<!-- layout:<id> {json} -->`` matches, in order."""
+    return list(_BLOCK_RE.finditer(md))
+
+
+def parse_directives(md: str) -> list[dict]:
+    """Parse all block dicts present in a markdown body, in order."""
+    blocks: list[dict] = []
+    for m in directive_matches(md):
+        cid = m.group(1)
+        payload = (m.group(2) or "").strip()
+        try:
+            data = json.loads(payload) if payload else {}
+        except json.JSONDecodeError:
+            data = {}
+        data.setdefault("type", cid)
+        blocks.append(data)
+    return blocks
+
+
+def replace_directive(md: str, idx: int, new_block: dict) -> str:
+    """Replace the ``idx``-th inline directive's JSON with ``new_block``."""
+    matches = directive_matches(md)
+    if idx >= len(matches):
+        raise IndexError(f"block index {idx} out of range (have {len(matches)})")
+    m = matches[idx]
+    cid = new_block.get("type", m.group(1))
+    payload = json.dumps(
+        {k: v for k, v in new_block.items() if k != "type"}, ensure_ascii=False
+    )
+    new_directive = f"<!-- layout:{cid} {payload} -->"
+    return md[: m.start()] + new_directive + md[m.end():]
+
+
+def blocks_to_directives(blocks: list[dict]) -> str:
+    """Serialize a list of block dicts into inline ```<!-- layout:.. -->`` text."""
+    out = []
+    for b in blocks:
+        cid = b.get("type")
+        if cid not in COMPONENTS:
+            continue
+        payload = json.dumps(
+            {k: v for k, v in b.items() if k != "type"}, ensure_ascii=False
+        )
+        out.append(f"<!-- layout:{cid} {payload} -->")
+    return "\n\n".join(out)
+
+
+def _component_catalog() -> str:
+    return "\n".join(
+        f"- {cid}: {COMPONENTS[cid].data_schema}"
+        for cid in sorted(COMPONENTS)
+        if COMPONENTS[cid].ai_generatable
+    )
+
+
+def generate_blocks(llm, title: str, keyword: str, content: str,
+                     max_blocks: int = 4) -> list[dict]:
+    """Ask the LLM to propose high-value layout blocks for an article.
+
+    Returns only blocks whose ``type`` is a registered, AI-generatable component.
+    ``llm`` is any object exposing ``extract_json(prompt, system_prompt=...)``
+    (e.g. OpenRouterClient / deepseek-v4-flash).
+    """
+    prompt = (
+        f"Article title: {title}\nKeyword: {keyword}\n\n"
+        f"Article content (first 2500 chars):\n{content[:2500]}\n\n"
+        "Choose 2-4 layout blocks that BEST enrich this article (a comparison "
+        "table, recipe steps, FAQ, pros/cons, callout, etc.) that are relevant "
+        "to the content. Available components + JSON schemas:\n"
+        f"{_component_catalog()}\n\n"
+        "Return ONLY a JSON object with a 'blocks' array. Provide up to "
+        f"{max_blocks} blocks. Each block is an object with "
+        "'type' (the component id) and 'data' (exactly that component's "
+        "schema fields, relevant to the article). No other text."
+    )
+    if BLOCKS_SCHEMA is None:
+        return []
+    try:
+        resp = llm.extract_json(
+            prompt,
+            system_prompt=(
+                "You are a content layout engineer. Output valid JSON only "
+                "matching the provided schema."
+            ),
+            schema=BLOCKS_SCHEMA,
+            max_tokens=4000,
+        )
+    except Exception:
+        return []
+    blocks = [
+        b for b in _blocks_from_validated(resp)
+        if isinstance(b, dict) and b.get("type") in COMPONENTS
+    ]
+    return blocks[:max_blocks]
+
+
+def regenerate_block(llm, md: str, idx: int, instruction: str) -> "tuple[str, dict]":
+    """Regenerate a single block (index ``idx``) via the LLM, keep the rest.
+
+    Returns (new_markdown, new_block_dict). Updates only the one directive;
+    all other content is untouched.
+    """
+    blocks = parse_directives(md)
+    if idx >= len(blocks):
+        raise IndexError(f"block index {idx} out of range (have {len(blocks)})")
+    old = blocks[idx]
+    cid = old.get("type")
+    comp = COMPONENTS.get(cid)
+    schema = comp.data_schema if comp else {}
+    prompt = (
+        f"Regenerate the layout block type '{cid}' for a coffee blog article.\n"
+        f"Current block data: {json.dumps(old, ensure_ascii=False)}\n"
+        f"Required schema: {schema}\n"
+        f"Instruction / what to improve: {instruction}\n"
+        "Return ONLY a single JSON object: the NEW block, same type, using the "
+        "schema fields, content faithful to the article."
+    )
+    if BLOCK_SCHEMA is None:
+        raise RuntimeError("pydantic/structured-output unavailable for regeneration")
+    new = llm.extract_json(
+        prompt,
+        system_prompt="You are a content layout editor. Output only the block object.",
+        schema=BLOCK_SCHEMA,
+        max_tokens=3000,
+    )
+    new_blocks = _blocks_from_validated(new)
+    new = new_blocks[0] if new_blocks else {"type": cid}
+    return replace_directive(md, idx, new), new

@@ -6,6 +6,7 @@ Web UI for reviewing articles, managing content calendar, and monitoring pipelin
 Run with: streamlit run streamlit_app/app.py
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -183,6 +184,41 @@ def _load_cloudflare_env() -> None:
             val = None
         if val:
             os.environ[key] = str(val)
+
+
+def _load_llm_env() -> None:
+    """Load OPENCODE_* LLM credentials (deepseek-v4-flash) into env from secrets."""
+    secrets = st.secrets if hasattr(st, "secrets") else {}
+    for env_key in ("OPENCODE_BASE_URL", "OPENCODE_API_KEY", "OPENCODE_MODEL"):
+        if env_key not in os.environ:
+            try:
+                val = secrets.get(env_key)
+            except Exception:
+                val = None
+            if val:
+                os.environ[env_key] = str(val)
+
+
+def _regenerate_layout_block(article_id: int, block_idx: int, instruction: str) -> dict:
+    """Regenerate ONE layout block via the LLM and persist updated content_draft.
+
+    Returns the new block dict. Other content is untouched.
+    """
+    from blog_automation.integrations.openrouter_client import OpenRouterClient
+    from blog_automation.layouts import regenerate_block
+    from blog_automation.models import Article, get_session
+
+    _load_llm_env()
+    llm = OpenRouterClient()
+    with get_session() as s:
+        a = s.query(Article).get(article_id)
+        md = a.content_draft or ""
+        new_md, new_block = regenerate_block(
+            llm, md, block_idx, instruction or "Improve this layout block"
+        )
+        a.content_draft = new_md
+        s.commit()
+    return new_block
 
 
 def _approve_and_publish(article_id: int) -> dict:
@@ -622,8 +658,14 @@ elif page == "📋 Review Queue":
                             st.metric("Status", article["status"])
 
                         # Tabs for different views
-                        tab1, tab2, tab3, tab4 = st.tabs(
-                            ["📝 Content", "✅ Fact-Check", "📊 SEO", "🎯 Decision"]
+                        tab1, tab2, tab3, tab4, tab5 = st.tabs(
+                            [
+                                "📝 Content",
+                                "✅ Fact-Check",
+                                "📊 SEO",
+                                "🎯 Decision",
+                                "🧩 Layout Blocks",
+                            ]
                         )
 
                         with tab1:
@@ -769,6 +811,71 @@ elif page == "📋 Review Queue":
                                     ):
                                         st.error("Article rejected")
                                         st.rerun()
+
+                            with tab5:
+                                st.markdown("### 🧩 Layout Blocks")
+                                from blog_automation.layouts import parse_directives
+
+                                _blocks = parse_directives(
+                                    article.get("content_draft") or ""
+                                )
+                                if not _blocks:
+                                    st.info(
+                                        "Bài chưa có layout block. Bài mới chạy pipeline "
+                                        "(Phase 3.5) sẽ tự sinh bảng so sánh / "
+                                        "recipe / FAQ."
+                                    )
+                                else:
+                                    _llm_ok = bool(
+                                        os.environ.get("OPENCODE_API_KEY")
+                                        or getattr(st, "secrets", {}).get(
+                                            "OPENCODE_API_KEY"
+                                        )
+                                    )
+                                    if not _llm_ok:
+                                        st.warning(
+                                            "⚠️ Chưa cấu hình OPENCODE_API_KEY trong "
+                                            "Streamlit secrets (Settings → Secrets) — "
+                                            "chưa regenerate block được."
+                                        )
+                                    for bi, blk in enumerate(_blocks):
+                                        _btype = blk.get("type", "?")
+                                        with st.expander(
+                                            f"Block {bi + 1}: {_btype}", expanded=False
+                                        ):
+                                            st.json(
+                                                {k: v for k, v in blk.items() if k != "type"}
+                                            )
+                                            _inst = st.text_input(
+                                                "Hướng dẫn regenerate (bỏ trống = cải thiện)",
+                                                key=f"regen_inst_{article['id']}_{bi}",
+                                            )
+                                            if st.button(
+                                                f"♻️ Regenerate block {bi + 1}",
+                                                key=f"regen_btn_{article['id']}_{bi}",
+                                            ):
+                                                if not _llm_ok:
+                                                    st.error("Thiếu OPENCODE_API_KEY secret")
+                                                else:
+                                                    try:
+                                                        with st.spinner(
+                                                            "Đang regenerate block…"
+                                                        ):
+                                                            nb = _regenerate_layout_block(
+                                                                article["id"], bi, _inst
+                                                            )
+                                                        st.session_state["_review_msg"] = (
+                                                            "success",
+                                                            f"Regenerate block {bi + 1} "
+                                                            f"({_btype}) ✅ — mới: "
+                                                            f"{list(nb.keys())}",
+                                                        )
+                                                    except Exception as e2:
+                                                        st.session_state["_review_msg"] = (
+                                                            "error",
+                                                            f"Regenerate lỗi: {e2}",
+                                                        )
+                                                    st.rerun()
 
         except Exception as e:
             st.error(f"Error loading articles: {e}")

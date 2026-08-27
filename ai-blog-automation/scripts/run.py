@@ -49,6 +49,25 @@ print(f"2. Brief ✅  {len(full.get_sections())} sections")
 article = content_brief_to_draft(full)
 print(f"3. Draft ✅  {article.word_count} words")
 
+# Phase 3.5 - AI layout blocks (deepseek structured output) appended to draft
+print("3.5 Blocks…")
+try:
+    from blog_automation.integrations.openrouter_client import OpenRouterClient
+    from blog_automation.layouts import blocks_to_directives, generate_blocks
+
+    _llm = OpenRouterClient()
+    _blocks = generate_blocks(_llm, article.title, kw, article.content_draft or "")
+    if _blocks:
+        article.content_draft = (
+            (article.content_draft or "").rstrip()
+            + "\n\n" + blocks_to_directives(_blocks) + "\n"
+        )
+        print(f"3.5 Blocks ✅  {[b.get('type') for b in _blocks]}")
+    else:
+        print("3.5 Blocks ⏭️  none")
+except Exception as e:
+    print(f"3.5 Blocks ⏭️  {str(e)[:60]}")
+
 # Persist article first so fact-check & SEO (which query by id) can find it
 from blog_automation.models import get_session
 with get_session() as s:
