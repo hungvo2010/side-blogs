@@ -31,6 +31,47 @@ sys.path.insert(0, str(_SRC))
 import markdown2
 
 # ---------------------------------------------------------------------------
+# Layout component CSS — styles the reusable `layout-*` blocks from layouts.py.
+# Shared by both PAGE_TEMPLATE and INDEX_TEMPLATE via the `{layout_css}` slot.
+# ---------------------------------------------------------------------------
+LAYOUT_CSS = """
+.layout-hero img{width:100%;border-radius:12px;display:block}
+.layout-hero p{color:#6b7280;font-size:1.05rem;margin:.5rem 0 0}
+.layout-figure{margin:1.4rem 0}
+.layout-figure img{max-width:100%;border-radius:10px}
+.layout-figure figcaption{font-size:.85rem;color:#6b7280;text-align:center;margin-top:.4rem}
+.layout-callout{border-left:4px solid #1a73e8;background:#eef2ff;padding:12px 16px;border-radius:8px;margin:1.2rem 0}
+.layout-callout.warn{border-color:#d97706;background:#fffbeb}
+.layout-callout.danger{border-color:#dc2626;background:#fef2f2}
+.layout-callout.tip{border-color:#16a34a;background:#f0fdf4}
+.layout-callout p{margin:0}
+.layout-steps{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:16px 20px 16px 36px;margin:1.2rem 0}
+.layout-steps li{margin:.35rem 0}
+.layout-list{margin:1rem 0 1rem 0}
+.layout-proscons{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:1.2rem 0}
+.layout-proscons .pros,.layout-proscons .cons{border-radius:10px;padding:14px 16px}
+.layout-proscons .pros{background:#f0fdf4;border:1px solid #bbf7d0}
+.layout-proscons .cons{background:#fef2f2;border:1px solid #fecaca}
+.layout-proscons h4,.layout-proscons ul{margin:.2rem 0}
+.layout-comparison{margin:1.4rem 0;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden}
+.layout-comparison h3{padding:14px 16px;margin:0;background:#f9fafb;border-bottom:1px solid #e5e7eb}
+.layout-comparison table{margin:0;border:none}
+.layout-comparison th{background:#f9fafb}
+.layout-recipe{border:1px solid #e5e7eb;border-radius:12px;padding:18px 20px;margin:1.4rem 0;background:#fbfaf7}
+.layout-recipe h3,.layout-recipe h4{margin:.3rem 0}
+.layout-recipe .meta{color:#6b7280;font-size:.9rem}
+.layout-faq{margin:1.2rem 0}
+.layout-faq details{border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;margin:.5rem 0}
+.layout-faq summary{cursor:pointer;font-weight:600}
+.layout-faq-item p{margin:.5rem 0 0}
+.layout-quote{border-left:4px solid #6d28d9;padding-left:16px;color:#4b5563;font-style:italic;margin:1.2rem 0}
+.layout-quote cite{display:block;font-style:normal;font-size:.85rem;color:#6b7280;margin-top:.4rem}
+.layout-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:1.2rem 0}
+.layout-card{border:1px solid #e5e7eb;border-radius:10px;padding:16px;background:#fff}
+.layout-card h4{margin:.2rem 0}
+"""
+
+# ---------------------------------------------------------------------------
 # HTML template — single article page, SEO-optimized
 # ---------------------------------------------------------------------------
 PAGE_TEMPLATE = """\
@@ -59,6 +100,7 @@ PAGE_TEMPLATE = """\
     {twitter_image}
     <script type="application/ld+json">{ld_json}</script>
     <link rel="alternate" type="application/rss+xml" title="{site_name} RSS" href="/rss.xml">
+    <style>{layout_css}</style>
     <style>
         :root{{--primary:#1a73e8;--text:#1f2937;--muted:#6b7280;--bg:#fff;--code-bg:#f3f4f6}}
         *{{box-sizing:border-box}}
@@ -147,6 +189,7 @@ INDEX_TEMPLATE = """\
     <meta property="og:type" content="website">
     <meta property="og:url" content="{site_url}">
     <link rel="alternate" type="application/rss+xml" title="{site_name} RSS" href="/rss.xml">
+    <style>{layout_css}</style>
     <style>
         :root{{--primary:#1a73e8;--text:#1f2937;--muted:#6b7280;--bg:#fff;--card-shadow:0 1px 3px rgba(0,0,0,.06)}}
         *{{box-sizing:border-box}}
@@ -357,6 +400,7 @@ def build_article(
     canonical = f"{DEFAULTS['site_url']}/{slug}"
 
     html = PAGE_TEMPLATE.format(
+        layout_css=LAYOUT_CSS,
         lang=DEFAULTS["lang"],
         title=f"{title} — {DEFAULTS['site_name']}",
         description=description,
@@ -419,6 +463,7 @@ def build_index(posts_meta: list[dict]) -> str:
     from urllib.parse import quote
 
     return INDEX_TEMPLATE.format(
+        layout_css=LAYOUT_CSS,
         lang=DEFAULTS["lang"],
         site_name=DEFAULTS["site_name"],
         title=f"{DEFAULTS['site_name']} — Latest Posts & Articles on Coffee, Brewing & Home Barista Tips",
