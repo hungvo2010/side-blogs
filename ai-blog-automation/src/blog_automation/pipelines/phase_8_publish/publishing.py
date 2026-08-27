@@ -71,11 +71,13 @@ def publish_article(
 
     # ── Description ──
     if not description:
-        # Pick first non-heading paragraph
+        # Pick first non-heading, non-image paragraph
         for line in content.split("\n"):
             s = line.strip()
-            if s and not s.startswith("#"):
-                plain = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", s)
+            if s and not s.startswith("#") and not re.match(
+                r"!\[[^\]]*\]\([^)]*\)\s*$", s
+            ):
+                plain = re.sub(r"!?\[([^\]]+)\]\([^)]+\)", r"\1", s)
                 plain = re.sub(r"[*_`]", "", plain)
                 if len(plain) > 10:
                     description = plain[:157] + "…"
