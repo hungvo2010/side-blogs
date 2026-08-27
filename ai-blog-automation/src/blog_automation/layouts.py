@@ -289,6 +289,21 @@ def _blocks_from_validated(resp) -> list[dict]:
     return out
 
 
+def _single_block(resp) -> dict:
+    """Coerce a single-block structured-output result into {type, ...data}."""
+    d = (
+        resp.model_dump()
+        if hasattr(resp, "model_dump")
+        else (resp if isinstance(resp, dict) else {})
+    )
+    if not isinstance(d, dict):
+        d = {}
+    blk = {"type": d.get("type")}
+    data = d.get("data") if isinstance(d.get("data"), dict) else {}
+    blk.update(data)
+    return blk
+
+
 # Clockwise: directive regex. Format:
 #   <!-- layout:comparison_table {JSON} -->
 #   <!-- layout:recipe
@@ -492,6 +507,6 @@ def regenerate_block(llm, md: str, idx: int, instruction: str) -> "tuple[str, di
         schema=BLOCK_SCHEMA,
         max_tokens=3000,
     )
-    new_blocks = _blocks_from_validated(new)
-    new = new_blocks[0] if new_blocks else {"type": cid}
+    new_blocks = _single_block(new)
+    new = new_blocks if new_blocks.get("type") in COMPONENTS else {"type": cid}
     return replace_directive(md, idx, new), new
