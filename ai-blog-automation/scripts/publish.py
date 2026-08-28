@@ -257,7 +257,7 @@ SITEMAP_TEMPLATE = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http:
 # ---------------------------------------------------------------------------
 DEFAULTS = {
     "site_name": os.getenv("SITE_NAME", "The Slow Drip"),
-    "site_url": os.getenv("SITE_URL", "https://myblog.pages.dev"),
+    "site_url": os.getenv("SITE_URL", "https://dripper.top"),
     "author": os.getenv("SITE_AUTHOR", "Anonymous"),
     "description": os.getenv(
         "SITE_DESCRIPTION", "A blog about coffee, brewing, and the perfect cup."
