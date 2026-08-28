@@ -219,6 +219,20 @@ INDEX_TEMPLATE = """\
         .section-heading{{display:flex;align-items:center;gap:14px;margin:0 0 26px;font-family:var(--serif);font-size:1.1rem;color:var(--ink);font-weight:600}}
         .section-heading:after{{content:"";flex:1;height:1px;background:var(--line)}}
         .mag-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:28px;list-style:none;margin:0;padding:0}}
+        .hero-mag .thumb-link img{{width:100%;height:420px;object-fit:cover;display:block;cursor:pointer}}
+        .thumb-link{{display:block;cursor:pointer;text-decoration:none}}
+        .thumb-link img{{width:100%;display:block}}
+        .card .thumb{{height:210px;object-fit:cover}}
+        .mini-list{{list-style:none;margin:0 0 46px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}}
+        .mini-item{{display:flex;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;align-items:center}}
+        .mini-item .mini-thumb{{width:92px;height:92px;flex-shrink:0;object-fit:cover;border-radius:10px;cursor:pointer}}
+        .mini-item .mini-thumb.placeholder{{background:var(--accent-soft);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.7rem}}
+        .mini-item .mini-body{{min-width:0}}
+        .mini-item .mini-kicker{{font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:600}}
+        .mini-item h4{{margin:4px 0 6px}}
+        .mini-item h4 a{{font-family:var(--serif);font-weight:600;font-size:1.05rem;line-height:1.3;color:var(--ink);text-decoration:none}}
+        .mini-item h4 a:hover{{color:var(--accent)}}
+        .mini-item .meta{{color:var(--muted);font-size:.78rem}}
         .card{{background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(58,47,40,.06);transition:transform .18s,box-shadow .18s;display:flex;flex-direction:column;border:1px solid var(--line)}}
         .card:hover{{transform:translateY(-5px);box-shadow:0 14px 32px rgba(58,47,40,.14)}}
         .card .thumb{{width:100%;height:210px;object-fit:cover;display:block}}
@@ -252,9 +266,13 @@ INDEX_TEMPLATE = """\
     <div class="topics">{topics_html}</div>
     <h2 class="section-heading">Latest stories</h2>
     <ul class="mag-grid">{post_items}</ul>
+    <h2 class="section-heading">Popular this Month</h2>
+    <ul class="mini-list">{popular_html}</ul>
+    <h2 class="section-heading">Editors Picks</h2>
+    <ul class="mini-list">{editors_html}</ul>
 </main>
 <footer><p>&copy; 2026 {site_name}.</p>
-<div class="cols"><a href="/about">About</a><a href="/privacy">Privacy</a><a href="/sitemap.xml">Sitemap</a><a href="/rss.xml">RSS</a></div>
+<div class="cols"><a href="/about">About Us</a><a href="/contributors">Contributors</a><a href="/contact">Contact</a><a href="/newsletter">Newsletter</a><a href="/pay-it-forward">Pay it Forward</a><a href="/sustainability">Sustainability</a><a href="/sitemap.xml">Sitemap</a><a href="/rss.xml">RSS</a></div>
 </footer>
 </body>
 </html>"""
@@ -452,22 +470,43 @@ def build_article(
 def build_index(posts_meta: list[dict]) -> str:
     from collections import Counter
 
-    def _thumb(p, width=800):
+    def _url(p, width):
         img = p.get("image") or ""
         if img:
-            img = re.sub(r"w=\d+", f"w={width}", img)
-            alt = p["title"].replace('"', "&quot;")
-            return f'<img class="thumb" src="{img}" alt="{alt}" loading="lazy">'
-        return '<div class="thumb placeholder">No image</div>'
+            return re.sub(r"w=\d+", f"w={width}", img)
+        return ""
+
+    def _thumb(p, width, cls="thumb"):
+        alt = p["title"].replace('"', "&quot;")
+        url = _url(p, width)
+        if url:
+            return f'<img class="{cls}" src="{url}" alt="{alt}" loading="lazy">'
+        return f'<div class="{cls} placeholder">No image</div>'
 
     def _meta(p):
         wc = p.get("word_count") or 0
         read_min = max(1, round(wc / 200))
-        return f'{p.get("date", "")[:10]} · {read_min} min read'
+        return f"{p.get('date', '')[:10]} · {read_min} min read"
 
     def _kicker(p):
         tags = p.get("tags") or []
         return tags[0].title() if tags else "Coffee"
+
+    def _mini_item(p):
+        alt = p["title"].replace('"', "&quot;")
+        url = _url(p, 400)
+        thumb = (
+            f'<a class="mini-thumb-link" href="/{p["slug"]}">'
+            f'<img class="mini-thumb" src="{url}" alt="{alt}" loading="lazy"></a>'
+            if url
+            else '<div class="mini-thumb placeholder">No image</div>'
+        )
+        return (
+            f'<li class="mini-item">{thumb}<div class="mini-body">'
+            f'<div class="mini-kicker">{_kicker(p)}</div>'
+            f'<h4><a href="/{p["slug"]}">{p["title"]}</a></h4>'
+            f'<div class="meta">{_meta(p)}</div></div></li>'
+        )
 
     # Hero = newest post
     hero_html = ""
@@ -475,17 +514,19 @@ def build_index(posts_meta: list[dict]) -> str:
         f = posts_meta[0]
         hero_html = (
             '<section class="hero-mag">'
-            + _thumb(f, 1200)
-            + '<div class="hero-body">'
+            f'<a class="thumb-link" href="/{f["slug"]}">{_thumb(f, 1200)}</a>'
+            '<div class="hero-body">'
             + f'<div class="hero-kicker">Featured · {_kicker(f)}</div>'
             + f'<h1><a href="/{f["slug"]}">{f["title"]}</a></h1>'
             + f'<p>{f["description"]}</p>'
             + f'<div class="meta"><span>{_meta(f)}</span>'
             + f'<a class="read-link" href="/{f["slug"]}">Read the story →</a></div>'
-            + '</div></section>'
+            + "</div></section>"
         )
 
-    # Topic chips from all tags
+    rest = posts_meta[1:] if posts_meta else []
+
+    # Topic chips
     tag_counts = Counter()
     for p in posts_meta:
         for t in (p.get("tags") or []):
@@ -494,16 +535,32 @@ def build_index(posts_meta: list[dict]) -> str:
         f'<span class="chip">{t}</span>' for t, _ in tag_counts.most_common(8)
     )
 
-    # Cards = the rest (skip hero)
+    # Card grid for the rest
     items = []
-    for p in posts_meta[1:]:
+    for p in rest:
         items.append(
-            f'<li class="card">{_thumb(p)}<div class="body">'
+            f'<li class="card"><a class="thumb-link" href="/{p["slug"]}">{_thumb(p, 800)}</a><div class="body">'
             f'<div class="kicker">{_kicker(p)}</div>'
             f'<h3><a href="/{p["slug"]}">{p["title"]}</a></h3>'
             f'<div class="desc">{p["description"]}</div>'
             f'<div class="meta"><span>{_meta(p)}</span></div></div></li>'
         )
+
+    # Popular this Month = top by word count (proxy for depth)
+    popular = sorted(rest, key=lambda p: p.get("word_count") or 0, reverse=True)[:3]
+    popular_html = "".join(_mini_item(p) for p in popular)
+
+    # Editors Picks = culture/curated tags first, fill from remaining
+    culture_tags = {"Vietnamese Coffee", "Coffee Culture", "Phin"}
+    picked, seen = [], {p["slug"] for p in ([posts_meta[0]] + popular) if p}
+    for p in rest:
+        if any(t in culture_tags for t in (p.get("tags") or [])) and p["slug"] not in seen and len(picked) < 3:
+            picked.append(p)
+            seen.add(p["slug"])
+    for p in rest:
+        if p["slug"] not in seen and len(picked) < 3:
+            picked.append(p)
+    editors_html = "".join(_mini_item(p) for p in picked)
 
     return INDEX_TEMPLATE.format(
         layout_css=LAYOUT_CSS,
@@ -516,6 +573,8 @@ def build_index(posts_meta: list[dict]) -> str:
         hero_html=hero_html,
         topics_html=topics_html,
         post_items="\n".join(items) if items else '<li class="card">No posts yet.</li>',
+        popular_html=popular_html or '<li class="mini-item">No posts yet.</li>',
+        editors_html=editors_html or '<li class="mini-item">No posts yet.</li>',
     )
 
 def build_sitemap(posts_meta: list[dict]) -> str:
