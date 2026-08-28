@@ -1,7 +1,7 @@
 ---
 title: The Espresso Transition Roadmap: Mastering the Art of the Home Barista Without the Burnout
 date: 2026-08-10
-description: !espresso at home…
+description: We have all been there. You walk into your favorite local coffee shop, smell that rich, nutty aroma, and take a sip of a perfectly textured latte. Then, you …
 keyword: espresso at home
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1596018589855-e9a2a91f687f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxlc3ByZXNzbyUyMGF0JTIwaG9tZXxlbnwwfHx8fDE3ODYzODAxNDl8MA&ixlib=rb-4.1.0&q=80&w=200

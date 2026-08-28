@@ -1,7 +1,7 @@
 ---
 title: How to Brew Strong Coffee: The Ultimate Guide to a Bold and Intense Cup
 date: 2026-08-13
-description: !how to brew strong coffee…
+description: Have you ever sat down with a fresh cup of coffee, expecting a punch of chocolatey, nutty intensity, only to find it tastes like watery, thin tea?…
 keyword: how to brew strong coffee
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1442512595331-e89e73853f31?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGJyZXclMjBzdHJvbmclMjBjb2ZmZWV8ZW58MHx8fHwxNzg2NjM5NzYzfDA&ixlib=rb-4.1.0&q=80&w=200

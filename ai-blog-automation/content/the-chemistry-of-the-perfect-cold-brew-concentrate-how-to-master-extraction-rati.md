@@ -1,7 +1,7 @@
 ---
 title: The Chemistry of the Perfect Cold Brew Concentrate: How to Master Extraction Ratios, Water Mineralization, and Storage Stability
 date: 2026-08-23
-description: !how to make cold brew concentrate…
+description: If you’ve ever walked into a high-end specialty coffee shop and felt that immediate "hit" of smoothness from a cold brew, you know it’s a world away from the…
 keyword: how to make cold brew concentrate
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1461023058943-07fcbe16d735?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMG1ha2UlMjBjb2xkJTIwYnJldyUyMGNvbmNlbnRyYXRlfGVufDB8fHx8MTc4NzEwNDE3Nnww&ixlib=rb-4.1.0&q=80&w=200

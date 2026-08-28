@@ -1,7 +1,7 @@
 ---
 title: The Ultimate Guide to the Best Coffee Beans for Espresso: How to Find the Perfect Shot
 date: 2026-08-23
-description: !best coffee beans for espresso…
+description: We’ve all been there. You’ve spent a small fortune on a high-end espresso machine, you’ve mastered the art of the perfect milk froth, and you’ve dialed in yo…
 keyword: best coffee beans for espresso
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1447933601403-0c6688de566e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxiZXN0JTIwY29mZmVlJTIwYmVhbnMlMjBmb3IlMjBlc3ByZXNzb3xlbnwwfHx8fDE3ODcxMDQ0OTl8MA&ixlib=rb-4.1.0&q=80&w=200

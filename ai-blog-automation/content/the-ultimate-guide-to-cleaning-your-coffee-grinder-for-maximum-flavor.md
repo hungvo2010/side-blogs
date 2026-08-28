@@ -1,7 +1,7 @@
 ---
 title: The Ultimate Guide to Cleaning Your Coffee Grinder for Maximum Flavor
 date: 2026-08-09
-description: !how to clean a coffee grinder…
+description: You spend a significant amount of money on high-quality, single-origin beans. You’ve invested in a reliable grinder and a precision scale. Yet, your morning …
 keyword: how to clean a coffee grinder
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1461988279488-1dac181a78f9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGNsZWFuJTIwYSUyMGNvZmZlZSUyMGdyaW5kZXJ8ZW58MHx8fHwxNzg2MjcwNjkzfDA&ixlib=rb-4.1.0&q=80&w=200

@@ -1,7 +1,7 @@
 ---
 title: The Science of the Perfect Phin: A Troubleshooting Guide for the Ultimate Vietnamese Iced Coffee Recipe
 date: 2026-08-14
-description: !vietnamese iced coffee recipe…
+description: Have you ever sat in a bustling café in Saigon, listening to the rhythmic clink-clink of ice against glass, and wondered why that coffee tastes so fundamenta…
 keyword: vietnamese iced coffee recipe
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1461023058943-07fcbe16d735?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwaWNlZCUyMGNvZmZlZSUyMHJlY2lwZXxlbnwwfHx8fDE3ODY2Njc2NDF8MA&ixlib=rb-4.1.0&q=80&w=200

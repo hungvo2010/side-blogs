@@ -1,7 +1,7 @@
 ---
 title: How to Descale Your Espresso Machine: The Ultimate Guide to Maintaining Peak Performance
 date: 2026-08-23
-description: !how to descale espresso machine…
+description: You’ve spent hundreds, perhaps thousands, of dollars on your espresso machine. You’ve sourced the perfect beans, dialed in your grind size, and mastered the …
 keyword: how to descale espresso machine
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1583165278997-0250ea5d72e2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGRlc2NhbGUlMjBlc3ByZXNzbyUyMG1hY2hpbmV8ZW58MHx8fHwxNzg3MTAzNDU3fDA&ixlib=rb-4.1.0&q=80&w=200
