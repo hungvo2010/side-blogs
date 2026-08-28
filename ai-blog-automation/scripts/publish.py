@@ -235,7 +235,8 @@ INDEX_TEMPLATE = """\
         .mini-item h4 a:hover{{color:var(--accent)}}
         .mini-item .meta{{color:var(--muted);font-size:.85rem}}
         @media(max-width:640px){{.mini-item{{gap:14px}}.mini-item .mini-thumb{{width:104px;height:80px}}}}
-        .card{{background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(58,47,40,.06);transition:transform .18s,box-shadow .18s;display:flex;flex-direction:column;border:1px solid var(--line)}}
+        .card{{background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(58,47,40,.06);transition:transform .18s,box-shadow .18s;display:flex;flex-direction:column;border:1px solid var(--line);position:relative}}
+        .card h3 a::after{{content:"";position:absolute;inset:0;z-index:1;cursor:pointer}}
         .card:hover{{transform:translateY(-5px);box-shadow:0 14px 32px rgba(58,47,40,.14)}}
         .card .thumb{{width:100%;height:210px;object-fit:cover;display:block}}
         .card .thumb.placeholder{{display:flex;align-items:center;justify-content:center;background:var(--accent-soft);color:var(--muted);font-size:.85rem}}
@@ -355,6 +356,32 @@ def _social_image(url: str) -> str:
     return _re.sub(r"w=\d+", "w=1200", url)
 
 
+def _known_slugs() -> set:
+    root = Path(__file__).resolve().parent.parent
+    cdir = root / "content"
+    return {p.stem for p in cdir.glob("*.md")} if cdir.exists() else set()
+
+
+def normalize_links(md: str, known_slugs: set) -> str:
+    """Fix internal markdown links.
+
+    - Real article slug -> absolute '/slug' (kills nested relative URLs).
+    - Unknown / placeholder targets (article-slug, internal-link-*, fictional
+      slugs like 'dial-in-espresso') -> unlink (turn into plain text) so we
+      never ship broken or 404 links.
+    - Absolute / http / anchor / mailto links are left untouched.
+    """
+    def _sub(m):
+        text, target = m.group(1), m.group(2).strip()
+        if target.startswith(("/", "http", "https", "#", "mailto:")):
+            return m.group(0)
+        if target in known_slugs:
+            return f"[{text}](/{target})"
+        return text
+
+    return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", _sub, md)
+
+
 def build_article(
     filepath: str,
     title: str | None = None,
@@ -396,6 +423,7 @@ def build_article(
         substitute_tokens,
     )
 
+    body = normalize_links(body, _known_slugs())
     body_clean, block_tokens = directives_from_markdown(body)
     html_body = markdown2.markdown(
         body_clean,
