@@ -106,10 +106,10 @@ PAGE_TEMPLATE = """\
         *{{box-sizing:border-box}}
         body{{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.7;color:var(--text);background:#f8fafc;margin:0;padding:0}}
         nav{{background:var(--bg);border-bottom:1px solid #e5e7eb;padding:12px 0}}
-        nav .inner{{max-width:800px;margin:0 auto;padding:0 20px;display:flex;justify-content:space-between;align-items:center}}
+        nav .inner{{width:min(75%,1080px);margin:0 auto;padding:0 20px;display:flex;justify-content:space-between;align-items:center}}
         nav a{{color:var(--primary);text-decoration:none;font-weight:600}}
         nav a:hover{{text-decoration:underline}}
-        .container{{max-width:800px;margin:32px auto 60px;padding:40px;background:var(--bg);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)}}
+        .container{{width:min(75%,1080px);margin:32px auto 60px;padding:40px;background:var(--bg);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)}}
         header{{margin-bottom:32px;border-bottom:2px solid #e5e7eb;padding-bottom:20px}}
         h1{{font-size:2.2rem;line-height:1.25;margin-bottom:8px}}
         .meta{{color:var(--muted);font-size:.9rem}}
@@ -129,7 +129,7 @@ PAGE_TEMPLATE = """\
         .content th{{background:#f9fafb;font-weight:600}}
         footer{{margin-top:48px;padding-top:20px;border-top:1px solid #e5e7eb;text-align:center;color:var(--muted);font-size:.85rem}}
         footer a{{color:var(--primary)}}
-        footer .cols{{max-width:800px;margin:0 auto;padding:0 20px;display:flex;flex-wrap:wrap;gap:32px;justify-content:space-between}}
+        footer .cols{{width:min(75%,1080px);margin:0 auto;padding:0 20px;display:flex;flex-wrap:wrap;gap:32px;justify-content:space-between}}
         footer h4{{color:var(--text);margin-bottom:8px}}
         footer ul{{list-style:none;padding:0;margin:0}}
         footer li{{margin-bottom:4px}}
@@ -199,11 +199,11 @@ INDEX_TEMPLATE = """\
         body{{font-family:var(--sans);line-height:1.7;color:var(--ink);background:var(--bg);margin:0}}
         a{{color:var(--accent)}}
         nav{{background:var(--surface);border-bottom:1px solid var(--line);padding:14px 0;position:sticky;top:0;z-index:10}}
-        nav .inner{{max-width:1100px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}}
+        nav .inner{{width:min(75%,1360px);margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}}
         nav .brand{{font-family:var(--serif);font-weight:700;font-size:1.3rem;color:var(--ink);text-decoration:none}}
         nav .nav-links a{{color:var(--muted);text-decoration:none;margin-left:20px;font-size:.92rem;font-weight:500}}
         nav .nav-links a:hover{{color:var(--accent)}}
-        .container{{max-width:1100px;margin:40px auto 60px;padding:0 24px}}
+        .container{{width:min(75%,1360px);margin:40px auto 60px;padding:0 24px}}
         .hero-mag{{position:relative;border-radius:20px;overflow:hidden;margin-bottom:44px;background:var(--surface);box-shadow:0 10px 30px rgba(58,47,40,.08)}}
         .hero-mag .hero-photo{{width:100%;height:420px;object-fit:cover;display:block}}
         .hero-mag .hero-body{{padding:32px 36px}}
@@ -247,7 +247,7 @@ INDEX_TEMPLATE = """\
         .card .desc{{color:var(--muted);font-size:.92rem;flex:1}}
         .card .meta{{color:var(--muted);font-size:.8rem;margin-top:16px;padding-top:12px;border-top:1px solid var(--line);display:flex;gap:12px;align-items:center}}
         footer{{text-align:center;color:var(--muted);font-size:.85rem;padding:36px 0}}
-        footer .cols{{max-width:1100px;margin:16px auto 0;padding:0 24px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center}}
+        footer .cols{{width:min(75%,1360px);margin:16px auto 0;padding:0 24px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center}}
         footer a{{color:var(--muted)}}footer a:hover{{color:var(--accent)}}
         @media(max-width:640px){{
             .container{{padding:0 18px}}
