@@ -167,6 +167,7 @@ class OpenRouterClient:
             api_key=self.api_key,
             base_url=self.base_url,
             default_headers=default_headers,
+            timeout=240.0,
         )
 
         # OpenRouter fallback client (used when primary is rate-limited/429).
@@ -179,6 +180,7 @@ class OpenRouterClient:
                         api_key=or_key,
                         base_url=self.BASE_URL,
                         default_headers=default_headers,
+                        timeout=240.0,
                     ),
                     "model": settings.openrouter_default_model,
                 }
@@ -201,7 +203,7 @@ class OpenRouterClient:
         messages: list[dict[str, str]],
         model: str | None = None,
         temperature: float = 0.7,
-        max_tokens: int = 16000,
+        max_tokens: int = 32000,
         max_retries: int = 3,
         **kwargs,
     ) -> dict[str, Any]:
@@ -507,7 +509,8 @@ class OpenRouterClient:
                 base_url=self.base_url,
                 default_headers=default_headers,
                 temperature=0.7,
-                max_tokens=16000,
+                max_tokens=32000,
+                timeout=240,
             )
         return self._chat_models[model]
 

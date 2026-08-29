@@ -15,17 +15,18 @@ logger = get_logger(__name__)
 
 
 # Prompts for fact-checking
-CLAIM_EXTRACTION_PROMPT = """Extract all factual, verifiable claims from this article.
+CLAIM_EXTRACTION_PROMPT = """Extract factual, verifiable claims from this article.
 Filter out common knowledge, opinions, and subjective statements.
 
 Article:
 {content}
 
 Requirements:
-- Extract specific factual claims that can be verified
+- Extract at most 12 of the most distinctive, verifiable factual claims
+- Keep each claim concise (max 25 words)
 - Include statistics, dates, technical specifications, quotes
-- Exclude obvious common knowledge
-- Exclude subjective opinions
+- Exclude obvious common knowledge and subjective opinions
+- Prioritize specific, checkable claims over general statements
 
 Return JSON:
 {{

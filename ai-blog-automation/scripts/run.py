@@ -6,6 +6,7 @@ Usage: python scripts/run.py "your keyword"
 
 import os
 import sys
+import traceback
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -66,7 +67,8 @@ try:
     else:
         print("3.5 Blocks ⏭️  none")
 except Exception as e:
-    print(f"3.5 Blocks ⏭️  {str(e)[:60]}")
+    print(f"3.5 Blocks ❗ {e!r}")
+    traceback.print_exc()
 
 # Persist article first so fact-check & SEO (which query by id) can find it
 from blog_automation.models import get_session
@@ -83,7 +85,8 @@ try:
     fact_check_article(article)
     print("4. Fact check ✅")
 except Exception as e:
-    print(f"4. Fact check ⏭️  {str(e)[:80]}")
+    print(f"4. Fact check ❗ {e!r}")
+    traceback.print_exc()
 
 # Phase 5 - SEO (uses opencode/deepseek-v4-flash)
 print("5. SEO…")
@@ -94,14 +97,16 @@ try:
     article = seo_optimize_article(article)
     print(f"5. SEO ✅  score={getattr(article, 'seo_score', '?')}")
 except Exception as e:
-    print(f"5. SEO ⏭️  {str(e)[:80]}")
+    print(f"5. SEO ❗ {e!r}")
+    traceback.print_exc()
 
 # Phase 6
 try:
     run_quality_gates(article)
     print("6. Quality ✅")
-except Exception:
-    print("6. Quality ⏭️  skipped")
+except Exception as e:
+    print(f"6. Quality ❗ {e!r}")
+    traceback.print_exc()
 
 # Phase 7 - Fetch image
 try:
@@ -130,7 +135,8 @@ try:
     else:
         print(f"7. Image ⏭️  {img_provider.name} not configured")
 except Exception as e:
-    print(f"7. Image ⏭️  {str(e)[:60]}")
+    print(f"7. Image ❗ {e!r}")
+    traceback.print_exc()
 
 # Phase 8 - Send to review queue (NO auto-publish)
 from blog_automation.models import get_session
