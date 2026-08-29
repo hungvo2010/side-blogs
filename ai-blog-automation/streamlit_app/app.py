@@ -1172,7 +1172,10 @@ WORDPRESS_APP_PASSWORD=...
     st.subheader("🗄️ Database")
     from blog_automation.config import get_settings
 
-    st.code(f"DATABASE_URL: {get_settings().database_url}")
+    import re as _re
+    _db = get_settings().database_url
+    _masked = _re.sub(r"(://[^:/\s]+):[^@/]+@", r"\1:***@", _db)
+    st.code(f"DATABASE_URL: {_masked}")
 
     st.subheader("📚 Documentation")
     st.markdown("""
