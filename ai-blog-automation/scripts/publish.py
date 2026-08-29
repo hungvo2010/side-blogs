@@ -115,7 +115,7 @@ PAGE_TEMPLATE = """\
         nav .brand{{font-family:var(--serif);font-weight:700;font-size:1.3rem;color:var(--ink);text-decoration:none}}
         nav .nav-links a{{color:var(--muted);text-decoration:none;margin-left:20px;font-size:.92rem;font-weight:500}}
         nav .nav-links a:hover{{color:var(--accent)}}
-        .container{{width:min(75%,860px);margin:0 auto;padding:0 24px}}
+        .container{{width:min(94%,1360px);margin:0 auto;padding:0 24px}}
         .article{{padding:48px 0 64px}}
         .hero{{margin:0 0 22px}}
         .hero img{{width:100%;height:auto;max-height:560px;object-fit:cover;border-radius:18px;display:block}}
@@ -125,11 +125,12 @@ PAGE_TEMPLATE = """\
         h1{{font-family:var(--serif);font-weight:700;font-size:2.5rem;line-height:1.12;margin:0 0 14px;color:var(--ink);letter-spacing:-.01em}}
         .deck{{font-size:1.25rem;line-height:1.55;color:#8a7a6a;max-width:680px;margin:0 0 22px}}
         .byline{{display:flex;flex-wrap:wrap;align-items:center;gap:10px;color:#8a7a6a;font-size:.85rem;padding-bottom:22px;border-bottom:1px solid var(--line)}}
+        .byline .avatar{{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #e8dcc9}}
         .byline .by{{font-weight:600;color:var(--ink)}}
         .byline .dot{{width:3px;height:3px;border-radius:50%;background:#b8aa96;display:inline-block}}
         .tags{{margin-top:16px}}
         .tags span{{display:inline-block;padding:4px 12px;border-radius:999px;font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:var(--accent-soft);color:#7a5a34;margin-right:6px}}
-        .content{{font-size:1.1rem}}
+        .content{{font-size:1.1rem;max-width:1000px;margin:0 auto}}
         .content p{{margin:1.15em 0}}
         .content>p:first-of-type::first-letter{{font-family:var(--serif);font-weight:700;font-size:3.6em;float:left;line-height:.82;padding:.06em .12em 0 0;color:var(--accent)}}
         .content h2{{font-family:var(--serif);font-size:1.7rem;font-weight:600;margin:2.4rem 0 .8rem;color:var(--ink)}}
@@ -175,6 +176,7 @@ PAGE_TEMPLATE = """\
         <h1>{title}</h1>
         <p class="deck">{description}</p>
         <div class="byline">
+            <img class="avatar" src="{author_avatar}" alt="{author}" loading="lazy">
             <span class="by">By {author}</span>
             <span class="dot"></span>
             <span>{display_date}</span>
@@ -269,6 +271,9 @@ INDEX_TEMPLATE = """\
         .mini-item h4 a{{font-family:var(--serif);font-weight:600;font-size:1.25rem;line-height:1.3;color:var(--ink);text-decoration:none}}
         .mini-item h4 a:hover{{color:var(--accent)}}
         .mini-item .meta{{color:var(--muted);font-size:.85rem}}
+        .avatar{{width:26px;height:26px;border-radius:50%;object-fit:cover;vertical-align:middle}}
+        .byline{{display:inline-flex;align-items:center;gap:7px;margin-right:14px;vertical-align:middle}}
+        .byline .author-name{{color:var(--ink);font-weight:600;font-size:.82rem;letter-spacing:.01em}}
         @media(max-width:640px){{.mini-item{{gap:14px}}.mini-item .mini-thumb{{width:104px;height:80px}}}}
         .card{{background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(58,47,40,.06);transition:transform .18s,box-shadow .18s;display:flex;flex-direction:column;border:1px solid var(--line);position:relative}}
         .card h3 a::after{{content:"";position:absolute;inset:0;z-index:1;cursor:pointer}}
@@ -336,6 +341,30 @@ DEFAULTS = {
 # ---------------------------------------------------------------------------
 # Build helpers
 # ---------------------------------------------------------------------------
+AUTHOR_AVATARS = {
+    # avatar tác giả (Unsplash portrait) — mỗi author 1 ảnh tròn
+    "Tien Nguyen": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=crop&w=160&h=160",
+}
+_DEFAULT_AVATAR = (
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?"
+    "crop=entropy&cs=tinysrgb&fit=crop&w=160&h=160"
+)
+
+
+def _avatar(author: str | None) -> str:
+    """Return a circular avatar image URL for an author (Unsplash/Pexels)."""
+    return AUTHOR_AVATARS.get((author or "").strip(), _DEFAULT_AVATAR)
+
+
+def _byline_html(author: str | None) -> str:
+    """Avatar + author name, adventure.com-style byline chip."""
+    a = (author or "").strip() or "The Slow Drip"
+    return (
+        f'<span class="byline"><img class="avatar" src="{_avatar(author)}" '
+        f'alt="{a}" loading="lazy"><span class="author-name">{a}</span></span>'
+    )
+
+
 def slugify(text: str) -> str:
     s = text.lower().strip()
     s = re.sub(r"[^\w\s-]", "", s)
@@ -514,6 +543,7 @@ def build_article(
         tags_html=tags_html,
         kicker=kicker,
         hero_html=hero_html,
+        author_avatar=_avatar(author),
         og_image=og_img,
         twitter_image=tw_img,
         og_locale=DEFAULTS["lang"].replace("-", "_"),
@@ -578,7 +608,7 @@ def build_index(posts_meta: list[dict]) -> str:
             f'<li class="mini-item">{thumb}<div class="mini-body">'
             f'<div class="mini-kicker">{_kicker(p)}</div>'
             f'<h4><a href="/{p["slug"]}">{p["title"]}</a></h4>'
-            f'<div class="meta">{_meta(p)}</div></div></li>'
+            f'<div class="meta">{_byline_html(p.get("author"))}<span>{_meta(p)}</span></div></div></li>'
         )
 
     # Hero = newest post
@@ -592,7 +622,7 @@ def build_index(posts_meta: list[dict]) -> str:
             + f'<div class="hero-kicker">Featured · {_kicker(f)}</div>'
             + f'<h1><a href="/{f["slug"]}">{f["title"]}</a></h1>'
             + f'<p>{f["description"]}</p>'
-            + f'<div class="meta"><span>{_meta(f)}</span>'
+            + f'<div class="meta">{_byline_html(f.get("author"))}<span>{_meta(f)}</span>'
             + f'<a class="read-link" href="/{f["slug"]}">Read the story →</a></div>'
             + "</div></section>"
         )
@@ -616,7 +646,7 @@ def build_index(posts_meta: list[dict]) -> str:
             f'<div class="kicker">{_kicker(p)}</div>'
             f'<h3><a href="/{p["slug"]}">{p["title"]}</a></h3>'
             f'<div class="desc">{p["description"]}</div>'
-            f'<div class="meta"><span>{_meta(p)}</span></div></div></li>'
+            f'<div class="meta">{_byline_html(p.get("author"))}<span>{_meta(p)}</span></div></div></li>'
         )
 
     # Popular this Month = top by word count (proxy for depth)
