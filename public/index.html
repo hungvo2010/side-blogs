@@ -17,40 +17,39 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-.layout-hero img{width:100%;border-radius:12px;display:block}
-.layout-hero p{color:#6b7280;font-size:1.05rem;margin:.5rem 0 0}
+    <style>.layout-hero img{width:100%;border-radius:16px;display:block}
+.layout-hero p{color:#8a7a6a;font-size:1.05rem;margin:.5rem 0 0}
 .layout-figure{margin:1.4rem 0}
-.layout-figure img{max-width:100%;border-radius:10px}
-.layout-figure figcaption{font-size:.85rem;color:#6b7280;text-align:center;margin-top:.4rem}
-.layout-callout{border-left:4px solid #1a73e8;background:#eef2ff;padding:12px 16px;border-radius:8px;margin:1.2rem 0}
-.layout-callout.warn{border-color:#d97706;background:#fffbeb}
-.layout-callout.danger{border-color:#dc2626;background:#fef2f2}
-.layout-callout.tip{border-color:#16a34a;background:#f0fdf4}
+.layout-figure img{max-width:100%;border-radius:14px}
+.layout-figure figcaption{font-size:.85rem;color:#8a7a6a;text-align:center;margin-top:.5rem}
+.layout-callout{border-left:4px solid #b07840;background:#f7efe3;padding:14px 18px;border-radius:12px;margin:1.2rem 0}
+.layout-callout.warn{border-color:#b8860b;background:#fbf3e0}
+.layout-callout.danger{border-color:#b00020;background:#fbeeea}
+.layout-callout.tip{border-color:#2e7d32;background:#eef6ee}
 .layout-callout p{margin:0}
-.layout-steps{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:16px 20px 16px 36px;margin:1.2rem 0}
+.layout-steps{background:#fbf7ef;border:1px solid #e6dccb;border-radius:12px;padding:16px 20px 16px 36px;margin:1.2rem 0}
 .layout-steps li{margin:.35rem 0}
-.layout-list{margin:1rem 0 1rem 0}
+.layout-list{margin:1rem 0}
 .layout-proscons{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:1.2rem 0}
-.layout-proscons .pros,.layout-proscons .cons{border-radius:10px;padding:14px 16px}
-.layout-proscons .pros{background:#f0fdf4;border:1px solid #bbf7d0}
-.layout-proscons .cons{background:#fef2f2;border:1px solid #fecaca}
+.layout-proscons .pros,.layout-proscons .cons{border-radius:12px;padding:14px 16px}
+.layout-proscons .pros{background:#eef6ee;border:1px solid #cfe6cf}
+.layout-proscons .cons{background:#fbeeea;border:1px solid #ecd0cd}
 .layout-proscons h4,.layout-proscons ul{margin:.2rem 0}
-.layout-comparison{margin:1.4rem 0;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden}
-.layout-comparison h3{padding:14px 16px;margin:0;background:#f9fafb;border-bottom:1px solid #e5e7eb}
+.layout-comparison{margin:1.4rem 0;border:1px solid #e6dccb;border-radius:12px;overflow:hidden}
+.layout-comparison h3{padding:14px 16px;margin:0;background:#faf6ef;border-bottom:1px solid #e6dccb}
 .layout-comparison table{margin:0;border:none}
-.layout-comparison th{background:#f9fafb}
-.layout-recipe{border:1px solid #e5e7eb;border-radius:12px;padding:18px 20px;margin:1.4rem 0;background:#fbfaf7}
+.layout-comparison th{background:#faf6ef}
+.layout-recipe{border:1px solid #e6dccb;border-radius:14px;padding:18px 20px;margin:1.4rem 0;background:#fbf7ef}
 .layout-recipe h3,.layout-recipe h4{margin:.3rem 0}
-.layout-recipe .meta{color:#6b7280;font-size:.9rem}
+.layout-recipe .meta{color:#8a7a6a;font-size:.9rem}
 .layout-faq{margin:1.2rem 0}
-.layout-faq details{border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;margin:.5rem 0}
+.layout-faq details{border:1px solid #e6dccb;border-radius:10px;padding:12px 16px;margin:.5rem 0}
 .layout-faq summary{cursor:pointer;font-weight:600}
 .layout-faq-item p{margin:.5rem 0 0}
-.layout-quote{border-left:4px solid #6d28d9;padding-left:16px;color:#4b5563;font-style:italic;margin:1.2rem 0}
-.layout-quote cite{display:block;font-style:normal;font-size:.85rem;color:#6b7280;margin-top:.4rem}
+.layout-quote{border-left:4px solid #b07840;padding-left:16px;color:#5b5240;font-style:italic;margin:1.2rem 0}
+.layout-quote cite{display:block;font-style:normal;font-size:.85rem;color:#8a7a6a;margin-top:.4rem}
 .layout-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:1.2rem 0}
-.layout-card{border:1px solid #e5e7eb;border-radius:10px;padding:16px;background:#fff}
+.layout-card{border:1px solid #e6dccb;border-radius:12px;padding:16px;background:#fff}
 .layout-card h4{margin:.2rem 0}
 </style>
     <style>
@@ -125,7 +124,7 @@
     <div class="nav-links"><a href="/">Home</a><a href="/sitemap.xml">Archive</a><a href="/rss.xml">RSS</a></div>
 </div></nav>
 <main class="container">
-    <section class="hero-mag"><a class="thumb-link" href="/why-vietnamese-coffee-is-served-with-sweetened-condensed-milk"><img class="thumb" src="https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwaWNlZCUyMGNvZmZlZSUyMGNvbmRlbnNlZCUyMG1pbGt8ZW58MHx8fHwxNzg1Nzg1OTI1fDA&ixlib=rb-4.1.0&q=80&w=1200" alt="Why Vietnamese Coffee Is Served With Sweetened Condensed Milk" loading="lazy"></a><div class="hero-body"><div class="hero-kicker">Featured · Vietnamese Coffee</div><h1><a href="/why-vietnamese-coffee-is-served-with-sweetened-condensed-milk">Why Vietnamese Coffee Is Served With Sweetened Condensed Milk</a></h1><p>The story of how Vietnam turned European coffee into a uniquely local ritual — and why sweetened condensed milk, a phin filter, and ice became its signature.</p><div class="meta"><span>2026-08-28 · 2 min read</span><a class="read-link" href="/why-vietnamese-coffee-is-served-with-sweetened-condensed-milk">Read the story →</a></div></div></section>
+    <section class="hero-mag"><a class="thumb-link" href="/why-vietnamese-coffee-is-served-with-sweetened-condensed-milk"><img class="thumb" src="https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwaWNlZCUyMGNvZmZlZSUyMGNvbmRlbnNlZCUyMG1pbGt8ZW58MHx8fHwxNzg1Nzg1OTI1fDA&ixlib=rb-4.1.0&q=80&w=1200" alt="Why Vietnamese Coffee Is Served With Sweetened Condensed Milk" loading="lazy"></a><div class="hero-body"><div class="hero-kicker">Featured · Vietnamese Coffee</div><h1><a href="/why-vietnamese-coffee-is-served-with-sweetened-condensed-milk">Why Vietnamese Coffee Is Served With Sweetened Condensed Milk</a></h1><p>The story of how Vietnam turned European coffee into a uniquely local ritual — and why sweetened condensed milk, a phin filter, and ice became its signature.</p><div class="meta"><span>2026-08-29 · 2 min read</span><a class="read-link" href="/why-vietnamese-coffee-is-served-with-sweetened-condensed-milk">Read the story →</a></div></div></section>
     <div class="topics"><span class="chip">Vietnamese Coffee</span><span class="chip">Condensed Milk</span><span class="chip">Coffee Culture</span><span class="chip">Phin</span></div>
     <h2 class="section-heading">Latest stories</h2>
     <ul class="mag-grid"><li class="card"><a class="thumb-link" href="/how-to-descale-your-espresso-machine-the-ultimate-guide-to-maintaining-peak-perf"><img class="thumb" src="https://images.unsplash.com/photo-1583165278997-0250ea5d72e2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGRlc2NhbGUlMjBlc3ByZXNzbyUyMG1hY2hpbmV8ZW58MHx8fHwxNzg3MTAzNDU3fDA&ixlib=rb-4.1.0&q=80&w=800" alt="How to Descale Your Espresso Machine: The Ultimate Guide to Maintaining Peak Performance" loading="lazy"></a><div class="body"><div class="kicker">Coffee</div><h3><a href="/how-to-descale-your-espresso-machine-the-ultimate-guide-to-maintaining-peak-perf">How to Descale Your Espresso Machine: The Ultimate Guide to Maintaining Peak Performance</a></h3><div class="desc">You’ve spent hundreds, perhaps thousands, of dollars on your espresso machine. You’ve sourced the perfect beans, dialed in your grind size, and mastered the …</div><div class="meta"><span>2026-08-23 · 11 min read</span></div></div></li>
