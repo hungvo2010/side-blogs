@@ -420,6 +420,21 @@ def _social_image(url: str) -> str:
     return _re.sub(r"w=\d+", "w=1200", url)
 
 
+def _hero_image(url: str) -> str:
+    """Upgrade the article hero image to a sharp size for the wide layout.
+
+    The article container is now min(94%,1360px) wide and the hero img is
+    CSS-stretched (width:100%). Frontmatter stores w=200 thumbnails, so the
+    hero rendered a tiny, blurry upscale. Request w=1600 so the large display
+    stays crisp (matches a ~1.2x of the 1360px container for a sharp 2x DPR).
+    """
+    import re as _re
+
+    if not url:
+        return url
+    return _re.sub(r"w=\d+", "w=1600", url)
+
+
 def _known_slugs() -> set:
     root = Path(__file__).resolve().parent.parent
     cdir = root / "content"
@@ -509,7 +524,7 @@ def build_article(
     # NatGeo-style hero (top image) + section kicker (eyebrow)
     kicker = (tags_list[0].upper() if tags_list else DEFAULTS["site_name"].upper())
     hero_html = (
-        f'<figure class="hero"><img src="{image}" alt="{title}" loading="eager"></figure>'
+        f'<figure class="hero"><img src="{_hero_image(image)}" alt="{title}" loading="eager"></figure>'
         if image else ""
     )
 
