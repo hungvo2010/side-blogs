@@ -116,6 +116,8 @@ def get_articles():
                 "meta_description": a.meta_description,
                 "fact_check_report": a.fact_check_report,
                 "seo_analysis": a.seo_analysis,
+                "featured_image_url": a.featured_image_url,
+                "tags": a.tags or [],
             }
             for a in articles
         ]
@@ -197,6 +199,127 @@ def _load_llm_env() -> None:
                 val = None
             if val:
                 os.environ[env_key] = str(val)
+
+
+def _image_search_keywords(article_id: int) -> list[str]:
+    """Build image-search phrases from an article's saved keywords.
+
+    Returns candidate search terms: primary keyword, tags, then LSI keywords
+    (from the brief) — so 'find a different image' queries the right subject
+    instead of a generic phrase. Falls back to a cleaned title.
+    """
+    import re as _re
+
+    from blog_automation.models import Article, get_session
+
+    terms: list[str] = []
+    with get_session() as s:
+        a = s.get(Article, article_id)
+        if not a:
+            return [""]
+        if a.keyword:
+            terms.append(a.keyword)
+        for t in a.tags or []:
+            terms.append(str(t))
+        # LSI from the linked brief, if we can find one
+        try:
+            from blog_automation.models import Brief
+
+            b = s.query(Brief).filter_by(keyword=a.keyword).first()
+            if b:
+                terms.extend(str(x) for x in (b.get_lsi_keywords() or [])[:6])
+        except Exception:
+            pass
+    seen, out = set(), []
+    for t in terms:
+        t = t.strip()
+        if t and t.lower() not in seen:
+            seen.add(t.lower())
+            out.append(t)
+    if out:
+        return out
+    return [_re.sub(r"[^A-Za-z0-9 ]", "", a.title) for a in [s.get(Article, article_id)]]
+
+
+def _find_candidate_images(article_id: int, count: int = 6) -> list[dict]:
+    """Search the configured image provider using the article's keywords.
+
+    Returns a list of dicts {url, thumbnail, author, source} of candidate
+    replacement images (skips the current featured image if it reappears).
+    """
+    from blog_automation.integrations.image_provider import get_image_provider
+
+    _load_image_env()
+    provider = get_image_provider()
+    terms = _image_search_keywords(article_id)
+    candidates: list[dict] = []
+    current = _db_featured_image_url(article_id)
+    for term in terms:
+        if not term:
+            continue
+        try:
+            for r in provider.search(term, count=count):
+                if r.url and r.url != current:
+                    candidates.append(
+                        {
+                            "url": r.url,
+                            "thumbnail": r.thumbnail or r.url,
+                            "author": r.author,
+                            "source": r.source,
+                        }
+                    )
+        except Exception:
+            continue
+        if len(candidates) >= count:
+            break
+    return candidates[:count]
+
+
+def _db_featured_image_url(article_id: int) -> str:
+    from blog_automation.models import Article, get_session
+
+    with get_session() as s:
+        a = s.get(Article, article_id)
+        return (a.featured_image_url or "") if a else ""
+
+
+def _set_article_image(article_id: int, image_url: str) -> str:
+    """Swap the article's hero/featured image and persist it.
+
+    Updates ``featured_image_url`` and replaces the FIRST markdown image line
+    in ``content_draft`` (the hero). Returns the new URL.
+    """
+    import re as _re
+
+    from blog_automation.models import Article, get_session
+
+    with get_session() as s:
+        a = s.get(Article, article_id)
+        if not a:
+            raise RuntimeError(f"Article {article_id} not found")
+        a.featured_image_url = image_url
+        md = a.content_draft or ""
+        # Replace the first ![alt](url) with the new url, keep alt text
+        m = _re.search(r"(!\[[^\]]*\]\()([^)]+)(\))", md)
+        if m:
+            md = md[: m.start(2)] + image_url + md[m.end(2):]
+            a.content_draft = md
+        s.commit()
+    return image_url
+
+
+def _load_image_env():
+    """Load IMAGE_PROVIDER/*_API_KEY secrets into env (for Streamlit Cloud)."""
+    secrets = st.secrets if hasattr(st, "secrets") else {}
+    for key in ("IMAGE_PROVIDER", "UNSPLASH_ACCESS_KEY", "PEXELS_API_KEY",
+                "PIXABAY_API_KEY"):
+        if key not in os.environ:
+            try:
+                val = secrets.get(key)
+            except Exception:
+                val = None
+            if val:
+                os.environ[key] = str(val)
 
 
 def _regenerate_layout_block(article_id: int, block_idx: int, instruction: str) -> dict:
@@ -658,13 +781,14 @@ elif page == "📋 Review Queue":
                             st.metric("Status", article["status"])
 
                         # Tabs for different views
-                        tab1, tab2, tab3, tab4, tab5 = st.tabs(
+                        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
                             [
                                 "📝 Content",
                                 "✅ Fact-Check",
                                 "📊 SEO",
                                 "🎯 Decision",
                                 "🧩 Layout Blocks",
+                                "🖼️ Images",
                             ]
                         )
 
@@ -876,6 +1000,85 @@ elif page == "📋 Review Queue":
                                                             f"Regenerate lỗi: {e2}",
                                                         )
                                                     st.rerun()
+
+                        with tab6:
+                            st.markdown("### 🖼️ Màn ảnh bài (hero)")
+                            _cur_img = article.get("featured_image_url") or ""
+                            if _cur_img:
+                                st.markdown(
+                                    f"**Ảnh đang dùng:** `{_cur_img[:80]}…`"
+                                )
+                                st.image(_cur_img, width=260)
+                            else:
+                                st.info("Bài chưa có ảnh hero.")
+
+                            _kw = _image_search_keywords(article["id"])
+                            st.markdown("**Keywords dùng để tìm ảnh:**")
+                            st.write(" · ".join(_kw) if _kw else "(không có)")
+
+                            if st.button(
+                                "🔍 Tìm ảnh khác (theo keywords)",
+                                key=f"findimg_{article['id']}",
+                                help="Gọi image provider (Unsplash/Pexels) tìm ảnh mới dựa trên keywords của bài",
+                            ):
+                                _cands = []
+                                _err = None
+                                with st.spinner("Đang tìm ảnh…"):
+                                    try:
+                                        _cands = _find_candidate_images(
+                                            article["id"]
+                                        )
+                                    except Exception as e3:
+                                        _err = f"⚠️ Lỗi tìm ảnh: {e3}"
+                                if not _cands:
+                                    st.error(
+                                        _err
+                                        or "Không tìm thấy ảnh (kiểm tra IMAGE_PROVIDER / *_API_KEY secret)"
+                                    )
+                                else:
+                                    st.session_state[f"_cands_{article['id']}"] = _cands
+
+                            _cands = st.session_state.get(
+                                f"_cands_{article['id']}"
+                            )
+                            if _cands:
+                                st.markdown("**Chọn 1 ảnh để thay:**")
+                                _cols = st.columns(3)
+                                for _i, _cand in enumerate(_cands):
+                                    with _cols[_i % 3]:
+                                        st.image(
+                                            _cand["thumbnail"]
+                                            or _cand["url"],
+                                            width=180,
+                                            caption=f"{_cand['source']} · {_cand['author']}",
+                                        )
+                                        if st.button(
+                                            f"✅ Dùng ảnh {_i + 1}",
+                                            key=f"pickimg_{article['id']}_{_i}",
+                                        ):
+                                            try:
+                                                with st.spinner(
+                                                    "Đang cập nhật ảnh…"
+                                                ):
+                                                    _set_article_image(
+                                                        article["id"],
+                                                        _cand["url"],
+                                                    )
+                                                st.session_state[
+                                                    "_review_msg"
+                                                ] = (
+                                                    "success",
+                                                    f"✅ Đã đổi ảnh hero thành ảnh {_i + 1}. "
+                                                    "Bấm 'Approve & Publish' để build lại với ảnh mới.",
+                                                )
+                                            except Exception as e4:
+                                                st.session_state[
+                                                    "_review_msg"
+                                                ] = (
+                                                    "error",
+                                                    f"❌ Đổi ảnh lỗi: {e4}",
+                                                )
+                                            st.rerun()
 
         except Exception as e:
             st.error(f"Error loading articles: {e}")

@@ -146,6 +146,9 @@ PAGE_TEMPLATE = """\
         .related{{margin-top:44px;padding-top:28px;border-top:1px solid var(--line)}}
         .related .label{{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:#b07840;font-weight:600;margin-bottom:14px}}
         .share{{margin-top:40px;padding-top:24px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:8px}}
+        .hashtags{{margin-top:34px;padding:18px 0;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px}}
+        .hashtags span{{font-size:.85rem;font-weight:600;color:#b07840}}
+        .hashtags span::before{{content:"#"}}
         .share .share-label{{color:#8a7a6a;font-size:.9rem;font-weight:600;margin-right:6px}}
         .share a,.share button{{display:inline-block;padding:8px 18px;border-radius:999px;font-size:.82rem;font-weight:600;background:var(--surface);color:var(--ink);text-decoration:none;border:1px solid var(--line);cursor:pointer;font-family:inherit}}
         .share a:hover,.share button:hover{{background:#b07840;color:#fff;border-color:#b07840}}
@@ -185,7 +188,8 @@ PAGE_TEMPLATE = """\
         </div>
         <div class="tags">{tags_html}</div>
     </header>
-    <div class="content">{content_html}</div>
+    <div class="content">{content_html}
+    {hashtags_html}</div>
     <div class="related">
         <div class="label">Related topics</div>
         <div class="tags">{tags_html}</div>
@@ -435,6 +439,28 @@ def _hero_image(url: str) -> str:
     return _re.sub(r"w=\d+", "w=1600", url)
 
 
+def _hashtag_str(tags: list[str]) -> str:
+    """Turn tag words into shareable hashtags, e.g. ['Hanoi Old Quarter'] ->
+    '#HanoiOldQuarter'. Keeps alphanumerics only, PascalCase each word.
+    """
+    out = []
+    for t in tags:
+        cleaned = "".join(w.capitalize() for w in re.split(r"[^A-Za-z0-9]+", t) if w)
+        if cleaned:
+            out.append("#" + cleaned)
+    return " ".join(out)
+
+
+def _hashtags_html(tags: list[str]) -> str:
+    # _hashtag_str gives '#HanoiOldQuarter ...'; strip the '#' because the
+    # CSS .hashtags span::before adds it (avoids '##Hanoi').
+    s = _hashtag_str(tags).replace("#", " ")
+    words = s.split()
+    if not words:
+        return ""
+    return "<div class=\"hashtags\">" + "".join(f"<span>{w}</span>" for w in words) + "</div>"
+
+
 def _known_slugs() -> set:
     root = Path(__file__).resolve().parent.parent
     cdir = root / "content"
@@ -550,7 +576,7 @@ def build_article(
         site_name=DEFAULTS["site_name"],
         canonical_url=canonical,
         share_url=quote(canonical, safe=""),
-        share_text=quote(title, safe=""),
+        share_text=quote(f"{title} {_hashtag_str(tags_list)}".strip(), safe=""),
         published_time=iso,
         iso_date=iso,
         display_date=display,
@@ -558,6 +584,7 @@ def build_article(
         tags_html=tags_html,
         kicker=kicker,
         hero_html=hero_html,
+        hashtags_html=_hashtags_html(tags_list),
         author_avatar=_avatar(author),
         og_image=og_img,
         twitter_image=tw_img,
