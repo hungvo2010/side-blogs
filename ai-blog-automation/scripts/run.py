@@ -148,6 +148,18 @@ with get_session() as s:
     thumb = getattr(article, "_thumbnail", None)
     if thumb:
         a.featured_image_url = thumb
+    # Persist main keywords (LSI from the brief) into tags so the dashboard
+    # 🖼️ Images tab can find a replacement image by subject, not just the
+    # primary keyword. Fall back to keyword if no LSI came through.
+    try:
+        lsi = full.get_lsi_keywords()
+        if lsi:
+            a.tags = [str(x) for x in lsi[:8]]
+        elif not a.tags:
+            a.tags = [kw]
+    except Exception:
+        if not a.tags:
+            a.tags = [kw]
     a.status = "pending_review"
     s.commit()
     article_id = a.id

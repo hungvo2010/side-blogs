@@ -367,6 +367,7 @@ def _approve_and_publish(article_id: int) -> dict:
             title=a.title or a.keyword,
             content=a.content_draft or "",
             keyword=a.keyword or "",
+            tags=[t for t in (a.tags or [a.keyword]) if t],
             image=a.featured_image_url or "",
             auto_push=True,
         )
