@@ -322,6 +322,105 @@ def _load_image_env():
                 os.environ[key] = str(val)
 
 
+def _article_md_path(article_id: int) -> str | None:
+    """Find the content/*.md file for an article (match slug, then title)."""
+    from pathlib import Path
+
+    from blog_automation.models import Article, get_session
+    from blog_automation.pipelines.phase_8_publish.publishing import _REPO_ROOT
+
+    content_dir = _REPO_ROOT / "ai-blog-automation" / "content"
+    with get_session() as s:
+        a = s.get(Article, article_id)
+        if not a:
+            return None
+        slug, title = a.slug, a.title
+
+    if not content_dir.exists():
+        return None
+    for p in content_dir.glob("*.md"):
+        if p.stem == slug:
+            return str(p)
+    for p in content_dir.glob("*.md"):
+        if (p.stem or "").startswith((slug or "")[:40]):
+            return str(p)
+    # Match by title
+    for p in content_dir.glob("*.md"):
+        txt = p.read_text(encoding="utf-8")
+        if title and f"title: {title}" in txt:
+            return str(p)
+    return None
+
+
+def _set_featured(article_id: int, make_featured: bool = True) -> dict:
+    """Make ONE article the homepage hero (frontmatter `featured: true`).
+
+    Clears `featured` from all other content/*.md, sets it on the target,
+    rebuilds the whole site in-process and deploys to Cloudflare Pages.
+    Returns {file, deployed, url}.
+    """
+    import re as _re
+
+    from blog_automation.models import Article, get_session
+    from blog_automation.pipelines.phase_8_publish.publishing import (
+        _build_site_files,
+        _deploy_to_cloudflare,
+    )
+
+    _load_cloudflare_env()
+    md_path = _article_md_path(article_id)
+    if not md_path:
+        raise RuntimeError(f"Không tìm thấy content/*.md cho bài #{article_id}")
+
+    target_stem = md_path.rsplit("/", 1)[-1]
+    # Clear featured from every content/*.md
+    from pathlib import Path
+
+    cleared = 0
+    for p in Path(md_path).parent.glob("*.md"):
+        txt = p.read_text(encoding="utf-8")
+        if _re.search(r"^featured:\s*(true|1|yes)\s*$", txt, _re.M):
+            new = _re.sub(r"^featured:\s*(true|1|yes)\s*$", "", txt, flags=_re.M)
+            p.write_text(new, encoding="utf-8")
+            cleared += 1
+
+    # Set featured on target if requested
+    if make_featured:
+        txt = Path(md_path).read_text(encoding="utf-8")
+        if not _re.search(r"^featured:", txt, _re.M):
+            # insert right after the opening '---'
+            txt = txt.replace("---\n", "---\nfeatured: true\n", 1)
+        else:
+            txt = _re.sub(
+                r"^featured:\s*(true|1|yes|false|0|no)\s*$",
+                "featured: true",
+                txt,
+                flags=_re.M,
+            )
+        Path(md_path).write_text(txt, encoding="utf-8")
+
+    target_md = Path(md_path).read_text(encoding="utf-8")
+    files = _build_site_files(slug="x", md_content=target_md)
+    method, pushed = _deploy_to_cloudflare(files, "featured-set")
+    slug = article_slug_from_id(article_id)
+    return {
+        "file": md_path,
+        "deck": "featured",
+        "deployed": pushed,
+        "method": method,
+        "url": f"{os.environ.get('SITE_URL','https://dripper.top')}/{slug}" if slug else "",
+        "cleared": cleared,
+    }
+
+
+def article_slug_from_id(article_id: int) -> str:
+    from blog_automation.models import Article, get_session
+
+    with get_session() as s:
+        a = s.get(Article, article_id)
+        return a.slug if a else ""
+
+
 def _regenerate_layout_block(article_id: int, block_idx: int, instruction: str) -> dict:
     """Regenerate ONE layout block via the LLM and persist updated content_draft.
 
@@ -1150,7 +1249,7 @@ elif page == "📄 All Articles":
 
                     # Quick Actions for Article
                     st.markdown("### 🛠️ Article Actions")
-                    col_act1, col_act2 = st.columns(2)
+                    col_act1, col_act2, col_act3 = st.columns(3)
                     with col_act1:
                         if st.button(
                             "📄 Export to Static HTML", use_container_width=True
@@ -1181,6 +1280,31 @@ elif page == "📄 All Articles":
                             use_container_width=True,
                             help="Configure WordPress API keys to enable",
                         )
+
+                    with col_act3:
+                        if st.button(
+                            "⭐ Set as Featured (đầu trang)",
+                            key=f"setfeat_{article['id']}",
+                            use_container_width=True,
+                            type="primary",
+                            help="Đưa bài này lên đầu trang (hero). Sẽ gỡ 'featured' khỏi các bài khác, rebuild + deploy.",
+                        ):
+                            try:
+                                with st.spinner(
+                                    "Đang set featured + rebuild + deploy…"
+                                ):
+                                    _set_featured(article["id"], True)
+                                st.session_state["_review_msg"] = (
+                                    "success",
+                                    "⭐ Đã set bài này làm bài đầu trang (hero) "
+                                    "và deploy xong.",
+                                )
+                            except Exception as e5:
+                                st.session_state["_review_msg"] = (
+                                    "error",
+                                    f"❌ Set featured lỗi: {e5}",
+                                )
+                            st.rerun()
 
                     tab1, tab2, tab3 = st.tabs(
                         ["📝 Content", "✅ Fact-Check", "📊 SEO"]
