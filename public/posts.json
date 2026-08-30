@@ -9,10 +9,11 @@
       "coffee culture",
       "phin"
     ],
-    "author": "Tien Nguyen",
+    "author": "Anonymous",
     "image": "https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwaWNlZCUyMGNvZmZlZSUyMGNvbmRlbnNlZCUyMG1pbGt8ZW58MHx8fHwxNzg1Nzg1OTI1fDA&ixlib=rb-4.1.0&q=80&w=200",
-    "date": "2026-08-30T10:51:32Z",
-    "word_count": 458
+    "date": "2026-08-30T11:33:44Z",
+    "word_count": 458,
+    "featured": false
   },
   {
     "title": "Hanoi 36 Old Quarters Travel Guide: Exploring the Ancient Heart of Vietnam's Capital",
@@ -27,7 +28,8 @@
     "author": "Tien Nguyen",
     "image": "https://images.unsplash.com/photo-1543355890-20bc0a26fda1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxIYW5vaSUyMDM2JTIwb2xkJTIwcXVhcnRlcnMlMjB0cmF2ZWwlMjBndWlkZXxlbnwwfHx8fDE3ODgwODQ1NDF8MA&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-30T00:00:00Z",
-    "word_count": 4417
+    "word_count": 4417,
+    "featured": true
   },
   {
     "title": "Vietnamese Food Culture: A Journey Through Balance, History, and Flavor",
@@ -37,7 +39,8 @@
     "author": "Tien Nguyen",
     "image": "https://images.unsplash.com/photo-1616438096679-620332ede3a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwZm9vZCUyMGN1bHR1cmV8ZW58MHx8fHwxNzg4MDAwOTI5fDA&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-29T00:00:00Z",
-    "word_count": 3274
+    "word_count": 3274,
+    "featured": false
   },
   {
     "title": "How to Descale Your Espresso Machine: The Ultimate Guide to Maintaining Peak Performance",
@@ -47,7 +50,8 @@
     "author": "Tien Nguyen",
     "image": "https://images.unsplash.com/photo-1583165278997-0250ea5d72e2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGRlc2NhbGUlMjBlc3ByZXNzbyUyMG1hY2hpbmV8ZW58MHx8fHwxNzg3MTAzNDU3fDA&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-23T00:00:00Z",
-    "word_count": 2180
+    "word_count": 2180,
+    "featured": false
   },
   {
     "title": "The Chemistry of the Perfect Cold Brew Concentrate: How to Master Extraction Ratios, Water Mineralization, and Storage Stability",
@@ -57,7 +61,8 @@
     "author": "Tien Nguyen",
     "image": "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMG1ha2UlMjBjb2xkJTIwYnJldyUyMGNvbmNlbnRyYXRlfGVufDB8fHx8MTc4NzEwNDE3Nnww&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-23T00:00:00Z",
-    "word_count": 2343
+    "word_count": 2343,
+    "featured": false
   },
   {
     "title": "The Ultimate Guide to the Best Coffee Beans for Espresso: How to Find the Perfect Shot",
@@ -67,7 +72,8 @@
     "author": "Tien Nguyen",
     "image": "https://images.unsplash.com/photo-1447933601403-0c6688de566e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxiZXN0JTIwY29mZmVlJTIwYmVhbnMlMjBmb3IlMjBlc3ByZXNzb3xlbnwwfHx8fDE3ODcxMDQ0OTl8MA&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-23T00:00:00Z",
-    "word_count": 1856
+    "word_count": 1856,
+    "featured": false
   },
   {
     "title": "How to Make Coffee Stronger: A Complete Guide to Boosting Flavor and Intensity",
@@ -77,7 +83,8 @@
     "author": "Tien Nguyen",
     "image": "https://images.unsplash.com/photo-1610632380989-680fe40816c6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMG1ha2UlMjBjb2ZmZWUlMjBzdHJvbmdlcnxlbnwwfHx8fDE3ODY3ODQyMjJ8MA&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-17T00:00:00Z",
-    "word_count": 2270
+    "word_count": 2270,
+    "featured": false
   },
   {
     "title": "The Science of the Perfect Phin: A Troubleshooting Guide for the Ultimate Vietnamese Iced Coffee Recipe",
@@ -87,7 +94,8 @@
     "author": "Tien Nguyen",
     "image": "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwaWNlZCUyMGNvZmZlZSUyMHJlY2lwZXxlbnwwfHx8fDE3ODY2Njc2NDF8MA&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-14T00:00:00Z",
-    "word_count": 1671
+    "word_count": 1671,
+    "featured": false
   },
   {
     "title": "How to Brew Strong Coffee: The Ultimate Guide to a Bold and Intense Cup",
@@ -97,7 +105,8 @@
     "author": "Tien Nguyen",
     "image": "https://images.unsplash.com/photo-1442512595331-e89e73853f31?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGJyZXclMjBzdHJvbmclMjBjb2ZmZWV8ZW58MHx8fHwxNzg2NjM5NzYzfDA&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-13T00:00:00Z",
-    "word_count": 2187
+    "word_count": 2187,
+    "featured": false
   },
   {
     "title": "The Espresso Transition Roadmap: Mastering the Art of the Home Barista Without the Burnout",
@@ -107,7 +116,8 @@
     "author": "Tien Nguyen",
     "image": "https://images.unsplash.com/photo-1596018589855-e9a2a91f687f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxlc3ByZXNzbyUyMGF0JTIwaG9tZXxlbnwwfHx8fDE3ODYzODAxNDl8MA&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-10T00:00:00Z",
-    "word_count": 1768
+    "word_count": 1768,
+    "featured": false
   },
   {
     "title": "Master the Art of the Perfect Pour Over: A Step-by-Step Brewing Guide",
@@ -117,7 +127,8 @@
     "author": "Tien Nguyen",
     "image": "https://images.unsplash.com/photo-1442512595331-e89e73853f31?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGJyZXclMjBwb3VyJTIwb3ZlciUyMGNvZmZlZXxlbnwwfHx8fDE3ODYyNjYwOTF8MA&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-09T00:00:00Z",
-    "word_count": 1722
+    "word_count": 1722,
+    "featured": false
   },
   {
     "title": "The Ultimate Guide to Cleaning Your Coffee Grinder for Maximum Flavor",
@@ -127,7 +138,8 @@
     "author": "Tien Nguyen",
     "image": "https://images.unsplash.com/photo-1461988279488-1dac181a78f9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGNsZWFuJTIwYSUyMGNvZmZlZSUyMGdyaW5kZXJ8ZW58MHx8fHwxNzg2MjcwNjkzfDA&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-09T00:00:00Z",
-    "word_count": 1674
+    "word_count": 1674,
+    "featured": false
   },
   {
     "title": "Unlocking the Bold Setting: Does It Actually Make Your Coffee Better?",
@@ -137,7 +149,8 @@
     "author": "Tien Nguyen",
     "image": "https://images.unsplash.com/photo-1630411870702-8f6f8fd80ce2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxVbmxvY2tpbmclMjB0aGUlMjBCb2xkJTIwU2V0dGluZyUzQSUyMERvZXMlMjBJdCUyMEFjdHVhbGx5JTIwTWFrZSUyMFlvdXIlMjBDb2ZmZWUlMjBCZXR0ZXIlM0Z8ZW58MHx8fHwxNzg2MTc5NTk2fDA&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-08T00:00:00Z",
-    "word_count": 1967
+    "word_count": 1967,
+    "featured": false
   },
   {
     "title": "Master the French Press: Expert Tips for a Richer, Smoother Brew",
@@ -147,7 +160,8 @@
     "author": "Tien Nguyen",
     "image": "https://images.unsplash.com/photo-1639906512494-dd4a536abc4e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxmcmVuY2glMjBwcmVzcyUyMGJyZXdpbmclMjB0aXBzfGVufDB8fHx8MTc4NTc3MTk2OXww&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-03T00:00:00Z",
-    "word_count": 1989
+    "word_count": 1989,
+    "featured": false
   },
   {
     "title": "The Soul of Vietnam in a Cup: A Deep Dive into Vietnamese Coffee Culture",
@@ -157,7 +171,8 @@
     "author": "Tien Nguyen",
     "image": "https://images.unsplash.com/photo-1622087250339-9295c9ef442b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxUaGUlMjBTb3VsJTIwb2YlMjBWaWV0bmFtJTIwaW4lMjBhJTIwQ3VwJTNBJTIwQSUyMERlZXAlMjBEaXZlJTIwaW50byUyMFZpZXRuYW1lc2UlMjBDb2ZmZWUlMjBDdWx0dXJlfGVufDB8fHx8MTc4NjE3OTU5NHww&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-03T00:00:00Z",
-    "word_count": 1680
+    "word_count": 1680,
+    "featured": false
   },
   {
     "title": "The Ultimate Cold Brew Coffee Guide: How to Make Smooth, Cafe-Quality Brew at Home",
@@ -167,7 +182,8 @@
     "author": "Tien Nguyen",
     "image": "https://images.unsplash.com/photo-1522825397800-ddf6405fc258?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxUaGUlMjBVbHRpbWF0ZSUyMENvbGQlMjBCcmV3JTIwQ29mZmVlJTIwR3VpZGUlM0ElMjBIb3clMjB0byUyME1ha2UlMjBTbW9vdGglMkMlMjBDYWZlLVF1YWxpdHklMjBCcmV3JTIwYXQlMjBIb21lfGVufDB8fHx8MTc4NjE3OTU5NXww&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-03T00:00:00Z",
-    "word_count": 2067
+    "word_count": 2067,
+    "featured": false
   },
   {
     "title": "Best Budget Coffee Maker 2026: Top Picks for Exceptional Flavor Without the High Price Tag",
@@ -177,7 +193,8 @@
     "author": "Tien Nguyen",
     "image": "https://images.unsplash.com/photo-1565452344518-47faca79dc69?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxCZXN0JTIwQnVkZ2V0JTIwQ29mZmVlJTIwTWFrZXIlMjAyMDI2JTNBJTIwVG9wJTIwUGlja3MlMjBmb3IlMjBFeGNlcHRpb25hbCUyMEZsYXZvciUyMFdpdGhvdXQlMjB0aGUlMjBIaWdoJTIwUHJpY2UlMjBUYWd8ZW58MHx8fHwxNzg2MTc5NTkyfDA&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-02T00:00:00Z",
-    "word_count": 1864
+    "word_count": 1864,
+    "featured": false
   },
   {
     "title": "Robusta vs. Arabica: The Ultimate Guide to Choosing Your Perfect Coffee Bean",
@@ -187,6 +204,7 @@
     "author": "Tien Nguyen",
     "image": "https://images.unsplash.com/photo-1580933073521-dc49ac0d4e6a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxSb2J1c3RhJTIwdnMuJTIwQXJhYmljYSUzQSUyMFRoZSUyMFVsdGltYXRlJTIwR3VpZGUlMjB0byUyMENob29zaW5nJTIwWW91ciUyMFBlcmZlY3QlMjBDb2ZmZWUlMjBCZWFufGVufDB8fHx8MTc4NjE3OTU5M3ww&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-02T00:00:00Z",
-    "word_count": 2095
+    "word_count": 2095,
+    "featured": false
   }
 ]

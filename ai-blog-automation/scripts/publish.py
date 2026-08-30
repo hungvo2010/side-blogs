@@ -507,6 +507,8 @@ def build_article(
     ]
     author = author or fm.get("author") or DEFAULTS["author"]
     image = image or fm.get("image") or ""
+    # featured: true in frontmatter -> this post becomes the homepage hero
+    featured = str(fm.get("featured", "")).lower() in ("1", "true", "yes", "y")
 
     # Use frontmatter date if present, otherwise fall back to now
     fm_date = fm.get("date")
@@ -605,6 +607,7 @@ def build_article(
             "image": image,
             "date": iso,
             "word_count": wc,
+            "featured": featured,
         },
     )
 
@@ -653,10 +656,13 @@ def build_index(posts_meta: list[dict]) -> str:
             f'<div class="meta">{_byline_html(p.get("author"))}<span>{_meta(p)}</span></div></div></li>'
         )
 
-    # Hero = newest post
+    # Hero = featured post if any (frontmatter `featured: true`), else newest
     hero_html = ""
-    if posts_meta:
-        f = posts_meta[0]
+    featured = next((p for p in posts_meta if p.get("featured")), None)
+    if not featured and posts_meta:
+        featured = posts_meta[0]
+    if featured:
+        f = featured
         hero_html = (
             '<section class="hero-mag">'
             f'<a class="thumb-link" href="/{f["slug"]}">{_thumb(f, 1200)}</a>'
@@ -669,7 +675,7 @@ def build_index(posts_meta: list[dict]) -> str:
             + "</div></section>"
         )
 
-    rest = posts_meta[1:] if posts_meta else []
+    rest = [p for p in posts_meta if p is not featured]
 
     # Topic chips
     tag_counts = Counter()
@@ -697,7 +703,7 @@ def build_index(posts_meta: list[dict]) -> str:
 
     # Editors Picks = culture/curated tags first, fill from remaining
     culture_tags = {"Vietnamese Coffee", "Coffee Culture", "Phin"}
-    picked, seen = [], {p["slug"] for p in ([posts_meta[0]] + popular) if p}
+    picked, seen = [], {p["slug"] for p in ([featured] + popular) if p}
     for p in rest:
         if any(t in culture_tags for t in (p.get("tags") or [])) and p["slug"] not in seen and len(picked) < 3:
             picked.append(p)
