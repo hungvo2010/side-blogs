@@ -241,17 +241,27 @@ def _image_search_keywords(article_id: int) -> list[str]:
     return [_re.sub(r"[^A-Za-z0-9 ]", "", a.title) for a in [s.get(Article, article_id)]]
 
 
-def _find_candidate_images(article_id: int, count: int = 6) -> list[dict]:
+def _find_candidate_images(
+    article_id: int,
+    count: int = 6,
+    keyword_override: str | None = None,
+) -> list[dict]:
     """Search the configured image provider using the article's keywords.
 
     Returns a list of dicts {url, thumbnail, author, source} of candidate
     replacement images (skips the current featured image if it reappears).
+    When ``keyword_override`` is given (non-empty), it replaces the saved
+    keywords for this single search — it is NOT persisted to the article.
     """
     from blog_automation.integrations.image_provider import get_image_provider
 
     _load_image_env()
     provider = get_image_provider()
-    terms = _image_search_keywords(article_id)
+    terms = (
+        [keyword_override.strip()]
+        if (keyword_override and keyword_override.strip())
+        else _image_search_keywords(article_id)
+    )
     candidates: list[dict] = []
     current = _db_featured_image_url(article_id)
     for term in terms:
@@ -283,29 +293,78 @@ def _db_featured_image_url(article_id: int) -> str:
         return (a.featured_image_url or "") if a else ""
 
 
-def _set_article_image(article_id: int, image_url: str) -> str:
-    """Swap the article's hero/featured image and persist it.
+def _set_article_image(article_id: int, image_url: str, img_index: int = 0) -> str:
+    """Swap an article image (hero or one of the inline images) and persist it.
 
-    Updates ``featured_image_url`` and replaces the FIRST markdown image line
-    in ``content_draft`` (the hero). Returns the new URL.
+    Replaces the markdown image at ``img_index`` (0-based, in rendering order —
+    0 = hero) inside ``content_draft``. Only ``img_index == 0`` updates
+    ``featured_image_url`` (the frontmatter/OG/thumb image) too. Returns the
+    new URL. ``img_index`` out of range → hero (index 0).
     """
     import re as _re
 
     from blog_automation.models import Article, get_session
 
+    # Enumerate image tags in order: (start, alt, url_end) for each ![alt](url)
+    _IMG = _re.compile(r"(!\[[^\]]*\]\()([^)]+)(\))")
+
     with get_session() as s:
         a = s.get(Article, article_id)
         if not a:
             raise RuntimeError(f"Article {article_id} not found")
-        a.featured_image_url = image_url
+
         md = a.content_draft or ""
-        # Replace the first ![alt](url) with the new url, keep alt text
-        m = _re.search(r"(!\[[^\]]*\]\()([^)]+)(\))", md)
-        if m:
+        idx = img_index if img_index >= 0 else 0
+        if _IMG.search(md):
+            matches = list(_IMG.finditer(md))
+            # clamp to real range
+            if idx >= len(matches):
+                idx = 0
+            m = matches[idx]
             md = md[: m.start(2)] + image_url + md[m.end(2):]
             a.content_draft = md
+
+        if idx == 0:
+            a.featured_image_url = image_url
+        elif not a.featured_image_url:
+            # never had a featured image; don't fabricate one for an inline swap
+            pass
         s.commit()
     return image_url
+
+
+def _requeue_article(article_id: int, reviewer: str = "Tien Nguyen") -> int:
+    """Move an already-approved/published article BACK to the review queue.
+
+    Sets status → ``pending_review`` (reset pipeline progress), clears publish
+    markers, updates the existing review task if any (else creates one).
+    Returns the review task id.
+    """
+    from blog_automation.models import Article, get_session
+    from blog_automation.review.task_queue import ReviewTask, create_review_task
+
+    with get_session() as s:
+        a = s.get(Article, article_id)
+        if not a:
+            raise RuntimeError(f"Article {article_id} not found")
+        a.status = "pending_review"
+        a.pipeline_progress = None
+        a.published_date = None
+        s.commit()
+
+        task = (
+            s.query(ReviewTask)
+            .filter_by(article_id=article_id)
+            .order_by(ReviewTask.id.desc())
+            .first()
+        )
+        if task:
+            task.status = "pending"
+            task.assigned_reviewer = reviewer
+            s.commit()
+            return task.id
+        t = create_review_task(a, reviewer=reviewer, deadline_hours=24)
+        return t.id if t else 0
 
 
 def _load_image_env():
@@ -1102,83 +1161,106 @@ elif page == "📋 Review Queue":
                                                     st.rerun()
 
                         with tab6:
-                            st.markdown("### 🖼️ Màn ảnh bài (hero)")
-                            _cur_img = article.get("featured_image_url") or ""
-                            if _cur_img:
-                                st.markdown(
-                                    f"**Ảnh đang dùng:** `{_cur_img[:80]}…`"
-                                )
-                                st.image(_cur_img, width=260)
-                            else:
-                                st.info("Bài chưa có ảnh hero.")
+                            st.markdown("### 🖼️ Ảnh trong bài (hero + inline)")
 
-                            _kw = _image_search_keywords(article["id"])
-                            st.markdown("**Keywords dùng để tìm ảnh:**")
-                            st.write(" · ".join(_kw) if _kw else "(không có)")
-
-                            if st.button(
-                                "🔍 Tìm ảnh khác (theo keywords)",
-                                key=f"findimg_{article['id']}",
-                                help="Gọi image provider (Unsplash/Pexels) tìm ảnh mới dựa trên keywords của bài",
-                            ):
-                                _cands = []
-                                _err = None
-                                with st.spinner("Đang tìm ảnh…"):
-                                    try:
-                                        _cands = _find_candidate_images(
-                                            article["id"]
-                                        )
-                                    except Exception as e3:
-                                        _err = f"⚠️ Lỗi tìm ảnh: {e3}"
-                                if not _cands:
-                                    st.error(
-                                        _err
-                                        or "Không tìm thấy ảnh (kiểm tra IMAGE_PROVIDER / *_API_KEY secret)"
-                                    )
-                                else:
-                                    st.session_state[f"_cands_{article['id']}"] = _cands
-
-                            _cands = st.session_state.get(
-                                f"_cands_{article['id']}"
+                            _override_kw = st.text_input(
+                                "✏️ Keyword tìm ảnh (gõ override, bỏ trống = dùng keyword bài)",
+                                value="",
+                                key=f"kw_override_{article['id']}",
+                                help="Override TẠM: keyword mày gõ sẽ được dùng để tìm ảnh lần này, "
+                                "KHÔNG đổi keyword gốc / tags của bài trong DB.",
                             )
-                            if _cands:
-                                st.markdown("**Chọn 1 ảnh để thay:**")
-                                _cols = st.columns(3)
-                                for _i, _cand in enumerate(_cands):
-                                    with _cols[_i % 3]:
-                                        st.image(
-                                            _cand["thumbnail"]
-                                            or _cand["url"],
-                                            width=180,
-                                            caption=f"{_cand['source']} · {_cand['author']}",
+
+                            import re as _re_images
+
+                            _body = article.get("content_draft") or ""
+                            _imgs = list(
+                                _re_images.finditer(r"!\[[^\]]*\]\(([^)]+)\)", _body)
+                            )
+                            if not _imgs:
+                                st.info("Bài chưa có ảnh nào trong nội dung. "
+                                        "Bấm 'Approve & Publish' để build (sẽ gắn ảnh bìa).")
+                            else:
+                                for _k, _m in enumerate(_imgs):
+                                    _url = _m.group(1)
+                                    _role = "hero (ảnh bìa)" if _k == 0 else f"inline ảnh #{_k}"
+                                    with st.container():
+                                        st.markdown(
+                                            f"**Ảnh {_k + 1} — {_role}**"
                                         )
+                                        st.caption(_url[:100])
+                                        st.image(_url, width=240)
                                         if st.button(
-                                            f"✅ Dùng ảnh {_i + 1}",
-                                            key=f"pickimg_{article['id']}_{_i}",
+                                            f"🔍 Tìm ảnh thay thế ảnh {_k + 1}",
+                                            key=f"findimg_{article['id']}_{_k}",
+                                            help="Gọi image provider tìm ảnh thay thế cho RIÊNG ảnh này "
+                                            "(theo keyword override nếu có, else keyword bài)",
                                         ):
                                             try:
-                                                with st.spinner(
-                                                    "Đang cập nhật ảnh…"
-                                                ):
-                                                    _set_article_image(
+                                                with st.spinner("Đang tìm ảnh…"):
+                                                    _cs = _find_candidate_images(
                                                         article["id"],
-                                                        _cand["url"],
+                                                        keyword_override=_override_kw or None,
                                                     )
-                                                st.session_state[
-                                                    "_review_msg"
-                                                ] = (
-                                                    "success",
-                                                    f"✅ Đã đổi ảnh hero thành ảnh {_i + 1}. "
-                                                    "Bấm 'Approve & Publish' để build lại với ảnh mới.",
-                                                )
-                                            except Exception as e4:
-                                                st.session_state[
-                                                    "_review_msg"
-                                                ] = (
-                                                    "error",
-                                                    f"❌ Đổi ảnh lỗi: {e4}",
-                                                )
-                                            st.rerun()
+                                                if not _cs:
+                                                    st.error(
+                                                        "Không tìm thấy ảnh (kiểm tra IMAGE_PROVIDER / *_API_KEY secret)"
+                                                    )
+                                                else:
+                                                    st.session_state[
+                                                        f"_cands_{article['id']}_{_k}"
+                                                    ] = _cs
+                                            except Exception as ex:
+                                                st.error(f"⚠️ Lỗi tìm ảnh: {ex}")
+
+                                        _cs = st.session_state.get(
+                                            f"_cands_{article['id']}_{_k}"
+                                        )
+                                        if _cs:
+                                            st.markdown(
+                                                f"**Chọn 1 ảnh thay cho ảnh {_k + 1} ({_role}):**"
+                                            )
+                                            _ccols = st.columns(3)
+                                            for _ci, _cd in enumerate(_cs):
+                                                with _ccols[_ci % 3]:
+                                                    st.image(
+                                                        _cd["thumbnail"] or _cd["url"],
+                                                        width=170,
+                                                        caption=f"{_cd['source']} · {_cd['author']}",
+                                                    )
+                                                    if st.button(
+                                                        f"✅ Dùng ảnh {_ci + 1}",
+                                                        key=f"pickimg_{article['id']}_{_k}_{_ci}",
+                                                    ):
+                                                        try:
+                                                            with st.spinner(
+                                                                "Đang cập nhật ảnh…"
+                                                            ):
+                                                                _set_article_image(
+                                                                    article["id"],
+                                                                    _cd["url"],
+                                                                    img_index=_k,
+                                                                )
+                                                            st.session_state[
+                                                                "_review_msg"
+                                                            ] = (
+                                                                "success",
+                                                                f"✅ Đã đổi ảnh {_k + 1} ({_role}). "
+                                                                "Bấm 'Approve & Publish' để build lại với ảnh mới.",
+                                                            )
+                                                        except Exception as ex:
+                                                            st.session_state[
+                                                                "_review_msg"
+                                                            ] = (
+                                                                "error",
+                                                                f"❌ Đổi ảnh lỗi: {ex}",
+                                                            )
+                                                        st.rerun()
+
+                            st.markdown("---")
+                            _kw = _image_search_keywords(article["id"])
+                            st.markdown("**Keywords default dùng để tìm ảnh:**")
+                            st.write(" · ".join(_kw) if _kw else "(không có)")
 
         except Exception as e:
             st.error(f"Error loading articles: {e}")
@@ -1303,6 +1385,30 @@ elif page == "📄 All Articles":
                                 st.session_state["_review_msg"] = (
                                     "error",
                                     f"❌ Set featured lỗi: {e5}",
+                                )
+                            st.rerun()
+
+                    # Requeue-to-review-queue action
+                    na1, na2, na3, na4 = st.columns(4)
+                    with na1:
+                        if st.button(
+                            "↩️ Đưa về Review Queue",
+                            key=f"requeue_{article['id']}",
+                            use_container_width=True,
+                            help="Đưa bài này về lại danh sách pending_review để kiểm duyệt + publish lại.",
+                        ):
+                            try:
+                                with st.spinner("Đang đưa về Review Queue…"):
+                                    _tid = _requeue_article(article["id"])
+                                st.session_state["_review_msg"] = (
+                                    "success",
+                                    f"✅ Đã đưa bài về Review Queue (task #{_tid}). "
+                                    "Chuyển qua tab 📋 Review Queue để approve lại.",
+                                )
+                            except Exception as ex:
+                                st.session_state["_review_msg"] = (
+                                    "error",
+                                    f"❌ Đưa về Review Queue lỗi: {ex}",
                                 )
                             st.rerun()
 
