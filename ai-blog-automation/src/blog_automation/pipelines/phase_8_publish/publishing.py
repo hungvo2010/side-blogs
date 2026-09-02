@@ -91,6 +91,10 @@ def publish_article(
     # ── Build frontmatter markdown ──
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     fm = f"---\ntitle: {title}\ndate: {now}\n"
+    # Pin the slug in frontmatter so build_article produces the SAME URL
+    # (otherwise it derives slugify(title), which keeps Vietnamese diacritics
+    # and silently creates a second URL for the same article)
+    fm += f"slug: {slug}\n"
     if description:
         fm += f"description: {description}\n"
     if keyword:
