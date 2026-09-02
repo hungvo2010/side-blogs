@@ -1463,7 +1463,7 @@ elif page == "📄 All Articles":
             if articles:
                 for article in articles:
                     with st.container():
-                        col1, col2, col3, col4, col5 = st.columns([3, 1, 1, 1, 1])
+                        col1, col2, col3, col4, col5, col6 = st.columns([2, 1, 1, 1, 1, 1])
                         with col1:
                             title = article['title'] or 'Untitled'
                             if article['status'] == 'published':
@@ -1490,6 +1490,59 @@ elif page == "📄 All Articles":
                             if st.button("View", key=f"view_{article['id']}"):
                                 st.session_state["selected_article"] = article["id"]
                                 st.rerun()
+                        with col6:
+                            if st.button(
+                                "🗑️ Delete", key=f"del_{article['id']}"
+                            ):
+                                from blog_automation.models import (
+                                    delete_article_cascade,
+                                    get_session,
+                                    Article,
+                                )
+                                from blog_automation.pipelines.phase_8_publish import (
+                                    delete_article_and_redeploy,
+                                )
+                                from blog_automation.logging_config import get_logger
+
+                                del_id = int(article["id"])
+                                # Capture slug BEFORE deleting the row (we need
+                                # it to remove the article from the live site).
+                                try:
+                                    with get_session() as s:
+                                        row = s.get(Article, del_id)
+                                        del_slug = row.slug if row else None
+                                except Exception:
+                                    del_slug = None
+                                deleted = delete_article_cascade(del_id)
+                                if deleted:
+                                    msg = (
+                                        f"Deleted article {del_id} from DB. "
+                                    )
+                                    # Remove from the live site if it had a slug.
+                                    if del_slug:
+                                        try:
+                                            res = delete_article_and_redeploy(
+                                                del_slug
+                                            )
+                                            if res.get("pushed"):
+                                                msg += (
+                                                    "Removed from dripper.top "
+                                                    f"(deploy: {res.get('deploy_method')})."
+                                                )
+                                            else:
+                                                msg += (
+                                                    "Site rebuild done but deploy "
+                                                    "NOT confirmed."
+                                                )
+                                        except Exception as ex:
+                                            get_logger(__name__).exception(
+                                                "site delete failed", slug=del_slug
+                                            )
+                                            msg += f" Site remove FAILED: {ex}"
+                                    st.success(msg)
+                                    st.rerun()
+                                else:
+                                    st.error(f"Article {del_id} not found.")
                         st.markdown("---")
             else:
                 st.info("No articles found")

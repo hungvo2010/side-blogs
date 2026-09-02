@@ -28,6 +28,59 @@ _DIST_DIR = Path("../public")  # at repo root — served by Cloudflare Pages
 _REPO_ROOT = Path(__file__).resolve().parents[5]  # side-blogs/
 
 
+def _delete_article_from_site(slug: str) -> None:
+    """Remove an article's source + built output from the local site tree.
+
+    Deletes ``ai-blog-automation/content/<slug>.md`` and ``public/<slug>/`` so
+    that a subsequent rebuild + deploy drops the article from the live site.
+    """
+    content_md = _REPO_ROOT / "ai-blog-automation" / _CONTENT_DIR / f"{slug}.md"
+    if content_md.exists():
+        content_md.unlink()
+    dist_dir = (_REPO_ROOT / "public") / slug
+    if dist_dir.exists():
+        import shutil
+
+        shutil.rmtree(dist_dir, ignore_errors=True)
+
+
+def delete_article_and_redeploy(slug: str) -> dict[str, Any]:
+    """Delete a published article from the live site and redeploy.
+
+    Removes the article's content markdown + built ``public/<slug>/`` dir, then
+    rebuilds the full site from the remaining ``content/*.md`` and deploys via
+    the Cloudflare Direct Upload API. Run this AFTER deleting the article row
+    from the DB (the site is built purely from content/*.md).
+
+    Returns dict with ``slug`` and ``deploy_method``/``pushed`` like
+    ``publish_article``.
+    """
+    _delete_article_from_site(slug)
+
+    # Build the site from the remaining content/*.md files and deploy.
+    # Reuse the in-process builder by publishing a trivial placeholder then
+    # discarding it — simplifies reuse of the exact templates/deploy path.
+    placeholder_md = "# placeholder\n\n(removed)"
+    files = _build_site_files(slug="__deleted__", md_content=placeholder_md)
+
+    # Scrub the placeholder artifacts (source + built page) so they never leak
+    # into content/, public/, or a future build.
+    files.pop("/__deleted__/index.html", None)
+    placeholder_src = (
+        _REPO_ROOT / "ai-blog-automation" / _CONTENT_DIR / "__deleted__.md"
+    )
+    if placeholder_src.exists():
+        placeholder_src.unlink()
+    placeholder_dist = (_REPO_ROOT / "public") / "__deleted__"
+    if placeholder_dist.exists():
+        import shutil
+
+        shutil.rmtree(placeholder_dist, ignore_errors=True)
+
+    method, pushed = _deploy_to_cloudflare(files, title=slug)
+    return {"slug": slug, "deploy_method": method, "pushed": pushed}
+
+
 def publish_article(
     *,
     title: str,

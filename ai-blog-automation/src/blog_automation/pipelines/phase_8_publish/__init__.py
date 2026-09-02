@@ -4,6 +4,9 @@ No DB. No WordPress. Output is static HTML in ``public/`` served by
 Cloudflare Pages.
 """
 
-from blog_automation.pipelines.phase_8_publish.publishing import publish_article
+from blog_automation.pipelines.phase_8_publish.publishing import (
+    delete_article_and_redeploy,
+    publish_article,
+)
 
-__all__ = ["publish_article"]
+__all__ = ["publish_article", "delete_article_and_redeploy"]
