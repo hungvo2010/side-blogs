@@ -990,13 +990,23 @@ elif page == "📋 Review Queue":
 
                                 if report.get("issues_found"):
                                     st.markdown("#### Issues Found")
-                                    for issue in report["issues_found"]:
-                                        claim = issue.get("claim", "Unknown")[:100]
-                                        verdict = issue.get("verdict")
-                                        st.warning(
-                                            f"**Claim:** {claim}...\n\n"
-                                            f"**Verdict:** {verdict}"
-                                        )
+                                    for i, issue in enumerate(report["issues_found"], 1):
+                                        claim = issue.get("claim", "Unknown") or "Unknown"
+                                        verdict = issue.get("verdict", "unknown")
+                                        explanation = issue.get("explanation") or ""
+                                        revision = issue.get("suggested_revision") or ""
+                                        with st.expander(
+                                            f"**Issue {i}** — _Verdict:_ {verdict}"
+                                        ):
+                                            st.markdown(f"**Claim:**\n\n{claim}")
+                                            st.markdown(
+                                                f"**Verdict:** {verdict} · "
+                                                f"Confidence: {issue.get('confidence', 50)}%"
+                                            )
+                                            if explanation:
+                                                st.markdown(f"**Explanation:**\n\n{explanation}")
+                                            if revision:
+                                                st.markdown(f"**Suggested revision:**\n\n{revision}")
                             else:
                                 st.info("No fact-check report available")
 
@@ -1443,6 +1453,25 @@ elif page == "📄 All Articles":
                                 "Status",
                                 "✅ Passed" if report.get("pass") else "❌ Failed",
                             )
+                            if report.get("issues_found"):
+                                st.markdown("#### Issues Found")
+                                for i, issue in enumerate(report["issues_found"], 1):
+                                    claim = issue.get("claim", "Unknown") or "Unknown"
+                                    verdict = issue.get("verdict", "unknown")
+                                    with st.expander(
+                                        f"**Issue {i}** — _Verdict:_ {verdict}"
+                                    ):
+                                        st.markdown(f"**Claim:**\n\n{claim}")
+                                        explanation = issue.get("explanation") or ""
+                                        revision = issue.get("suggested_revision") or ""
+                                        if explanation:
+                                            st.markdown(
+                                                f"**Explanation:**\n\n{explanation}"
+                                            )
+                                        if revision:
+                                            st.markdown(
+                                                f"**Suggested revision:**\n\n{revision}"
+                                            )
                         else:
                             st.info("No fact-check report available")
 
