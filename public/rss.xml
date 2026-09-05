@@ -2,166 +2,214 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
   <title>The Slow Drip</title>
-  <link>https://dripper.top</link>
+  <link>https://side-blogs.pages.dev</link>
   <description>A blog about coffee, brewing, and the perfect cup.</description>
-  <atom:link href="https://dripper.top/rss.xml" rel="self" type="application/rss+xml"/>
-  <lastBuildDate>Tue, 01 Sep 2026 07:00:00 +0700</lastBuildDate>
+  <atom:link href="https://side-blogs.pages.dev/rss.xml" rel="self" type="application/rss+xml"/>
+  <lastBuildDate>Sat, 05 Sep 2026 07:00:00 +0700</lastBuildDate>
+    <item>
+      <title>The Art of Thinness: Inside Thanh Tri's Banh Cuon Craft</title>
+      <link>https://side-blogs.pages.dev/banh-cuon-thanh-tri-20260904-5e55</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/banh-cuon-thanh-tri-20260904-5e55</guid>
+      <pubDate>Sat, 05 Sep 2026 07:00:00 +0700</pubDate>
+      <description>There's a moment in Hanoi when the morning mist still clings to the trees and the city is just waking up. Street vendors begin setting up their stations—pots</description>
+      <enclosure url="https://images.unsplash.com/photo-1594020292985-216a72a2c7ce?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwZm9vZCUyMHN0ZWFtZWQlMjByaWNlJTIwcm9sbHN8ZW58MHx8fHwxNzg4NTg0MjIwfDA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
+    </item>
+    <item>
+      <title>Hue Royal Cuisine: The Hidden Rules of the Nguyen Court's Table</title>
+      <link>https://side-blogs.pages.dev/hue-royal-cuisine-20260902-0b93</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/hue-royal-cuisine-20260902-0b93</guid>
+      <pubDate>Wed, 02 Sep 2026 07:00:00 +0700</pubDate>
+      <description>Imagine sitting down to a meal where every dish is a message, every color has a meaning, and every bite is designed to balance the universe. That's not a sce</description>
+      <enclosure url="https://images.unsplash.com/photo-1672858502748-fb7dc81ef830?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHw2fHxodWUlMjByb3lhbCUyMGN1aXNpbmV8ZW58MHx8fHwxNzg4MzYyMjM0fDA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" type="image/jpeg"/>
+    </item>
+    <item>
+      <title>Hue Street Food Guide: Must-Try Dishes, Best Markets, and Local Tips</title>
+      <link>https://side-blogs.pages.dev/hue-street-food-guide-20260902-16cf</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/hue-street-food-guide-20260902-16cf</guid>
+      <pubDate>Wed, 02 Sep 2026 07:00:00 +0700</pubDate>
+      <description>There's a moment in nearly every traveler's first visit to Hue when the city reveals its secret. You're perched on a tiny plastic stool, steam curling from a</description>
+      <enclosure url="https://images.unsplash.com/photo-1715165895195-c0b7e80f0b61?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxIdWUlMjBzdHJlZXQlMjBmb29kJTIwZ3VpZGV8ZW58MHx8fHwxNzg4MzY3MjQ1fDA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
+    </item>
     <item>
       <title>Pho Bo vs Pho Ga: The Ultimate Guide to Vietnam's Beef and Chicken Noodle Soup Culture</title>
-      <link>https://dripper.top/pho-bo-vs-pho-ga-vietnam-beef-and-chicken-noodle-soup-culture</link>
-      <guid isPermaLink="true">https://dripper.top/pho-bo-vs-pho-ga-vietnam-beef-and-chicken-noodle-soup-culture</guid>
+      <link>https://side-blogs.pages.dev/pho-bo-vs-pho-ga-vietnam-beef-and-chicken-noodle-soup-culture</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/pho-bo-vs-pho-ga-vietnam-beef-and-chicken-noodle-soup-culture</guid>
       <pubDate>Tue, 01 Sep 2026 07:00:00 +0700</pubDate>
       <description>You're standing at a bustling street stall in Hanoi, steam rising from massive metal pots, and the woman behind the counter looks at you expectantly. "Pho bo…</description>
       <enclosure url="https://images.unsplash.com/photo-1636474498689-27e2d3ecf8d7?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHw1fHxQaG8lMjBibyUyMHBobyUyMGclQzMlQTAlMjBiZWVmJTIwY2hpY2tlbnxlbnwwfHx8fDE3ODgyNDQ0NDZ8MA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" type="image/jpeg"/>
     </item>
     <item>
       <title>What Is Egg Coffee? Hanoi's Velvet Café Trứng (Recipe + Culture)</title>
-      <link>https://dripper.top/what-is-egg-coffee-hanois-velvet-cafe-trung-recipe-culture</link>
-      <guid isPermaLink="true">https://dripper.top/what-is-egg-coffee-hanois-velvet-cafe-trung-recipe-culture</guid>
+      <link>https://side-blogs.pages.dev/what-is-egg-coffee-hanois-velvet-cafe-trung-recipe-culture</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/what-is-egg-coffee-hanois-velvet-cafe-trung-recipe-culture</guid>
       <pubDate>Mon, 31 Aug 2026 07:00:00 +0700</pubDate>
       <description>Egg coffee — cá phê trứng — is Vietnam's most famous surprise: rich Vietnamese coffee crowned with a silky, sweet whipped-egg foam. Here's the story, the recipe, and where the trend began in Hanoi.</description>
       <enclosure url="https://images.unsplash.com/photo-1760769214612-aff51cd270bd?ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwZWdnJTIwY29mZmVlfGVufDB8fHx8MTc4ODIzNzAwMXww&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" type="image/jpeg"/>
     </item>
     <item>
       <title>Hanoi 36 Old Quarters Travel Guide: Exploring the Ancient Heart of Vietnam's Capital</title>
-      <link>https://dripper.top/hanoi-36-old-quarters-travel-guide-exploring-the-ancient-heart-of-vietnams-capit</link>
-      <guid isPermaLink="true">https://dripper.top/hanoi-36-old-quarters-travel-guide-exploring-the-ancient-heart-of-vietnams-capit</guid>
+      <link>https://side-blogs.pages.dev/hanoi-36-old-quarters-travel-guide-exploring-the-ancient-heart-of-vietnams-capit</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/hanoi-36-old-quarters-travel-guide-exploring-the-ancient-heart-of-vietnams-capit</guid>
       <pubDate>Sun, 30 Aug 2026 07:00:00 +0700</pubDate>
       <description>The Living Labyrinth: A Craft-and-Story Walk Through Hanoi's 36 Old Quarters…</description>
       <enclosure url="https://images.unsplash.com/photo-1543355890-20bc0a26fda1?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxIYW5vaSUyMDM2JTIwb2xkJTIwcXVhcnRlcnMlMjB0cmF2ZWwlMjBndWlkZXxlbnwwfHx8fDE3ODgwODQ1NDF8MA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
       <title>Vietnamese Food Culture: A Journey Through Balance, History, and Flavor</title>
-      <link>https://dripper.top/vietnamese-food-culture-a-journey-through-balance-history-and-flavor</link>
-      <guid isPermaLink="true">https://dripper.top/vietnamese-food-culture-a-journey-through-balance-history-and-flavor</guid>
+      <link>https://side-blogs.pages.dev/vietnamese-food-culture-a-journey-through-balance-history-and-flavor</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/vietnamese-food-culture-a-journey-through-balance-history-and-flavor</guid>
       <pubDate>Sat, 29 Aug 2026 07:00:00 +0700</pubDate>
       <description>The steam rises from a battered aluminum pot at 5:30 a.m. in Hanoi's Old Quarter. A woman in a conical hat ladles clear broth into a bowl of rice noodles, th…</description>
       <enclosure url="https://images.unsplash.com/photo-1616438096679-620332ede3a2?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwZm9vZCUyMGN1bHR1cmV8ZW58MHx8fHwxNzg4MDAwOTI5fDA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
+      <title>How to Make Vietnamese Cold Brew: A Refreshing Twist on Classic Cà Phê Sữa Đá</title>
+      <link>https://side-blogs.pages.dev/how-to-make-vietnamese-cold-brew-20260826-7e7f</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/how-to-make-vietnamese-cold-brew-20260826-7e7f</guid>
+      <pubDate>Fri, 28 Aug 2026 07:00:00 +0700</pubDate>
+      <description>There's a moment in every coffee lover's journey when the same old pour-over starts feeling, well, predictable. You want something bolder. Something that hit</description>
+      <enclosure url="https://images.unsplash.com/photo-1662105489808-f3dd79b7f13c?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMG1ha2UlMjB2aWV0bmFtZXNlJTIwY29sZCUyMGJyZXd8ZW58MHx8fHwxNzg3NzA4MTYwfDA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
+    </item>
+    <item>
+      <title>Master the Coffee Bloom for Pour Over: Unlock Richer, Brighter Brews</title>
+      <link>https://side-blogs.pages.dev/coffee-bloom-pour-over-20260824-7bc1</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/coffee-bloom-pour-over-20260824-7bc1</guid>
+      <pubDate>Mon, 24 Aug 2026 07:00:00 +0700</pubDate>
+      <description>Your coffee bloom is the most honest moment in pour over brewing. The way the grounds swell, bubble, and release gas when water first hits them isn't just a</description>
+      <enclosure url="https://images.unsplash.com/photo-1587955245893-389f2215c6eb?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjb2ZmZWUlMjBibG9vbSUyMHBvdXIlMjBvdmVyfGVufDB8fHx8MTc4NzUzMzU4OHww&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
+    </item>
+    <item>
+      <title>How to Dial In Espresso: Master Your Grinder for Perfect Shots</title>
+      <link>https://side-blogs.pages.dev/how-to-dial-in-espresso-20260824-4999</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/how-to-dial-in-espresso-20260824-4999</guid>
+      <pubDate>Mon, 24 Aug 2026 07:00:00 +0700</pubDate>
+      <description>You just spent serious money on a beautiful espresso machine. You dialed in what you thought was the perfect grind, pulled the shot, and… it tastes like batt</description>
+      <enclosure url="https://images.unsplash.com/photo-1583165278997-0250ea5d72e2?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGRpYWwlMjBpbiUyMGVzcHJlc3NvfGVufDB8fHx8MTc4NzUzMzM5M3ww&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
+    </item>
+    <item>
       <title>How to Descale Your Espresso Machine: The Ultimate Guide to Maintaining Peak Performance</title>
-      <link>https://dripper.top/how-to-descale-your-espresso-machine-the-ultimate-guide-to-maintaining-peak-perf</link>
-      <guid isPermaLink="true">https://dripper.top/how-to-descale-your-espresso-machine-the-ultimate-guide-to-maintaining-peak-perf</guid>
+      <link>https://side-blogs.pages.dev/how-to-descale-your-espresso-machine-the-ultimate-guide-to-maintaining-peak-perf</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/how-to-descale-your-espresso-machine-the-ultimate-guide-to-maintaining-peak-perf</guid>
       <pubDate>Sun, 23 Aug 2026 07:00:00 +0700</pubDate>
       <description>You’ve spent hundreds, perhaps thousands, of dollars on your espresso machine. You’ve sourced the perfect beans, dialed in your grind size, and mastered the …</description>
       <enclosure url="https://images.unsplash.com/photo-1583165278997-0250ea5d72e2?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGRlc2NhbGUlMjBlc3ByZXNzbyUyMG1hY2hpbmV8ZW58MHx8fHwxNzg3MTAzNDU3fDA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
       <title>The Chemistry of the Perfect Cold Brew Concentrate: How to Master Extraction Ratios, Water Mineralization, and Storage Stability</title>
-      <link>https://dripper.top/the-chemistry-of-the-perfect-cold-brew-concentrate-how-to-master-extraction-rati</link>
-      <guid isPermaLink="true">https://dripper.top/the-chemistry-of-the-perfect-cold-brew-concentrate-how-to-master-extraction-rati</guid>
+      <link>https://side-blogs.pages.dev/the-chemistry-of-the-perfect-cold-brew-concentrate-how-to-master-extraction-rati</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/the-chemistry-of-the-perfect-cold-brew-concentrate-how-to-master-extraction-rati</guid>
       <pubDate>Sun, 23 Aug 2026 07:00:00 +0700</pubDate>
       <description>If you’ve ever walked into a high-end specialty coffee shop and felt that immediate "hit" of smoothness from a cold brew, you know it’s a world away from the…</description>
       <enclosure url="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMG1ha2UlMjBjb2xkJTIwYnJldyUyMGNvbmNlbnRyYXRlfGVufDB8fHx8MTc4NzEwNDE3Nnww&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
       <title>The Ultimate Guide to the Best Coffee Beans for Espresso: How to Find the Perfect Shot</title>
-      <link>https://dripper.top/the-ultimate-guide-to-the-best-coffee-beans-for-espresso-how-to-find-the-perfect</link>
-      <guid isPermaLink="true">https://dripper.top/the-ultimate-guide-to-the-best-coffee-beans-for-espresso-how-to-find-the-perfect</guid>
+      <link>https://side-blogs.pages.dev/the-ultimate-guide-to-the-best-coffee-beans-for-espresso-how-to-find-the-perfect</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/the-ultimate-guide-to-the-best-coffee-beans-for-espresso-how-to-find-the-perfect</guid>
       <pubDate>Sun, 23 Aug 2026 07:00:00 +0700</pubDate>
       <description>We’ve all been there. You’ve spent a small fortune on a high-end espresso machine, you’ve mastered the art of the perfect milk froth, and you’ve dialed in yo…</description>
       <enclosure url="https://images.unsplash.com/photo-1447933601403-0c6688de566e?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxiZXN0JTIwY29mZmVlJTIwYmVhbnMlMjBmb3IlMjBlc3ByZXNzb3xlbnwwfHx8fDE3ODcxMDQ0OTl8MA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
       <title>How to Make Coffee Stronger: A Complete Guide to Boosting Flavor and Intensity</title>
-      <link>https://dripper.top/how-to-make-coffee-stronger-a-complete-guide-to-boosting-flavor-and-intensity</link>
-      <guid isPermaLink="true">https://dripper.top/how-to-make-coffee-stronger-a-complete-guide-to-boosting-flavor-and-intensity</guid>
+      <link>https://side-blogs.pages.dev/how-to-make-coffee-stronger-a-complete-guide-to-boosting-flavor-and-intensity</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/how-to-make-coffee-stronger-a-complete-guide-to-boosting-flavor-and-intensity</guid>
       <pubDate>Mon, 17 Aug 2026 07:00:00 +0700</pubDate>
       <description>We have all been there. You pour yourself a steaming mug of morning coffee, take that first anticipated sip, and instead of a bold, mouth-watering experience…</description>
       <enclosure url="https://images.unsplash.com/photo-1610632380989-680fe40816c6?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMG1ha2UlMjBjb2ZmZWUlMjBzdHJvbmdlcnxlbnwwfHx8fDE3ODY3ODQyMjJ8MA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
       <title>The Science of the Perfect Phin: A Troubleshooting Guide for the Ultimate Vietnamese Iced Coffee Recipe</title>
-      <link>https://dripper.top/the-science-of-the-perfect-phin-a-troubleshooting-guide-for-the-ultimate-vietnam</link>
-      <guid isPermaLink="true">https://dripper.top/the-science-of-the-perfect-phin-a-troubleshooting-guide-for-the-ultimate-vietnam</guid>
+      <link>https://side-blogs.pages.dev/the-science-of-the-perfect-phin-a-troubleshooting-guide-for-the-ultimate-vietnam</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/the-science-of-the-perfect-phin-a-troubleshooting-guide-for-the-ultimate-vietnam</guid>
       <pubDate>Fri, 14 Aug 2026 07:00:00 +0700</pubDate>
       <description>Have you ever sat in a bustling café in Saigon, listening to the rhythmic clink-clink of ice against glass, and wondered why that coffee tastes so fundamenta…</description>
       <enclosure url="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwaWNlZCUyMGNvZmZlZSUyMHJlY2lwZXxlbnwwfHx8fDE3ODY2Njc2NDF8MA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
       <title>How to Brew Strong Coffee: The Ultimate Guide to a Bold and Intense Cup</title>
-      <link>https://dripper.top/how-to-brew-strong-coffee-the-ultimate-guide-to-a-bold-and-intense-cup</link>
-      <guid isPermaLink="true">https://dripper.top/how-to-brew-strong-coffee-the-ultimate-guide-to-a-bold-and-intense-cup</guid>
+      <link>https://side-blogs.pages.dev/how-to-brew-strong-coffee-the-ultimate-guide-to-a-bold-and-intense-cup</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/how-to-brew-strong-coffee-the-ultimate-guide-to-a-bold-and-intense-cup</guid>
       <pubDate>Thu, 13 Aug 2026 07:00:00 +0700</pubDate>
       <description>Have you ever sat down with a fresh cup of coffee, expecting a punch of chocolatey, nutty intensity, only to find it tastes like watery, thin tea?…</description>
       <enclosure url="https://images.unsplash.com/photo-1442512595331-e89e73853f31?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGJyZXclMjBzdHJvbmclMjBjb2ZmZWV8ZW58MHx8fHwxNzg2NjM5NzYzfDA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
       <title>The Espresso Transition Roadmap: Mastering the Art of the Home Barista Without the Burnout</title>
-      <link>https://dripper.top/the-espresso-transition-roadmap-mastering-the-art-of-the-home-barista-without-th</link>
-      <guid isPermaLink="true">https://dripper.top/the-espresso-transition-roadmap-mastering-the-art-of-the-home-barista-without-th</guid>
+      <link>https://side-blogs.pages.dev/the-espresso-transition-roadmap-mastering-the-art-of-the-home-barista-without-th</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/the-espresso-transition-roadmap-mastering-the-art-of-the-home-barista-without-th</guid>
       <pubDate>Mon, 10 Aug 2026 07:00:00 +0700</pubDate>
       <description>We have all been there. You walk into your favorite local coffee shop, smell that rich, nutty aroma, and take a sip of a perfectly textured latte. Then, you …</description>
       <enclosure url="https://images.unsplash.com/photo-1596018589855-e9a2a91f687f?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxlc3ByZXNzbyUyMGF0JTIwaG9tZXxlbnwwfHx8fDE3ODYzODAxNDl8MA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
       <title>Master the Art of the Perfect Pour Over: A Step-by-Step Brewing Guide</title>
-      <link>https://dripper.top/master-the-art-of-the-perfect-pour-over-a-step-by-step-brewing-guide</link>
-      <guid isPermaLink="true">https://dripper.top/master-the-art-of-the-perfect-pour-over-a-step-by-step-brewing-guide</guid>
+      <link>https://side-blogs.pages.dev/master-the-art-of-the-perfect-pour-over-a-step-by-step-brewing-guide</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/master-the-art-of-the-perfect-pour-over-a-step-by-step-brewing-guide</guid>
       <pubDate>Sun, 09 Aug 2026 07:00:00 +0700</pubDate>
       <description>Have you ever spent a little extra money on a bag of high-end, single-origin beans, only to have the final cup taste... well, mediocre? Perhaps it’s overly b…</description>
       <enclosure url="https://images.unsplash.com/photo-1442512595331-e89e73853f31?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGJyZXclMjBwb3VyJTIwb3ZlciUyMGNvZmZlZXxlbnwwfHx8fDE3ODYyNjYwOTF8MA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
       <title>The Ultimate Guide to Cleaning Your Coffee Grinder for Maximum Flavor</title>
-      <link>https://dripper.top/the-ultimate-guide-to-cleaning-your-coffee-grinder-for-maximum-flavor</link>
-      <guid isPermaLink="true">https://dripper.top/the-ultimate-guide-to-cleaning-your-coffee-grinder-for-maximum-flavor</guid>
+      <link>https://side-blogs.pages.dev/the-ultimate-guide-to-cleaning-your-coffee-grinder-for-maximum-flavor</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/the-ultimate-guide-to-cleaning-your-coffee-grinder-for-maximum-flavor</guid>
       <pubDate>Sun, 09 Aug 2026 07:00:00 +0700</pubDate>
       <description>You spend a significant amount of money on high-quality, single-origin beans. You’ve invested in a reliable grinder and a precision scale. Yet, your morning …</description>
       <enclosure url="https://images.unsplash.com/photo-1461988279488-1dac181a78f9?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGNsZWFuJTIwYSUyMGNvZmZlZSUyMGdyaW5kZXJ8ZW58MHx8fHwxNzg2MjcwNjkzfDA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
       <title>Why Vietnamese Coffee Is Served With Sweetened Condensed Milk</title>
-      <link>https://dripper.top/why-vietnamese-coffee-is-served-with-sweetened-condensed-milk</link>
-      <guid isPermaLink="true">https://dripper.top/why-vietnamese-coffee-is-served-with-sweetened-condensed-milk</guid>
+      <link>https://side-blogs.pages.dev/why-vietnamese-coffee-is-served-with-sweetened-condensed-milk</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/why-vietnamese-coffee-is-served-with-sweetened-condensed-milk</guid>
       <pubDate>Sun, 09 Aug 2026 07:00:00 +0700</pubDate>
       <description>The story of how Vietnam turned European coffee into a uniquely local ritual — and why sweetened condensed milk, a phin filter, and ice became its signature.</description>
       <enclosure url="https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwaWNlZCUyMGNvZmZlZSUyMGNvbmRlbnNlZCUyMG1pbGt8ZW58MHx8fHwxNzg1Nzg1OTI1fDA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
       <title>Unlocking the Bold Setting: Does It Actually Make Your Coffee Better?</title>
-      <link>https://dripper.top/unlocking-the-bold-setting-does-it-actually-make-your-coffee-better</link>
-      <guid isPermaLink="true">https://dripper.top/unlocking-the-bold-setting-does-it-actually-make-your-coffee-better</guid>
+      <link>https://side-blogs.pages.dev/unlocking-the-bold-setting-does-it-actually-make-your-coffee-better</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/unlocking-the-bold-setting-does-it-actually-make-your-coffee-better</guid>
       <pubDate>Sat, 08 Aug 2026 07:00:00 +0700</pubDate>
       <description>We’ve all been there. You’ve just woken up, the house is quiet, and you’re craving that rich, soul-warming cup of coffee that feels like a hug in a mug. You …</description>
       <enclosure url="https://images.unsplash.com/photo-1630411870702-8f6f8fd80ce2?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxVbmxvY2tpbmclMjB0aGUlMjBCb2xkJTIwU2V0dGluZyUzQSUyMERvZXMlMjBJdCUyMEFjdHVhbGx5JTIwTWFrZSUyMFlvdXIlMjBDb2ZmZWUlMjBCZXR0ZXIlM0Z8ZW58MHx8fHwxNzg2MTc5NTk2fDA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
       <title>Master the French Press: Expert Tips for a Richer, Smoother Brew</title>
-      <link>https://dripper.top/master-the-french-press-expert-tips-for-a-richer-smoother-brew</link>
-      <guid isPermaLink="true">https://dripper.top/master-the-french-press-expert-tips-for-a-richer-smoother-brew</guid>
+      <link>https://side-blogs.pages.dev/master-the-french-press-expert-tips-for-a-richer-smoother-brew</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/master-the-french-press-expert-tips-for-a-richer-smoother-brew</guid>
       <pubDate>Mon, 03 Aug 2026 07:00:00 +0700</pubDate>
       <description>There is something almost ritualistic about the French Press. Unlike the quick, mechanical buzz of a pod machine, the French Press requires patience. It asks…</description>
       <enclosure url="https://images.unsplash.com/photo-1639906512494-dd4a536abc4e?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxmcmVuY2glMjBwcmVzcyUyMGJyZXdpbmclMjB0aXBzfGVufDB8fHx8MTc4NTc3MTk2OXww&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
       <title>The Soul of Vietnam in a Cup: A Deep Dive into Vietnamese Coffee Culture</title>
-      <link>https://dripper.top/the-soul-of-vietnam-in-a-cup-a-deep-dive-into-vietnamese-coffee-culture</link>
-      <guid isPermaLink="true">https://dripper.top/the-soul-of-vietnam-in-a-cup-a-deep-dive-into-vietnamese-coffee-culture</guid>
+      <link>https://side-blogs.pages.dev/the-soul-of-vietnam-in-a-cup-a-deep-dive-into-vietnamese-coffee-culture</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/the-soul-of-vietnam-in-a-cup-a-deep-dive-into-vietnamese-coffee-culture</guid>
       <pubDate>Mon, 03 Aug 2026 07:00:00 +0700</pubDate>
       <description>Close your eyes and imagine the sound of a bustling city. It isn’t just the roar of motorbikes or the chatter of vendors; it is the rhythmic, metallic tink-t…</description>
       <enclosure url="https://images.unsplash.com/photo-1622087250339-9295c9ef442b?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxUaGUlMjBTb3VsJTIwb2YlMjBWaWV0bmFtJTIwaW4lMjBhJTIwQ3VwJTNBJTIwQSUyMERlZXAlMjBEaXZlJTIwaW50byUyMFZpZXRuYW1lc2UlMjBDb2ZmZWUlMjBDdWx0dXJlfGVufDB8fHx8MTc4NjE3OTU5NHww&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
       <title>The Ultimate Cold Brew Coffee Guide: How to Make Smooth, Cafe-Quality Brew at Home</title>
-      <link>https://dripper.top/the-ultimate-cold-brew-coffee-guide-how-to-make-smooth-cafe-quality-brew-at-home</link>
-      <guid isPermaLink="true">https://dripper.top/the-ultimate-cold-brew-coffee-guide-how-to-make-smooth-cafe-quality-brew-at-home</guid>
+      <link>https://side-blogs.pages.dev/the-ultimate-cold-brew-coffee-guide-how-to-make-smooth-cafe-quality-brew-at-home</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/the-ultimate-cold-brew-coffee-guide-how-to-make-smooth-cafe-quality-brew-at-home</guid>
       <pubDate>Mon, 03 Aug 2026 07:00:00 +0700</pubDate>
       <description>There is a specific kind of magic that happens when you wake up, grab a glass of ice, and pour a rich, velvety liquid over it. It’s not just coffee; it’s a r…</description>
       <enclosure url="https://images.unsplash.com/photo-1522825397800-ddf6405fc258?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxUaGUlMjBVbHRpbWF0ZSUyMENvbGQlMjBCcmV3JTIwQ29mZmVlJTIwR3VpZGUlM0ElMjBIb3clMjB0byUyME1ha2UlMjBTbW9vdGglMkMlMjBDYWZlLVF1YWxpdHklMjBCcmV3JTIwYXQlMjBIb21lfGVufDB8fHx8MTc4NjE3OTU5NXww&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
       <title>Best Budget Coffee Maker 2026: Top Picks for Exceptional Flavor Without the High Price Tag</title>
-      <link>https://dripper.top/best-budget-coffee-maker-2026-top-picks-for-exceptional-flavor-without-the-high-</link>
-      <guid isPermaLink="true">https://dripper.top/best-budget-coffee-maker-2026-top-picks-for-exceptional-flavor-without-the-high-</guid>
+      <link>https://side-blogs.pages.dev/best-budget-coffee-maker-2026-top-picks-for-exceptional-flavor-without-the-high-</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/best-budget-coffee-maker-2026-top-picks-for-exceptional-flavor-without-the-high-</guid>
       <pubDate>Sun, 02 Aug 2026 07:00:00 +0700</pubDate>
       <description>We’ve all been there. It’s 6:30 AM, the house is freezing, and your soul is currently trapped in a state of caffeine-deprived limbo. You stare at your counte…</description>
       <enclosure url="https://images.unsplash.com/photo-1565452344518-47faca79dc69?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxCZXN0JTIwQnVkZ2V0JTIwQ29mZmVlJTIwTWFrZXIlMjAyMDI2JTNBJTIwVG9wJTIwUGlja3MlMjBmb3IlMjBFeGNlcHRpb25hbCUyMEZsYXZvciUyMFdpdGhvdXQlMjB0aGUlMjBIaWdoJTIwUHJpY2UlMjBUYWd8ZW58MHx8fHwxNzg2MTc5NTkyfDA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
       <title>Robusta vs. Arabica: The Ultimate Guide to Choosing Your Perfect Coffee Bean</title>
-      <link>https://dripper.top/robusta-vs-arabica-the-ultimate-guide-to-choosing-your-perfect-coffee-bean</link>
-      <guid isPermaLink="true">https://dripper.top/robusta-vs-arabica-the-ultimate-guide-to-choosing-your-perfect-coffee-bean</guid>
+      <link>https://side-blogs.pages.dev/robusta-vs-arabica-the-ultimate-guide-to-choosing-your-perfect-coffee-bean</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/robusta-vs-arabica-the-ultimate-guide-to-choosing-your-perfect-coffee-bean</guid>
       <pubDate>Sun, 02 Aug 2026 07:00:00 +0700</pubDate>
       <description>Have you ever stood in the coffee aisle, staring at a bag of beans, wondering why one costs five dollars and another costs fifteen? You might have noticed te…</description>
       <enclosure url="https://images.unsplash.com/photo-1580933073521-dc49ac0d4e6a?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxSb2J1c3RhJTIwdnMuJTIwQXJhYmljYSUzQSUyMFRoZSUyMFVsdGltYXRlJTIwR3VpZGUlMjB0byUyMENob29zaW5nJTIwWW91ciUyMFBlcmZlY3QlMjBDb2ZmZWUlMjBCZWFufGVufDB8fHx8MTc4NjE3OTU5M3ww&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
