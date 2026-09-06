@@ -9,6 +9,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Any
+from urllib.parse import urlparse
 
 import requests
 
@@ -32,7 +33,12 @@ class AlertConfig:
 
     @property
     def slack_enabled(self) -> bool:
-        return bool(self.slack_webhook_url)
+        u = (self.slack_webhook_url or "").strip()
+        # A real Slack webhook is https://hooks.slack.com/... — a bare/placeholder
+        # value (empty, "..." , host-only) must NOT be treated as enabled, else
+        # send_notification posts to an invalid URL and throws
+        # "Invalid URL '...': No scheme supplied" on every call.
+        return bool(u and urlparse(u).scheme in ("http", "https"))
 
     @property
     def email_enabled(self) -> bool:
@@ -218,6 +224,12 @@ def send_notification(
 
     if channel == "slack" and config.slack_enabled:
         try:
+            url = (config.slack_webhook_url or "").strip()
+            # Defensive: even if enabled sneaks a scheme-less value through, don't
+            # POST to an invalid URL — log and fall through to the info line.
+            if not urlparse(url).scheme:
+                logger.warning("Slack webhook missing scheme, skip: %r", url[:24])
+                return True
             payload = {
                 "attachments": [
                     {
@@ -229,7 +241,7 @@ def send_notification(
                 ]
             }
             response = requests.post(
-                config.slack_webhook_url,
+                url,
                 json=payload,
                 timeout=10,
             )
