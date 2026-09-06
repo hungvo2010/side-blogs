@@ -1,6 +1,6 @@
 ---
 title: Pho Bo vs Pho Ga: The Ultimate Guide to Vietnam's Beef and Chicken Noodle Soup Culture
-slug: pho-bo-vs-pho-ga-vietnam-beef-and-chicken-noodle-soup-culture
+slug: pho-bo-vs-pho-ga-vietnam-beef-and-chicken-noodle-soup-culture-20260901-4106
 date: 2026-09-01
 description: You're standing at a bustling street stall in Hanoi, steam rising from massive metal pots, and the woman behind the counter looks at you expectantly. "Pho bo…
 keyword: pho bo vs pho ga vietnam beef and chicken noodle soup culture
