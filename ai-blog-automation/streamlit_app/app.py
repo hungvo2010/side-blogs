@@ -1203,6 +1203,77 @@ elif page == "📋 Review Queue":
                                 "KHÔNG đổi keyword gốc / tags của bài trong DB.",
                             )
 
+                            # ── Avatar / cover image ──────────────────────────────
+                            st.markdown("#### 🖼️ Ảnh bìa (avatar)")
+                            _avatar = article.get("featured_image_url") or ""
+                            if _avatar:
+                                st.image(_avatar, width=240)
+                            else:
+                                st.warning(
+                                    "Bài chưa có ảnh bìa (avatar). "
+                                    "Dùng nút dưới để tìm ảnh theo keyword và đặt ảnh bìa."
+                                )
+                            if st.button(
+                                "🔍 Tìm ảnh bìa (avatar) theo keyword",
+                                key=f"findavatar_{article['id']}",
+                                help="Gọi image provider tìm ảnh để đặt làm ảnh bìa/avatar "
+                                "(dùng keyword override nếu có, else keyword bài)",
+                            ):
+                                try:
+                                    with st.spinner("Đang tìm ảnh bìa…"):
+                                        _av_cs = _find_candidate_images(
+                                            article["id"],
+                                            keyword_override=_override_kw or None,
+                                        )
+                                    if not _av_cs:
+                                        st.error(
+                                            "Không tìm thấy ảnh (kiểm tra IMAGE_PROVIDER / *_API_KEY secret)"
+                                        )
+                                    else:
+                                        st.session_state[
+                                            f"_avcands_{article['id']}"
+                                        ] = _av_cs
+                                except Exception as ex:
+                                    st.error(f"⚠️ Lỗi tìm ảnh bìa: {ex}")
+
+                            _av_cs = st.session_state.get(f"_avcands_{article['id']}")
+                            if _av_cs:
+                                st.markdown(
+                                    "**Chọn 1 ảnh để đặt làm ảnh bìa (avatar):**"
+                                )
+                                _avcols = st.columns(3)
+                                for _ai, _ad in enumerate(_av_cs):
+                                    with _avcols[_ai % 3]:
+                                        st.image(
+                                            _ad["thumbnail"] or _ad["url"],
+                                            width=170,
+                                            caption=f"{_ad['source']} · {_ad['author']}",
+                                        )
+                                        if st.button(
+                                            f"✅ Đặt ảnh bìa {_ai + 1}",
+                                            key=f"pickavatar_{article['id']}_{_ai}",
+                                        ):
+                                            try:
+                                                with st.spinner("Đang đặt ảnh bìa…"):
+                                                    _set_article_image(
+                                                        article["id"],
+                                                        _ad["url"],
+                                                        img_index=0,
+                                                    )
+                                                st.session_state["_review_msg"] = (
+                                                    "success",
+                                                    "✅ Đã đặt ảnh bìa (avatar). "
+                                                    "Bấm 'Approve & Publish' để build "
+                                                    "lại với ảnh bìa mới.",
+                                                )
+                                            except Exception as ex:
+                                                st.session_state["_review_msg"] = (
+                                                    "error",
+                                                    f"❌ Đặt ảnh bìa lỗi: {ex}",
+                                                )
+                                            st.rerun()
+                            st.markdown("---")
+
                             import re as _re_images
 
                             _body = article.get("content_draft") or ""
