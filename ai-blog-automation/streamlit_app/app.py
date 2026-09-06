@@ -333,20 +333,28 @@ def _set_article_image(article_id: int, image_url: str, img_index: int = 0) -> s
     return image_url
 
 
-def _requeue_article(article_id: int, reviewer: str = "Tien Nguyen") -> int:
+def _requeue_article(article_id: int, reviewer: str = "Tien Nguyen") -> dict:
     """Move an already-approved/published article BACK to the review queue.
 
     Sets status → ``pending_review`` (reset pipeline progress), clears publish
-    markers, updates the existing review task if any (else creates one).
-    Returns the review task id.
+    markers, updates the existing review task if any (else creates one), AND
+    removes the article's page from the live site (rebuild + Cloudflare deploy)
+    so it actually disappears from the dripper.top homepage.
+
+    Returns dict with ``task_id`` and the deploy result (``deploy_method``/
+    ``pushed``) — or ``None`` deploy fields if the article had no slug.
     """
     from blog_automation.models import Article, get_session
+    from blog_automation.pipelines.phase_8_publish import delete_article_and_redeploy
     from blog_automation.review.task_queue import ReviewTask, create_review_task
 
+    _load_cloudflare_env()
+    slug = None
     with get_session() as s:
         a = s.get(Article, article_id)
         if not a:
             raise RuntimeError(f"Article {article_id} not found")
+        slug = a.slug
         a.status = "pending_review"
         a.pipeline_progress = None
         a.published_date = None
@@ -362,9 +370,22 @@ def _requeue_article(article_id: int, reviewer: str = "Tien Nguyen") -> int:
             task.status = "pending"
             task.assigned_reviewer = reviewer
             s.commit()
-            return task.id
-        t = create_review_task(a, reviewer=reviewer, deadline_hours=24)
-        return t.id if t else 0
+            task_id = task.id
+        else:
+            t = create_review_task(a, reviewer=reviewer, deadline_hours=24)
+            task_id = t.id if t else 0
+
+    deploy = {"deploy_method": None, "pushed": False}
+    if slug:
+        # Remove the article's page from the live dripper.top site + redeploy.
+        # This only removes content/<slug>.md + public/<slug>/ and rebuilds —
+        # the DB row stays put (now pending_review) for re-approval.
+        res = delete_article_and_redeploy(slug)
+        deploy = {
+            "deploy_method": res.get("deploy_method"),
+            "pushed": res.get("pushed"),
+        }
+    return {"task_id": task_id, **deploy}
 
 
 def _load_image_env():
@@ -1410,11 +1431,24 @@ elif page == "📄 All Articles":
                         ):
                             try:
                                 with st.spinner("Đang đưa về Review Queue…"):
-                                    _tid = _requeue_article(article["id"])
+                                    _res = _requeue_article(article["id"])
+                                _tid = _res.get("task_id")
+                                if _res.get("pushed"):
+                                    deploy_note = (
+                                        f"Đã gỡ bài khỏi dripper.top "
+                                        f"(deploy: {_res.get('deploy_method')})."
+                                    )
+                                else:
+                                    deploy_note = (
+                                        "⚠️ Đã cập nhật DB nhưng KHÔNG xác nhận "
+                                        "được deploy — bài có thể vẫn còn trên "
+                                        "dripper.top."
+                                    )
                                 st.session_state["_review_msg"] = (
                                     "success",
                                     f"✅ Đã đưa bài về Review Queue (task #{_tid}). "
-                                    "Chuyển qua tab 📋 Review Queue để approve lại.",
+                                    f"{deploy_note} Chuyển qua tab 📋 Review Queue "
+                                    "để approve lại.",
                                 )
                             except Exception as ex:
                                 st.session_state["_review_msg"] = (
