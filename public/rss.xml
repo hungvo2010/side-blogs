@@ -5,14 +5,22 @@
   <link>https://side-blogs.pages.dev</link>
   <description>A blog about coffee, brewing, and the perfect cup.</description>
   <atom:link href="https://side-blogs.pages.dev/rss.xml" rel="self" type="application/rss+xml"/>
-  <lastBuildDate>Sat, 05 Sep 2026 07:00:00 +0700</lastBuildDate>
+  <lastBuildDate>Sun, 06 Sep 2026 07:00:00 +0700</lastBuildDate>
+    <item>
+      <title>Mocha Coffee: The Complete Guide to Recipes, Variations, and Origins</title>
+      <link>https://side-blogs.pages.dev/mocha-coffee-20260906-dd42</link>
+      <guid isPermaLink="true">https://side-blogs.pages.dev/mocha-coffee-20260906-dd42</guid>
+      <pubDate>Sun, 06 Sep 2026 07:00:00 +0700</pubDate>
+      <description>!mocha…</description>
+      <enclosure url="https://images.unsplash.com/photo-1592663527359-cf6642f54cff?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxtb2NoYSUyMGNvZmZlZXxlbnwwfHx8fDE3ODg2NzQ0NTZ8MA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
+    </item>
     <item>
       <title>The Art of Thinness: Inside Thanh Tri's Banh Cuon Craft</title>
       <link>https://side-blogs.pages.dev/banh-cuon-thanh-tri-20260904-5e55</link>
       <guid isPermaLink="true">https://side-blogs.pages.dev/banh-cuon-thanh-tri-20260904-5e55</guid>
       <pubDate>Sat, 05 Sep 2026 07:00:00 +0700</pubDate>
       <description>There's a moment in Hanoi when the morning mist still clings to the trees and the city is just waking up. Street vendors begin setting up their stations—pots</description>
-      <enclosure url="https://images.unsplash.com/photo-1594020292985-216a72a2c7ce?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwZm9vZCUyMHN0ZWFtZWQlMjByaWNlJTIwcm9sbHN8ZW58MHx8fHwxNzg4NTg0MjIwfDA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
+      <enclosure url="https://plus.unsplash.com/premium_photo-1692731798118-2880236d32a6?q=80&amp;w=687&amp;auto=format&amp;fit=crop&amp;ixlib=rb-4.1.0&amp;ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" type="image/jpeg"/>
     </item>
     <item>
       <title>Hue Royal Cuisine: The Hidden Rules of the Nguyen Court's Table</title>

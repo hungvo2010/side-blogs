@@ -2,7 +2,7 @@
 title: The Art of Thinness: Inside Thanh Tri's Banh Cuon Craft
 slug: banh-cuon-thanh-tri-20260904-5e55
 date: 2026-09-05
-image: https://images.unsplash.com/photo-1594020292985-216a72a2c7ce?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwZm9vZCUyMHN0ZWFtZWQlMjByaWNlJTIwcm9sbHN8ZW58MHx8fHwxNzg4NTg0MjIwfDA&ixlib=rb-4.1.0&q=80&w=200
+image: https://plus.unsplash.com/premium_photo-1692731798118-2880236d32a6?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D
 keyword: banh cuon thanh tri
 tags:
   - "banh cuon recipe"
@@ -18,6 +18,8 @@ featured_image_url:
 ---
 
 # The Art of Thinness: Inside Thanh Tri's Banh Cuon Craft
+
+![Banh cuon Thanh Tri](https://plus.unsplash.com/premium_photo-1692731798118-2880236d32a6?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)
 
 There's a moment in Hanoi when the morning mist still clings to the trees and the city is just waking up. Street vendors begin setting up their stations—pots of water simmering, cotton cloths stretched taut, and thin bamboo sticks at the ready. By 6:30 AM, the first customers arrive, settling onto small plastic stools as the artisans begin their dance.
 
