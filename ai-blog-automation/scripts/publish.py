@@ -399,7 +399,12 @@ def auto_description(body: str, max_len: int = 160) -> str:
     for line in body.split("\n"):
         s = line.strip()
         if s and not s.startswith("#"):
-            plain = re.sub(r"\[([^\]]*)\]\([^)]+\)", r"\1", s)
+            # line is ONLY an image -> skip (no text to describe)
+            if re.match(r"!\[[^\]]*\]\([^)]*\)\s*$", s):
+                continue
+            # strip markdown links/images; the optional `!` kills
+            # `![alt](url)` hero lines that would leak a literal `!`
+            plain = re.sub(r"!?\[([^\]]+)\]\([^)]+\)", r"\1", s)
             plain = re.sub(r"[*_`]", "", plain)
             if len(plain) > 10:
                 return plain[:max_len].rsplit(" ", 1)[0] + "…"
@@ -481,7 +486,8 @@ def normalize_links(md: str, known_slugs: set) -> str:
         if target.startswith(("/", "http", "https", "#", "mailto:")):
             return m.group(0)
         if target in known_slugs:
-            return f"[{text}](/{target})"
+            # trailing slash: the slashless URL 308s on Cloudflare Pages
+            return f"[{text}](/{target}/)"
         return text
 
     return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", _sub, md)
@@ -567,7 +573,10 @@ def build_article(
     if image:
         ld["image"] = _social_image(image)
 
-    canonical = f"{DEFAULTS['site_url']}/{slug}"
+    # Cloudflare Pages serves article pages ONLY at the trailing-slash URL
+    # (it 308-redirects /slug -> /slug/). Canonical MUST point at the 200 URL,
+    # otherwise Google flags every page as "Page with redirect".
+    canonical = f"{DEFAULTS['site_url']}/{slug}/"
 
     html = PAGE_TEMPLATE.format(
         layout_css=LAYOUT_CSS,
@@ -644,7 +653,7 @@ def build_index(posts_meta: list[dict]) -> str:
         alt = p["title"].replace('"', "&quot;")
         url = _url(p, 400)
         thumb = (
-            f'<a class="mini-thumb-link" href="/{p["slug"]}">'
+            f'<a class="mini-thumb-link" href="/{p["slug"]}/">'
             f'<img class="mini-thumb" src="{url}" alt="{alt}" loading="lazy"></a>'
             if url
             else '<div class="mini-thumb placeholder">No image</div>'
@@ -652,7 +661,7 @@ def build_index(posts_meta: list[dict]) -> str:
         return (
             f'<li class="mini-item">{thumb}<div class="mini-body">'
             f'<div class="mini-kicker">{_kicker(p)}</div>'
-            f'<h4><a href="/{p["slug"]}">{p["title"]}</a></h4>'
+            f'<h4><a href="/{p["slug"]}/">{p["title"]}</a></h4>'
             f'<div class="meta">{_byline_html(p.get("author"))}<span>{_meta(p)}</span></div></div></li>'
         )
 
@@ -665,13 +674,13 @@ def build_index(posts_meta: list[dict]) -> str:
         f = featured
         hero_html = (
             '<section class="hero-mag">'
-            f'<a class="thumb-link" href="/{f["slug"]}">{_thumb(f, 1200)}</a>'
+            f'<a class="thumb-link" href="/{f["slug"]}/">{_thumb(f, 1200)}</a>'
             '<div class="hero-body">'
             + f'<div class="hero-kicker">Featured · {_kicker(f)}</div>'
-            + f'<h1><a href="/{f["slug"]}">{f["title"]}</a></h1>'
+            + f'<h1><a href="/{f["slug"]}/">{f["title"]}</a></h1>'
             + f'<p>{f["description"]}</p>'
             + f'<div class="meta">{_byline_html(f.get("author"))}<span>{_meta(f)}</span>'
-            + f'<a class="read-link" href="/{f["slug"]}">Read the story →</a></div>'
+            + f'<a class="read-link" href="/{f["slug"]}/">Read the story →</a></div>'
             + "</div></section>"
         )
 
@@ -690,9 +699,9 @@ def build_index(posts_meta: list[dict]) -> str:
     items = []
     for p in rest:
         items.append(
-            f'<li class="card"><a class="thumb-link" href="/{p["slug"]}">{_thumb(p, 800)}</a><div class="body">'
+            f'<li class="card"><a class="thumb-link" href="/{p["slug"]}/">{_thumb(p, 800)}</a><div class="body">'
             f'<div class="kicker">{_kicker(p)}</div>'
-            f'<h3><a href="/{p["slug"]}">{p["title"]}</a></h3>'
+            f'<h3><a href="/{p["slug"]}/">{p["title"]}</a></h3>'
             f'<div class="desc">{p["description"]}</div>'
             f'<div class="meta">{_byline_html(p.get("author"))}<span>{_meta(p)}</span></div></div></li>'
         )
@@ -734,7 +743,8 @@ def build_sitemap(posts_meta: list[dict]) -> str:
     ]
     for p in posts_meta:
         entries.append(
-            f"  <url><loc>{DEFAULTS['site_url']}/{p['slug']}</loc>"
+            # trailing slash: slashless article URLs 308 on Cloudflare Pages
+            f"  <url><loc>{DEFAULTS['site_url']}/{p['slug']}/</loc>"
             f"<lastmod>{p['date'][:10]}</lastmod></url>"
         )
     return SITEMAP_TEMPLATE.format(entries="\n".join(entries))
@@ -753,8 +763,8 @@ def build_rss(posts_meta: list[dict]) -> str:
         items.append(
             "    <item>\n"
             f"      <title>{escape(p['title'])}</title>\n"
-            f"      <link>{site_url}/{p['slug']}</link>\n"
-            f'      <guid isPermaLink="true">{site_url}/{p["slug"]}</guid>\n'
+            f"      <link>{site_url}/{p['slug']}/</link>\n"
+            f'      <guid isPermaLink="true">{site_url}/{p["slug"]}/</guid>\n'
             f"      <pubDate>{_rss_date(p['date'])}</pubDate>\n"
             f"      <description>{escape(p['description'])}</description>\n"
             + (
