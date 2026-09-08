@@ -1,17 +1,10 @@
 ---
 title: Hue Street Food Guide: Must-Try Dishes, Best Markets, and Local Tips
-slug: hue-street-food-guide-20260902-16cf
 date: 2026-09-02
+slug: hue-street-food-guide-20260902-16cf
 keyword: hue street food guide
-tags:
-  - "Hue street food"
-  - "Best street food in Hue"
-  - "What to eat in Hue"
-  - "Hue food guide"
-  - "Vietnamese street food"
-  - "Hue specialties"
-  - "Bun bo Hue"
-  - "Banh khoai"
+tags: Hue street food, Best street food in Hue, What to eat in Hue, Hue food guide, Vietnamese street food, Hue specialties, Bun bo Hue, Banh khoai
+author: Tien Nguyen
 image: https://images.unsplash.com/photo-1715165895195-c0b7e80f0b61?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxIdWUlMjBzdHJlZXQlMjBmb29kJTIwZ3VpZGV8ZW58MHx8fHwxNzg4MzY3MjQ1fDA&ixlib=rb-4.1.0&q=80&w=200
 description: There's a moment in nearly every traveler's first visit to Hue when the city reveals its secret. You're perched on a tiny plastic stool, steam curling from a
 ---

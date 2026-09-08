@@ -1,17 +1,10 @@
 ---
 title: Hue Royal Cuisine: The Hidden Rules of the Nguyen Court's Table
-slug: hue-royal-cuisine-20260902-0b93
 date: 2026-09-02
+slug: hue-royal-cuisine-20260902-0b93
 keyword: hue royal cuisine
-tags:
-  - "Hue imperial cuisine"
-  - "Vietnamese royal food"
-  - "Nguyen dynasty dishes"
-  - "Hue court cuisine"
-  - "imperial Vietnamese recipes"
-  - "Hue royal banquet dishes"
-  - "traditional Hue cooking"
-  - "what is Hue royal cuisine"
+tags: Hue imperial cuisine, Vietnamese royal food, Nguyen dynasty dishes, Hue court cuisine, imperial Vietnamese recipes, Hue royal banquet dishes, traditional Hue cooking, what is Hue royal cuisine
+author: Tien Nguyen
 image: https://images.unsplash.com/photo-1672858502748-fb7dc81ef830?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHw2fHxodWUlMjByb3lhbCUyMGN1aXNpbmV8ZW58MHx8fHwxNzg4MzYyMjM0fDA&ixlib=rb-4.1.0&q=80&w=1080
 description: Imagine sitting down to a meal where every dish is a message, every color has a meaning, and every bite is designed to balance the universe. That's not a sce
 ---

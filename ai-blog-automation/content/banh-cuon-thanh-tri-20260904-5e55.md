@@ -1,25 +1,15 @@
 ---
 title: The Art of Thinness: Inside Thanh Tri's Banh Cuon Craft
+date: 2026-09-06
 slug: banh-cuon-thanh-tri-20260904-5e55
-date: 2026-09-05
-image: https://plus.unsplash.com/premium_photo-1692731798118-2880236d32a6?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D
 keyword: banh cuon thanh tri
-tags:
-  - "banh cuon recipe"
-  - "Vietnamese steamed rice rolls"
-  - "banh cuon thanh tri Hanoi"
-  - "banh cuon ingredients"
-  - "how to make banh cuon"
-  - "banh cuon dipping sauce"
-  - "nuoc cham for banh cuon"
-  - "banh cuon filling"
+tags: banh cuon recipe, Vietnamese steamed rice rolls, banh cuon thanh tri Hanoi, banh cuon ingredients, how to make banh cuon, banh cuon dipping sauce, nuoc cham for banh cuon, banh cuon filling
+author: Tien Nguyen
+image: https://plus.unsplash.com/premium_photo-1692731798118-2880236d32a6?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D
 description: There's a moment in Hanoi when the morning mist still clings to the trees and the city is just waking up. Street vendors begin setting up their stations—pots
-featured_image_url: 
 ---
 
 # The Art of Thinness: Inside Thanh Tri's Banh Cuon Craft
-
-![Banh cuon Thanh Tri](https://plus.unsplash.com/premium_photo-1692731798118-2880236d32a6?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)
 
 There's a moment in Hanoi when the morning mist still clings to the trees and the city is just waking up. Street vendors begin setting up their stations—pots of water simmering, cotton cloths stretched taut, and thin bamboo sticks at the ready. By 6:30 AM, the first customers arrive, settling onto small plastic stools as the artisans begin their dance.
 

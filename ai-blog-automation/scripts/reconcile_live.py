@@ -12,6 +12,12 @@ Usage::
     python scripts/reconcile_live.py --apply              # rebuild + Direct Upload (push missing)
     python scripts/reconcile_live.py --import-live-only   # save live-only pages as content/*.md
     python scripts/reconcile_live.py --apply --import-live-only  # preserve live-only, then deploy
+    python scripts/reconcile_live.py --sync               # DB = source of truth: rewrite every
+                                                          #   PUBLISHED article's content/*.md
+                                                          #   from the DB (prevents local-stale
+                                                          #   rebuilds reverting dashboard edits)
+    python scripts/reconcile_live.py --sync --dry-run     # report without writing
+    python scripts/reconcile_live.py --sync --apply       # sync + rebuild + deploy
 
 Note on live-only pages: a full rebuild from ``content/`` builds pages ONLY
 from ``content/*.md``. A page that is live but has no local ``content/<slug>.md``
@@ -59,9 +65,11 @@ def fetch_live_slugs() -> list[str]:
     ns = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
     for loc in root.findall(".//s:loc", ns):
         url = (loc.text or "").strip()
-        if url == f"{SITE_URL}/":
+        if url == f"{SITE_URL}/" or url == f"{SITE_URL}":
             continue
-        slug = url.replace(f"{SITE_URL}/", "")
+        # slugs in the sitemap carry a trailing slash (article pages only serve
+        # at /slug/ on Cloudflare Pages) — strip it to compare with file stems
+        slug = url.replace(f"{SITE_URL}/", "").rstrip("/")
         if slug:
             slugs.append(slug)
     return sorted(set(slugs))
@@ -117,6 +125,135 @@ def import_live_only(slugs: list[str]) -> list[str]:
     return imported
 
 
+def _frontmatter_from_db(a, body: str, extra_keys: dict) -> str:
+    """Build frontmatter with the DB as source of truth, preserving
+    local-only keys (description, featured, blocks, ...) the DB has no column
+    for, so hand-set flags survive a sync."""
+    title = a.title or ""
+    keyword = a.keyword or ""
+    tags = a.tags or ([keyword] if keyword else [])
+    image = a.featured_image_url or ""
+    published = a.published_date or a.created_at
+    date_str = (
+        published.strftime("%Y-%m-%d")
+        if published
+        else datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    )
+    fm = f"---\ntitle: {title}\ndate: {date_str}\nslug: {a.slug}\n"
+    if keyword:
+        fm += f"keyword: {keyword}\n"
+    if tags:
+        fm += f"tags: {', '.join(str(t) for t in tags)}\n"
+    if extra_keys.get("author"):
+        fm += f"author: {extra_keys['author']}\n"
+    else:
+        fm += "author: Tien Nguyen\n"
+    if image:
+        fm += f"image: {image}\n"
+    for k in ("description", "featured", "blocks"):
+        if extra_keys.get(k):
+            fm += f"{k}: {extra_keys[k]}\n"
+    fm += "---\n\n"
+    return fm
+
+
+def _body_without_frontmatter(text: str) -> str:
+    m = re.match(r"^---\n.*?\n---\n(.*)$", text, re.S)
+    return m.group(1).strip() if m else text.strip()
+
+
+def sync_published(dry_run: bool = False) -> tuple[list[str], list[str]]:
+    """DB is the SINGLE SOURCE OF TRUTH: rewrite every content/*.md for
+    PUBLISHED articles from the DB row, so a local rebuild can never diverge
+    from (or revert) what the dashboard/approve deployed.
+
+    Only status='published' rows are materialized — a pending_review article
+    MUST NOT land in content/ (a build would publish it unreviewed).
+
+    Dup guard: legacy DB slugs (e.g. old date-suffixed slugs) that are NOT the
+    slug a live article already uses are SKIPPED when the same title already
+    has a content file under a different slug — otherwise every sync recreates
+    the "2 bài đúp" bug for articles that historically moved to title-slugs.
+    Rule per row:
+      - content file exists for the DB slug  -> overwrite (DB truth, same URL)
+      - no file + no same-title file         -> create (missing article,
+                                                e.g. dashboard-approved)
+      - no file + same-title file exists     -> skip (legacy slug, log it)
+    Local-only frontmatter keys (description, featured, blocks) are preserved.
+    Returns (written, unchanged).
+    """
+    from blog_automation.models import Article, get_session
+
+    def _existing_titles() -> dict[str, str]:
+        """map lower title -> slug for all current content files"""
+        out: dict[str, str] = {}
+        for f in CONTENT_DIR.glob("*.md"):
+            m = re.match(r"^---\n(.*?)\n---\n", f.read_text(encoding="utf-8"), re.S)
+            if not m:
+                continue
+            t = None
+            for line in m.group(1).splitlines():
+                if line.lower().startswith("title:"):
+                    t = line.partition(":")[2].strip().lower()
+                    break
+            if t:
+                out.setdefault(t, f.stem)
+        return out
+
+    existing_titles = _existing_titles()
+    written, unchanged, skipped = [], [], []
+    with get_session() as s:
+        rows = (
+            s.query(Article)
+            .filter(Article.status == "published")
+            .filter(Article.content_draft.isnot(None))
+            .order_by(Article.id)
+            .all()
+        )
+        for a in rows:
+            slug = a.slug or ""
+            if not slug or slug in _ARTIFACT_SLUGS:
+                skipped.append(slug or "?")
+                continue
+            out = CONTENT_DIR / f"{slug}.md"
+            title_key = (a.title or "").strip().lower()
+            if not out.exists() and title_key and title_key in existing_titles:
+                skipped.append(f"{slug} (dup of {existing_titles[title_key]})")
+                continue
+            extra: dict = {}
+            if out.exists():
+                txt = out.read_text(encoding="utf-8")
+                m = re.match(r"^---\n(.*?)\n---\n", txt, re.S)
+                if m:
+                    for line in m.group(1).splitlines():
+                        key, _, val = line.partition(":")
+                        key = key.strip()
+                        if key in (
+                            "title", "date", "slug", "keyword",
+                            "tags", "author", "image",
+                        ):
+                            continue
+                        if val.strip():
+                            extra[key] = val.strip()
+            body = _body_without_frontmatter(a.content_draft or "")
+            if not body:
+                skipped.append(slug)
+                continue
+            new = _frontmatter_from_db(a, body, extra) + body + "\n"
+            if out.exists() and out.read_text(encoding="utf-8") == new:
+                unchanged.append(slug)
+            else:
+                if not dry_run:
+                    out.write_text(new, encoding="utf-8")
+                written.append(slug)
+    print(f"  ✅ synced from DB ({len(written)}): {', '.join(written) if written else '-'}")
+    if unchanged:
+        print(f"  ⏸️  already in sync ({len(unchanged)})")
+    if skipped:
+        print(f"  🚫 skipped ({len(skipped)}): {', '.join(sorted(skipped))}")
+    return written, unchanged
+
+
 def main():
     import argparse
 
@@ -124,6 +261,11 @@ def main():
     p.add_argument("--apply", action="store_true", help="Rebuild + Direct Upload (push missing)")
     p.add_argument("--import-live-only", action="store_true",
                    help="Save live-only pages into content/ so rebuilds don't drop them")
+    p.add_argument("--sync", action="store_true",
+                   help="Rewrite ALL published articles' content/*.md from the DB "
+                        "(DB is the single source of truth; undoes local-stale reverts)")
+    p.add_argument("--dry-run", action="store_true",
+                   help="With --sync: report what would change without writing")
     args = p.parse_args()
 
     print(f"🌐 Live site: {SITE_URL}\n")
@@ -155,13 +297,17 @@ def main():
     if live_only:
         print("   → run with --import-live-only to save them into content/ first.")
 
-    if not (args.apply or args.import_live_only):
-        print("\n(dry-run — pass --apply to deploy, or --import-live-only to save live-only pages)")
+    if not (args.apply or args.import_live_only or args.sync):
+        print("\n(dry-run — pass --apply to deploy, --import-live-only to save live-only pages, or --sync to sync from DB)")
         return
 
     if args.import_live_only and live_only:
         print("\n⬇️  Importing live-only pages into content/…")
         import_live_only(sorted(live_only))
+
+    if args.sync:
+        print("\n🔄 Syncing published articles from the DB (DB = source of truth)…")
+        sync_published(dry_run=args.dry_run)
 
     if not args.apply:
         return

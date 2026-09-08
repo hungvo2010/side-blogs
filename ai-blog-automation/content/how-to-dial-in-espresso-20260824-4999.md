@@ -1,8 +1,10 @@
 ---
 title: How to Dial In Espresso: Master Your Grinder for Perfect Shots
-slug: how-to-dial-in-espresso-20260824-4999
 date: 2026-08-24
+slug: how-to-dial-in-espresso-20260824-4999
 keyword: how to dial in espresso
+tags: how to dial in espresso
+author: Tien Nguyen
 image: https://images.unsplash.com/photo-1583165278997-0250ea5d72e2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGRpYWwlMjBpbiUyMGVzcHJlc3NvfGVufDB8fHx8MTc4NzUzMzM5M3ww&ixlib=rb-4.1.0&q=80&w=200
 description: You just spent serious money on a beautiful espresso machine. You dialed in what you thought was the perfect grind, pulled the shot, and… it tastes like batt
 ---

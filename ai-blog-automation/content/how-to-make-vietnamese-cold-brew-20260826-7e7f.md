@@ -1,8 +1,10 @@
 ---
 title: How to Make Vietnamese Cold Brew: A Refreshing Twist on Classic Cà Phê Sữa Đá
-slug: how-to-make-vietnamese-cold-brew-20260826-7e7f
 date: 2026-08-28
+slug: how-to-make-vietnamese-cold-brew-20260826-7e7f
 keyword: how to make vietnamese cold brew
+tags: how to make vietnamese cold brew
+author: Tien Nguyen
 image: https://images.unsplash.com/photo-1662105489808-f3dd79b7f13c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMG1ha2UlMjB2aWV0bmFtZXNlJTIwY29sZCUyMGJyZXd8ZW58MHx8fHwxNzg3NzA4MTYwfDA&ixlib=rb-4.1.0&q=80&w=200
 description: There's a moment in every coffee lover's journey when the same old pour-over starts feeling, well, predictable. You want something bolder. Something that hit
 ---

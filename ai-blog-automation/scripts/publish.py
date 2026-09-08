@@ -967,6 +967,19 @@ def main():
             print("Usage: publish.py <file.md>    or drop .md files in content/")
             sys.exit(1)
 
+        # DB is the single source of truth: materialize any PUBLISHED article
+        # the DB has but content/ lacks (dashboard-approved pages), so a local
+        # rebuild can never drop a live page. Same-slug files are overwritten
+        # from the DB too (reverts local-stale images/content). pending_review
+        # rows are NEVER materialized; legacy dup slugs are skipped.
+        try:
+            import reconcile_live
+
+            reconcile_live.sync_published()
+        except Exception as e:  # noqa: BLE001
+            print(f"⚠️  DB materialize skipped ({e.__class__.__name__}: "
+                  f"{str(e)[:80]}) — building from content/ only")
+
         posts_meta: list[dict] = []
         all_slugs: set[str] = set()
         post_htmls: dict[str, str] = {}

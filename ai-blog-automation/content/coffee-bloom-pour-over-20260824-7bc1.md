@@ -1,10 +1,12 @@
 ---
 title: Master the Coffee Bloom for Pour Over: Unlock Richer, Brighter Brews
-slug: coffee-bloom-pour-over-20260824-7bc1
 date: 2026-08-24
+slug: coffee-bloom-pour-over-20260824-7bc1
 keyword: coffee bloom pour over
+tags: coffee bloom pour over
+author: Tien Nguyen
 image: https://images.unsplash.com/photo-1587955245893-389f2215c6eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjb2ZmZWUlMjBibG9vbSUyMHBvdXIlMjBvdmVyfGVufDB8fHx8MTc4NzUzMzU4OHww&ixlib=rb-4.1.0&q=80&w=200
-description: Your coffee bloom is the most honest moment in pour over brewing. The way the grounds swell, bubble, and release gas when water first hits them isn't just a 
+description: Your coffee bloom is the most honest moment in pour over brewing. The way the grounds swell, bubble, and release gas when water first hits them isn't just a
 ---
 
 ![coffee bloom pour over](https://images.unsplash.com/photo-1587955245893-389f2215c6eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjb2ZmZWUlMjBibG9vbSUyMHBvdXIlMjBvdmVyfGVufDB8fHx8MTc4NzUzMzU4OHww&ixlib=rb-4.1.0&q=80&w=1080)
