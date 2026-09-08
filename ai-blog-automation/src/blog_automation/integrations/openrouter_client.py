@@ -14,6 +14,7 @@ PerplexityClient) with a single entry point.
 
 import json
 import re
+import uuid
 from datetime import datetime
 from typing import Any, Generator
 
@@ -162,11 +163,19 @@ class OpenRouterClient:
         default_headers: dict[str, str] = {"X-Title": "AI Blog Automation"}
         if self.site_url:
             default_headers["HTTP-Referer"] = self.site_url
+        if not self.primary_is_openrouter:
+            # OpenCode Go requires a stable session id (routing/prompt-cache
+            # optimization) and prefers a descriptive User-Agent over the
+            # generic SDK one — missing x-opencode-session now 400s
+            # (MissingSessionID).
+            default_headers["x-opencode-session"] = uuid.uuid4().hex
+            default_headers["User-Agent"] = "ai-blog-automation/1.0"
+        self.default_headers = default_headers
 
         self.client = OpenAI(
             api_key=self.api_key,
             base_url=self.base_url,
-            default_headers=default_headers,
+            default_headers=self.default_headers,
             timeout=240.0,
         )
 
@@ -179,7 +188,7 @@ class OpenRouterClient:
                     "client": OpenAI(
                         api_key=or_key,
                         base_url=self.BASE_URL,
-                        default_headers=default_headers,
+                        default_headers=self.default_headers,
                         timeout=240.0,
                     ),
                     "model": settings.openrouter_default_model,
@@ -500,14 +509,11 @@ class OpenRouterClient:
         """
         model = model or self.default_model
         if model not in self._chat_models:
-            default_headers: dict[str, str] = {"X-Title": "AI Blog Automation"}
-            if self.site_url:
-                default_headers["HTTP-Referer"] = self.site_url
             self._chat_models[model] = ChatOpenAI(
                 model=model,
                 api_key=self.api_key,
                 base_url=self.base_url,
-                default_headers=default_headers,
+                default_headers=self.default_headers,
                 temperature=0.7,
                 max_tokens=32000,
                 timeout=240,
