@@ -8,6 +8,7 @@ Writing voice is a per-blog knob — see :mod:`blog_automation.styles`.
 import os
 import re
 from datetime import datetime
+from typing import Protocol
 
 from blog_automation import styles
 from blog_automation.errors import ProcessingError
@@ -16,6 +17,22 @@ from blog_automation.logging_config import get_logger
 from blog_automation.models import Article, ContentBrief, get_session
 
 logger = get_logger(__name__)
+
+
+class BriefLike(Protocol):
+    """Duck-typed content brief: a real ``ContentBrief`` or ``_BriefView``."""
+
+    keyword: str
+
+    def get_sections(self) -> list[dict]: ...
+
+    def get_lsi_keywords(self) -> list[str]: ...
+
+    def get_sources(self) -> list[dict]: ...
+
+    def get_unique_angle(self) -> str | None: ...
+
+    def get_target_word_count(self) -> int: ...
 
 
 # Prompts for drafting
@@ -65,14 +82,17 @@ Requirements:
 - Follow the voice/format rules from your system instructions exactly"""
 
 
-def generate_outline(brief: ContentBrief) -> str:
-    """Generate article outline from content brief."""
+def generate_outline(brief: BriefLike, style: str | None = None) -> str:
+    """Generate article outline from content brief.
+
+    ``style`` overrides the configured/active voice for this call only.
+    """
     from blog_automation.config import get_settings
 
     if get_settings().mock_mode:
         return f"# {brief.keyword.title()}\n\n## Introduction\n\n## Section 1\n\n### Sub 1\n\n## Section 2\n\n## Conclusion"
 
-    logger.info("Generating outline", keyword=brief.keyword)
+    logger.info("Generating outline", keyword=brief.keyword, style=style or "default")
     llm = OpenRouterClient()
     # ... rest of the original logic ...
     # Format sections for prompt
@@ -85,7 +105,7 @@ def generate_outline(brief: ContentBrief) -> str:
     prompt = OUTLINE_GENERATION_PROMPT.format(
         keyword=brief.keyword,
         sections=sections_text,
-        style_hint=styles.outline_hint() or "- Keep headings clear and specific.",
+        style_hint=styles.outline_hint(style) or "- Keep headings clear and specific.",
     )
 
     response = llm.complete(prompt, temperature=0.7, max_tokens=1500)
@@ -101,10 +121,17 @@ def generate_outline(brief: ContentBrief) -> str:
 
 
 def generate_article_draft(
-    brief: ContentBrief,
+    brief: BriefLike,
     outline: str,
+    style: str | None = None,
 ) -> Article:
-    """Generate full article draft from brief and outline."""
+    """Generate full article draft from brief and outline.
+
+    ``style`` overrides the configured/active voice for this call only (the
+    resolved name is stamped on ``article.style``). When omitted the style comes
+    from ``ARTICLE_STYLE`` / ``BLOG_STYLE_FILE`` / ``BLOG_STYLE`` env, else the
+    default preset.
+    """
     from blog_automation.config import get_settings
 
     if get_settings().mock_mode:
@@ -121,10 +148,11 @@ def generate_article_draft(
             word_count=len(mock_content.split()),
         )
 
+    resolved_style = styles.resolve_style(style)
     logger.info(
         "Generating article draft",
         keyword=brief.keyword,
-        style=styles.describe(),
+        style=f"{resolved_style.name} ({resolved_style.label})",
     )
     llm = OpenRouterClient()
     # ... rest of original logic ...
@@ -153,13 +181,14 @@ def generate_article_draft(
             {
                 "role": "system",
                 "content": styles.build_system_prompt(
+                    style,
                     site_name=os.environ.get("SITE_NAME"),
                     author=os.environ.get("SITE_AUTHOR"),
                 ),
             },
             {"role": "user", "content": user_prompt},
         ],
-        temperature=styles.active_temperature(),
+        temperature=styles.active_temperature(style),
         max_tokens=4000,
     )
 
@@ -179,6 +208,7 @@ def generate_article_draft(
             "input": response.get("input_tokens", 0),
             "output": response.get("output_tokens", 0),
         },
+        style=resolved_style.name,
     )
 
     # Update word count
@@ -192,6 +222,215 @@ def generate_article_draft(
     )
 
     return article
+
+
+class _BriefView:
+    """Session-free, duck-typed stand-in for ContentBrief.
+
+    Re-drafting talks to the DB in two short sessions (Neon drops connections
+    held across LLM calls), so the brief is flattened into this plain object
+    before the model is called.
+    """
+
+    def __init__(
+        self,
+        keyword: str,
+        *,
+        sections: list[dict] | None = None,
+        lsi_keywords: list[str] | None = None,
+        sources: list[dict] | None = None,
+        unique_angle: str | None = None,
+        target_word_count: int = 2000,
+    ) -> None:
+        self.keyword = keyword
+        self._sections = sections or []
+        self._lsi = lsi_keywords or []
+        self._sources = sources or []
+        self._angle = unique_angle
+        self._target = target_word_count
+
+    def get_sections(self) -> list[dict]:
+        return self._sections
+
+    def get_lsi_keywords(self) -> list[str]:
+        return self._lsi
+
+    def get_sources(self) -> list[dict]:
+        return self._sources
+
+    def get_unique_angle(self) -> str | None:
+        return self._angle
+
+    def get_target_word_count(self) -> int:
+        return self._target
+
+
+def _image_urls(md: str) -> list[dict]:
+    """Images in body order as ``{"url", "alt"}`` (deduped, http only)."""
+    out: list[dict] = []
+    seen: set[str] = set()
+    for alt, url in re.findall(r"!\[([^\]]*)\]\(([^)\s]+)", md or ""):
+        if url.startswith("http") and url not in seen:
+            seen.add(url)
+            out.append({"url": url, "alt": alt.strip()})
+    return out
+
+
+def _insert_images(md: str, images: list[dict]) -> str:
+    """Re-attach preserved images: first as hero, the rest after successive H2s.
+
+    Original alt text is kept (the SEO audit wants non-empty alts).
+    """
+    if not images:
+        return md
+    body = md
+
+    def _img(item: dict) -> str:
+        return f"![{item.get('alt') or hero_alt(item['url'])}]({item['url']})"
+
+    hero, rest = images[0], images[1:]
+    if rest:
+        parts = re.split(r"(\n## [^\n]+\n)", body)
+        # parts = [pre, h2, chunk, h2, chunk, ...]
+        idxs = [i for i in range(1, len(parts), 2)][: len(rest)]
+        for n, i in enumerate(reversed(idxs)):
+            parts[i] = parts[i] + f"\n{_img(rest[len(idxs) - 1 - n])}\n"
+        body = "".join(parts)
+    return f"{_img(hero)}\n\n{body}"
+
+
+def hero_alt(url: str) -> str:
+    """Best-effort alt text from an image URL."""
+    tail = url.split("?")[0].rstrip("/").split("/")[-1]
+    return tail.replace("-", " ").replace("_", " ") or "article image"
+
+
+def redraft_article(
+    article_id: int,
+    style: str | None = None,
+    *,
+    regenerate_blocks: bool = True,
+    keep_images: bool = True,
+) -> dict:
+    """Re-generate an existing article's body in a (new) writing voice.
+
+    The article's title and slug are never touched (URL stability). Images
+    already in the old draft are re-attached, and AI layout blocks are
+    regenerated from the new text. Persists ``content_draft``, ``style``,
+    ``word_count``, cost and tokens; the DB row's status is preserved.
+
+    Returns a summary dict for the caller to display.
+    """
+    from blog_automation.models import ContentBrief
+
+    resolved = styles.resolve_style(style)
+
+    # --- session 1: read everything the LLM needs, then close the connection ---
+    with get_session() as s:
+        article = s.get(Article, article_id)
+        if not article:
+            raise ProcessingError(f"Article {article_id} not found")
+        keyword = article.keyword or ""
+        old_body = article.content_draft or ""
+        outline = article.outline or ""
+        status = article.status
+        brief_row = (
+            s.query(ContentBrief).filter_by(article_id=article_id).first()
+            or s.query(ContentBrief)
+            .filter_by(keyword=keyword)
+            .order_by(ContentBrief.id.desc())
+            .first()
+        )
+        if brief_row is not None:
+            view = _BriefView(
+                keyword,
+                sections=brief_row.get_sections(),
+                lsi_keywords=brief_row.get_lsi_keywords(),
+                sources=brief_row.get_sources(),
+                unique_angle=brief_row.get_unique_angle(),
+                target_word_count=brief_row.get_target_word_count(),
+            )
+        else:
+            view = _BriefView(
+                keyword,
+                sections=[
+                    {"h2": re.sub(r"^#+\s*", "", line).strip()}
+                    for line in outline.splitlines()
+                    if line.startswith("## ")
+                ],
+            )
+
+    images: list[dict] = _image_urls(old_body) if keep_images else []
+    logger.info(
+        "Re-drafting article",
+        article_id=article_id,
+        keyword=keyword,
+        style=resolved.name,
+        images=len(images),
+    )
+
+    if not outline:
+        outline = generate_outline(view, resolved.name)
+
+    new = generate_article_draft(view, outline, resolved.name)
+    body = new.content_draft or ""
+    if not body.strip():
+        raise ProcessingError("Re-draft produced empty content — aborted")
+
+    blocks: list[dict] = []
+    if regenerate_blocks:
+        try:
+            from blog_automation import layouts
+
+            llm = OpenRouterClient()
+            blocks = layouts.generate_blocks(llm, new.title or keyword, keyword, body)
+            if blocks:
+                body = (
+                    body.rstrip() + "\n\n" + layouts.blocks_to_directives(blocks) + "\n"
+                )
+        except Exception as exc:  # noqa: BLE001 - blocks are optional garnish
+            logger.warning("Layout block regeneration failed", error=str(exc))
+
+    body = _insert_images(body, images)
+
+    # --- session 2: write back (short, with one reconnect retry) ---
+    words = len(body.split())
+    for attempt in (1, 2):
+        try:
+            with get_session() as s:
+                art = s.get(Article, article_id)
+                if not art:
+                    raise ProcessingError(f"Article {article_id} vanished")
+                art.content_draft = body
+                art.style = resolved.name
+                art.word_count = words
+                art.ai_generation_cost = (art.ai_generation_cost or 0) + (
+                    new.ai_generation_cost or 0
+                )
+                art.ai_tokens_used = new.ai_tokens_used
+                s.commit()
+            break
+        except Exception:
+            if attempt == 2:
+                raise
+
+    logger.info(
+        "Article re-drafted",
+        article_id=article_id,
+        style=resolved.name,
+        word_count=words,
+        blocks=len(blocks) if regenerate_blocks else 0,
+    )
+    return {
+        "article_id": article_id,
+        "style": resolved.name,
+        "style_label": resolved.label,
+        "word_count": words,
+        "images_kept": len(images),
+        "blocks": len(blocks),
+        "was_published": status == "published",
+        "status": status,
+    }
 
 
 def validate_draft_quality(
@@ -350,11 +589,16 @@ def revise_article_with_feedback(
     return article
 
 
-def content_brief_to_draft(brief: ContentBrief) -> Article:
+def content_brief_to_draft(
+    brief: BriefLike,
+    style: str | None = None,
+) -> Article:
     """Complete pipeline: brief → outline → draft.
 
     Args:
         brief: ContentBrief with all data
+        style: Optional voice override (preset name / file path / custom:<text>).
+            Falls back to ARTICLE_STYLE / BLOG_STYLE_FILE / BLOG_STYLE env.
 
     Returns:
         Article with validated draft
@@ -365,12 +609,13 @@ def content_brief_to_draft(brief: ContentBrief) -> Article:
     logger.info("Starting brief to draft pipeline", keyword=brief.keyword)
 
     try:
+        resolved = styles.resolve_style(style)
         # Step 1: Generate outline
-        outline = generate_outline(brief)
+        outline = generate_outline(brief, resolved.name)
         logger.info("Outline generated", keyword=brief.keyword)
 
         # Step 2: Generate draft
-        article = generate_article_draft(brief, outline)
+        article = generate_article_draft(brief, outline, resolved.name)
         # Mark initial pipeline progress so dashboard shows correct state
         article.pipeline_progress = {
             "research": "done",

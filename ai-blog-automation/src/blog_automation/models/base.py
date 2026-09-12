@@ -163,12 +163,51 @@ def create_session() -> Session:
 def init_db(engine=None) -> None:
     """Initialize the database by creating all tables.
 
+    Also adds any columns that were introduced after the table was first
+    created (``create_all`` never ALTERs an existing table), so a deployed DB
+    doesn't blow up with ``column ... does not exist`` after a schema addition.
+
     Args:
         engine: Optional engine override
     """
     eng = engine or get_engine()
     Base.metadata.create_all(eng)
+    _ensure_columns(eng)
     logger.info("Database tables created")
+
+
+# Columns added after the initial schema. Keep idempotent (IF NOT EXISTS).
+_ADDED_COLUMNS: tuple[tuple[str, str, str], ...] = (
+    # (table, column, ddl type)
+    ("articles", "style", "VARCHAR(64)"),
+)
+
+
+def _ensure_columns(engine=None) -> list[str]:
+    """Add missing post-hoc columns. Returns the list of columns added."""
+    from sqlalchemy import inspect, text
+
+    eng = engine or get_engine()
+    inspector = inspect(eng)
+    tables = set(inspector.get_table_names())
+    known: dict[str, set[str]] = {}
+    for table, _column, _ddl in _ADDED_COLUMNS:
+        if table in tables and table not in known:
+            known[table] = {c["name"] for c in inspector.get_columns(table)}
+
+    added: list[str] = []
+    with eng.begin() as conn:
+        for table, column, ddl in _ADDED_COLUMNS:
+            cols = known.get(table)
+            if cols is None or column in cols:
+                continue  # table absent (just created) or column already there
+            conn.execute(
+                text(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {column} {ddl}")
+            )
+            added.append(f"{table}.{column}")
+    if added:
+        logger.info("Added missing DB columns", columns=added)
+    return added
 
 
 def drop_db(engine=None) -> None:

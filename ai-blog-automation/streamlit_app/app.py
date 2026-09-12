@@ -118,6 +118,7 @@ def get_articles():
                 "seo_analysis": a.seo_analysis,
                 "featured_image_url": a.featured_image_url,
                 "tags": a.tags or [],
+                "style": a.style,
             }
             for a in articles
         ]
@@ -593,6 +594,166 @@ def _render_backlink_tab(article: dict) -> None:
                 st.markdown(f"- [{it['anchor'] or it['url']}]({it['url']})")
 
 
+def _style_names() -> dict[str, str]:
+    """Preset slug → human label, for the style pickers."""
+    try:
+        from blog_automation.styles import STYLE_PRESETS
+
+        return {k: v["label"] for k, v in STYLE_PRESETS.items()}
+    except Exception:
+        return {}
+
+
+def _default_style_label() -> str:
+    """Label for 'whatever the site is configured with'."""
+    try:
+        from blog_automation.styles import resolve_style
+
+        return f"Mặc định site — {resolve_style().name}"
+    except Exception:
+        return "Mặc định site"
+
+
+def _preview_style(article_id: int, style: str, words: int = 120) -> str:
+    """Generate a short sample of the article's topic in the given voice."""
+    _load_llm_env()
+    from blog_automation.integrations.openrouter_client import OpenRouterClient
+    from blog_automation.styles import build_system_prompt
+
+    _art = _session_article(article_id)
+    keyword = _art["keyword"] or ""
+    title = _art["title"] or keyword
+
+    llm = OpenRouterClient()
+    resp = llm.chat_complete(
+        messages=[
+            {"role": "system", "content": build_system_prompt(style)},
+            {
+                "role": "user",
+                "content": (
+                    f"Viết mở bài khoảng {words} từ cho bài blog sau, đúng giọng đã "
+                    f"yêu cầu, kèm 3 heading H2. Chỉ trả markdown.\n\n"
+                    f"Tiêu đề: {title}\nKeyword: {keyword}"
+                ),
+            },
+        ],
+        temperature=0.7,
+        max_tokens=600,
+    )
+    return (resp.get("content") or "").strip()
+
+
+def _session_article(article_id: int) -> dict:
+    """Load a couple of fields of an article without leaking a session."""
+    from blog_automation.models import Article, get_session
+
+    with get_session() as s:
+        a = s.get(Article, article_id)
+        if not a:
+            raise RuntimeError(f"Article {article_id} not found")
+        return {"keyword": a.keyword, "title": a.title, "style": a.style}
+
+
+def _redraft_with_style(article_id: int, style: str) -> dict:
+    """Re-draft an article in a new voice (used by the Review Queue button)."""
+    _load_llm_env()
+    from blog_automation.pipelines.phase_3_draft import redraft_article
+
+    return redraft_article(article_id, style)
+
+
+def _style_control(article: dict) -> None:
+    """Review-Queue control: see and change the writing voice of this post."""
+    from blog_automation.styles import describe, list_styles
+
+    current = article.get("style")
+    names = list_styles()
+    st.markdown("### 🎨 Giọng viết (writing style)")
+    st.caption(
+        f"Bài này: **{current or '(chưa ghi — dùng mặc định)'}** · mặc định site: "
+        f"{describe()}. Đổi ở đây = **viết lại toàn bộ bài** theo giọng mới "
+        "(giữ tiêu đề + slug + ảnh; layout block sinh lại)."
+    )
+
+    c1, c2, c3, c4 = st.columns([2, 1, 1, 1])
+    with c1:
+        chosen = st.selectbox(
+            "Chọn giọng",
+            options=names,
+            index=names.index(current) if current in names else 0,
+            format_func=lambda n: _style_names().get(n, n),
+            key=f"stylepick_{article['id']}",
+            label_visibility="collapsed",
+        )
+    with c2:
+        if st.button("👀 Xem thử 120 từ", key=f"styleprev_{article['id']}"):
+            try:
+                with st.spinner("Đang viết thử…"):
+                    _sample = _preview_style(article["id"], chosen)
+                st.session_state[f"_style_sample_{article['id']}"] = (chosen, _sample)
+            except Exception as ex:
+                st.error(f"⚠️ Preview lỗi: {ex}")
+    with c3:
+        if st.button(
+            "🔁 Viết lại theo giọng này",
+            key=f"styleredraft_{article['id']}",
+            type="primary",
+            help="Sinh lại toàn bộ bài theo giọng đã chọn "
+            "(tốn ~1-3 phút + 1 lần gọi LLM).",
+        ):
+            try:
+                with st.spinner("Đang viết lại bài theo giọng mới…"):
+                    _res = _redraft_with_style(article["id"], chosen)
+                _note = ""
+                if _res.get("was_published"):
+                    _note = (
+                        " ⚠️ Bài này đang LIVE — bấm 'Approve & Publish' "
+                        "để đẩy bản mới lên."
+                    )
+                st.session_state["_review_msg"] = (
+                    "success",
+                    f"🎨 Đã viết lại theo **{_res['style_label']}**: "
+                    f"{_res['word_count']} từ · giữ {_res['images_kept']} ảnh · "
+                    f"{_res['blocks']} layout block.{_note}",
+                )
+            except Exception as ex:
+                st.session_state["_review_msg"] = ("error", f"❌ Viết lại lỗi: {ex}")
+            st.rerun()
+    with c4:
+        if st.button(
+            "💾 Chỉ lưu giọng",
+            key=f"stylesave_{article['id']}",
+            help="Ghi nhãn giọng vào bài mà KHÔNG viết lại (dùng khi nội dung đã OK).",
+        ):
+            try:
+                from blog_automation.models import Article, get_session
+
+                with get_session() as s:
+                    a = s.get(Article, article["id"])
+                    if a is None:
+                        raise RuntimeError(f"Article {article['id']} not found")
+                    a.style = chosen
+                    s.commit()
+                st.session_state["_review_msg"] = (
+                    "success",
+                    "💾 Đã lưu giọng **{}** cho bài.".format(
+                        _style_names().get(chosen, chosen)
+                    ),
+                )
+            except Exception as ex:
+                st.session_state["_review_msg"] = ("error", f"❌ Lưu giọng lỗi: {ex}")
+            st.rerun()
+
+    _sample = st.session_state.get(f"_style_sample_{article['id']}")
+    if _sample:
+        _sname, _stext = _sample
+        with st.expander(
+            f"👀 Bản thử 120 từ — {_style_names().get(_sname, _sname)}",
+            expanded=True,
+        ):
+            st.markdown(_stext)
+
+
 def _article_md_path(article_id: int) -> str | None:
     """Find the content/*.md file for an article (match slug, then title)."""
     from pathlib import Path
@@ -756,8 +917,12 @@ def _approve_and_publish(article_id: int) -> dict:
         return result
 
 
-def _run_pipeline_inprocess(keyword: str) -> None:
-    """Run full pipeline inside Streamlit — no subprocess needed."""
+def _run_pipeline_inprocess(keyword: str, style: str | None = None) -> None:
+    """Run full pipeline inside Streamlit — no subprocess needed.
+
+    ``style`` pins the writing voice for this draft (stored on the article);
+    None falls back to the dashboard's configured default.
+    """
     import traceback
 
     from blog_automation.models import get_session
@@ -768,7 +933,10 @@ def _run_pipeline_inprocess(keyword: str) -> None:
         run_quality_gates,
     )
 
-    progress = st.status(f"Running pipeline: **{keyword}**", expanded=True)
+    _style_label = _style_names().get(style) if style else "default"
+    progress = st.status(
+        f"Running pipeline: **{keyword}** — 🎨 {_style_label}", expanded=True
+    )
 
     try:
         progress.write("🔍 Phase 1: Research...")
@@ -779,8 +947,8 @@ def _run_pipeline_inprocess(keyword: str) -> None:
         full_brief = generate_content_brief(keyword, brief.id)
         progress.write(f"✅ Brief done — {len(full_brief.get_sections())} sections")
 
-        progress.write("✍️ Phase 3: Drafting...")
-        article = content_brief_to_draft(full_brief)
+        progress.write(f"✍️ Phase 3: Drafting... (giọng: {_style_label})")
+        article = content_brief_to_draft(full_brief, style)
         progress.write(f"✅ Draft done — {article.word_count} words")
 
         progress.write("🔬 Phase 4: Fact checking... ⏭️ skipped (free model)")
@@ -1089,11 +1257,17 @@ if page == "🏠 Dashboard":
         with st.form("quick_new_article"):
             st.subheader("📝 Quick New Article")
             new_kw = st.text_input("Target Keyword")
+            new_style = st.selectbox(
+                "🎨 Giọng viết (style)",
+                options=[None, *_style_names().keys()],
+                format_func=lambda s: _style_names().get(s, _default_style_label()),
+                help="Giọng bài viết cho lần chạy này. Đổi được sau ở Review Queue.",
+            )
             col1, col2 = st.columns(2)
             with col1:
                 if st.form_submit_button("🚀 Start Automation"):
                     if new_kw:
-                        _run_pipeline_inprocess(new_kw)
+                        _run_pipeline_inprocess(new_kw, new_style)
                     else:
                         st.error("Please enter a keyword")
             with col2:
@@ -1139,8 +1313,12 @@ elif page == "📋 Review Queue":
                 st.info(f"📬 {len(articles)} article(s) awaiting review")
 
                 for article in articles:
+                    _style_badge = (
+                        f" · 🎨 {article.get('style')}" if article.get("style") else ""
+                    )
                     with st.expander(
-                        f"📄 {article['title'] or 'Untitled'} - {article['keyword']}",
+                        f"📄 {article['title'] or 'Untitled'} - "
+                        f"{article['keyword']}{_style_badge}",
                         expanded=False,
                     ):
                         # Article Info
@@ -1166,6 +1344,8 @@ elif page == "📋 Review Queue":
                         )
 
                         with tab1:
+                            _style_control(article)
+                            st.markdown("---")
                             st.markdown("### Content Preview")
                             if article["meta_title"]:
                                 st.markdown(f"**Meta Title:** {article['meta_title']}")
@@ -1729,6 +1909,8 @@ elif page == "📄 All Articles":
 
                     with tab1:
                         st.markdown("### Content Preview")
+                        if article.get("style"):
+                            st.caption(f"🎨 Giọng viết: {article['style']}")
                         if article["meta_title"]:
                             st.markdown(f"**Meta Title:** {article['meta_title']}")
                         if article["meta_description"]:

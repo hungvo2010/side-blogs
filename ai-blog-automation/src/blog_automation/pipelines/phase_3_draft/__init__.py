@@ -7,6 +7,7 @@ from blog_automation.pipelines.phase_3_draft.drafting import (
     content_brief_to_draft,
     generate_article_draft,
     generate_outline,
+    redraft_article,
     revise_article_with_feedback,
     validate_draft_quality,
 )
@@ -17,4 +18,5 @@ __all__ = [
     "content_brief_to_draft",
     "validate_draft_quality",
     "revise_article_with_feedback",
+    "redraft_article",
 ]

@@ -66,6 +66,11 @@ class Article(BaseModel):
     ai_generation_cost: Mapped[float] = mapped_column(Float, default=0.0)
     ai_tokens_used: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
+    # Writing voice this draft was generated in (see blog_automation.styles).
+    # Dynamic per article: set at generation time, changeable from the Review
+    # Queue (changing it re-drafts the piece in the new voice).
+    style: Mapped[str | None] = mapped_column(String(64), nullable=True)
+
     # Status
     status: Mapped[str] = mapped_column(
         String(50),
