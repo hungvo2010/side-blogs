@@ -189,9 +189,19 @@ def _load_cloudflare_env() -> None:
 
 
 def _load_llm_env() -> None:
-    """Load OPENCODE_* LLM credentials (deepseek-v4-flash) into env from secrets."""
+    """Load LLM credentials + per-blog style/brand knobs from secrets into env."""
     secrets = st.secrets if hasattr(st, "secrets") else {}
-    for env_key in ("OPENCODE_BASE_URL", "OPENCODE_API_KEY", "OPENCODE_MODEL"):
+    for env_key in (
+        "OPENCODE_BASE_URL",
+        "OPENCODE_API_KEY",
+        "OPENCODE_MODEL",
+        # Per-blog writing voice + branding (blog_automation.styles)
+        "BLOG_STYLE",
+        "BLOG_STYLE_FILE",
+        "SITE_NAME",
+        "SITE_AUTHOR",
+        "SITE_URL",
+    ):
         if env_key not in os.environ:
             try:
                 val = secrets.get(env_key)
@@ -400,6 +410,187 @@ def _load_image_env():
                 val = None
             if val:
                 os.environ[key] = str(val)
+
+
+# ---------------------------------------------------------------------------
+# Links / backlink targets (Review Queue tab + All Articles tab)
+# ---------------------------------------------------------------------------
+_IMAGE_HOSTS = (
+    "images.unsplash.com",
+    "images.pexels.com",
+    "cdn.pixabay.com",
+    "source.unsplash.com",
+    "unsplash.com/photos",
+    "pexels.com/photo",
+    "pixabay.com/",
+)
+
+
+def _site_url() -> str:
+    return os.environ.get("SITE_URL") or "https://dripper.top"
+
+
+def _extract_links(md: str, site_url: str = "") -> dict:
+    """Split every link in an article body into backlink targets / internal / images.
+
+    Returns ``{"external": [{"url","anchor","domain"}], "internal": [...],
+    "images": int}`` — deduped by URL, first anchor kept.
+    """
+    import re as _re
+    from urllib.parse import urlparse
+
+    body = md or ""
+    # Markdown links, incl. images (![alt](url)) which are separated out below.
+    # NOTE: pairs are (url, anchor) — keep that order in the loop below.
+    pairs = [
+        ((m.group(3) or "").strip(), m.group(2).strip())
+        for m in _re.finditer(r"(!?)\[([^\]]*)\]\(\s*([^)\s]+)[^)]*\)", body)
+        if m.group(3)
+    ]
+    # Bare URLs (Source: https://..., etc.)
+    anchors = {u for u, _ in pairs}
+    for m in _re.finditer(r"https?://[^\s)\"'<>\]]+", body):
+        url = m.group(0).rstrip(".,;]*)")
+        if url and url not in anchors:
+            pairs.append((url, ""))
+
+    site_host = urlparse(site_url).netloc.lower()
+    external, internal, images = [], [], 0
+    seen: set[str] = set()
+    for url, anchor in pairs:
+        url = url.rstrip(".,;")
+        if not url or url in seen or url.startswith("#"):
+            continue
+        low = url.lower()
+        if any(h in low for h in _IMAGE_HOSTS):
+            images += 1
+            continue
+        seen.add(url)
+        if low.startswith("/") or (site_host and site_host in low):
+            internal.append({"url": url, "anchor": anchor, "domain": site_host})
+            continue
+        if not low.startswith("http"):
+            # Relative markdown target (LLM-written internal link) → not a backlink.
+            internal.append({"url": "/" + url.lstrip("/"), "anchor": anchor,
+                             "domain": site_host})
+            continue
+        external.append({
+            "url": url,
+            "anchor": anchor,
+            "domain": urlparse(url).netloc.lower().removeprefix("www."),
+        })
+    return {"external": external, "internal": internal, "images": images}
+
+
+def _check_links_http(urls: list[str], limit: int = 25) -> list[dict]:
+    """HEAD/GET each URL and report a status code + plain-language meaning.
+
+    Note: 403/429 = bot protection (link is real), 000 = this box's DNS/network
+    blocks the host (also real in a browser) — neither means the link is dead.
+    """
+    import requests
+
+    ua = (
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0 Safari/537.36"
+    )
+    out = []
+    for url in urls[:limit]:
+        try:
+            r = requests.get(
+                url, timeout=8, allow_redirects=True, headers={"User-Agent": ua}
+            )
+            code = r.status_code
+            note = {403: "bot-blocked (OK)", 429: "rate-limited (OK)"}.get(code, "")
+            if code == 200:
+                note = "OK"
+            elif code >= 400 and not note:
+                note = "check"
+        except Exception as exc:  # noqa: BLE001
+            code, note = 0, f"network/DNS unreachable ({type(exc).__name__})"
+        out.append({"url": url, "status": code, "note": note})
+    return out
+
+
+def _render_backlink_tab(article: dict) -> None:
+    """Shared renderer: the links a post uses + backlink-outreach candidates."""
+    st.markdown("### 🔗 Links used in this post (backlink targets)")
+    st.caption(
+        "External sources cited in the article — these are the domains to hit up "
+        "for a backlink / link exchange. Internal links are your own posts."
+    )
+
+    links = _extract_links(article.get("content_draft") or "", _site_url())
+    ext, internal = links["external"], links["internal"]
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("External (backlink targets)", len(ext))
+    c2.metric("Internal links", len(internal))
+    c3.metric("Images skipped", links["images"])
+
+    if not ext:
+        st.info(
+            "Bài này chưa có link ngoài nào. Muốn có backlink target thì thêm nguồn "
+            "trích dẫn (ít nhất 3 external link / bài)."
+        )
+    else:
+        by_domain: dict[str, list[dict]] = {}
+        for item in ext:
+            by_domain.setdefault(item["domain"], []).append(item)
+
+        st.markdown(f"#### {len(by_domain)} domain(s)")
+        for domain, items in sorted(by_domain.items(), key=lambda kv: -len(kv[1])):
+            with st.expander(f"🌐 {domain} — {len(items)} link(s)", expanded=False):
+                for it in items:
+                    label = (
+                        f"**{it['anchor']}**" if it["anchor"] else "(bare URL)"
+                    )
+                    st.markdown(f"{label}\n\n<{it['url']}>", unsafe_allow_html=True)
+
+        st.markdown("#### 📋 Copy all external URLs")
+        st.text_area(
+            "outreach list",
+            value="\n".join(it["url"] for it in ext),
+            height=120,
+            key=f"exturls_{article['id']}",
+            label_visibility="collapsed",
+        )
+        st.download_button(
+            "⬇️ Tải .txt",
+            data="\n".join(
+                f"{it['url']}\t{it['anchor']}\t{it['domain']}" for it in ext
+            ).encode("utf-8"),
+            file_name=f"backlink-targets-{article['id']}.txt",
+            mime="text/plain",
+            key=f"dltxt_{article['id']}",
+        )
+
+        if st.button(
+            "🔍 Check HTTP status của các link", key=f"chklinks_{article['id']}"
+        ):
+            with st.spinner("Đang kiểm tra link…"):
+                res = _check_links_http([it["url"] for it in ext])
+            st.session_state[f"_linkcheck_{article['id']}"] = res
+
+        _res = st.session_state.get(f"_linkcheck_{article['id']}")
+        if _res:
+            st.dataframe(
+                [
+                    {"status": r["status"], "note": r["note"], "url": r["url"]}
+                    for r in _res
+                ],
+                use_container_width=True,
+                hide_index=True,
+            )
+            st.caption(
+                "403/429 = bot chặn (link vẫn sống). 0 = DNS/network của máy này chặn "
+                "host (browser vẫn mở được). Chỉ 404/410 mới là link chết thật."
+            )
+
+    if internal:
+        with st.expander(f"↩️ Internal links ({len(internal)})", expanded=False):
+            for it in internal:
+                st.markdown(f"- [{it['anchor'] or it['url']}]({it['url']})")
 
 
 def _article_md_path(article_id: int) -> str | None:
@@ -962,7 +1153,7 @@ elif page == "📋 Review Queue":
                             st.metric("Status", article["status"])
 
                         # Tabs for different views
-                        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+                        tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(
                             [
                                 "📝 Content",
                                 "✅ Fact-Check",
@@ -970,6 +1161,7 @@ elif page == "📋 Review Queue":
                                 "🎯 Decision",
                                 "🧩 Layout Blocks",
                                 "🖼️ Images",
+                                "🔗 Links / Backlink",
                             ]
                         )
 
@@ -1365,6 +1557,9 @@ elif page == "📋 Review Queue":
                             st.markdown("**Keywords default dùng để tìm ảnh:**")
                             st.write(" · ".join(_kw) if _kw else "(không có)")
 
+                        with tab7:
+                            _render_backlink_tab(article)
+
         except Exception as e:
             st.error(f"Error loading articles: {e}")
 
@@ -1528,8 +1723,8 @@ elif page == "📄 All Articles":
                                 )
                             st.rerun()
 
-                    tab1, tab2, tab3 = st.tabs(
-                        ["📝 Content", "✅ Fact-Check", "📊 SEO"]
+                    tab1, tab2, tab3, tab4 = st.tabs(
+                        ["📝 Content", "✅ Fact-Check", "📊 SEO", "🔗 Links / Backlink"]
                     )
 
                     with tab1:
@@ -1590,6 +1785,9 @@ elif page == "📄 All Articles":
                                     st.info(sug)
                         else:
                             st.info("No SEO analysis available")
+
+                    with tab4:
+                        _render_backlink_tab(article)
 
                     st.markdown("---")
 

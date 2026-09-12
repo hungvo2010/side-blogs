@@ -129,6 +129,16 @@ class Settings(BaseSettings):
         default=3.0, description="Max plagiarism percentage"
     )
 
+    # Per-blog writing voice (see blog_automation.styles)
+    blog_style: str = Field(
+        default="warm-editorial",
+        description="Writing-style preset name for this blog (BLOG_STYLE)",
+    )
+    blog_style_file: str = Field(
+        default="",
+        description="File holding the full custom system prompt (BLOG_STYLE_FILE)",
+    )
+
     @field_validator("log_level")
     @classmethod
     def validate_log_level(cls, v: str) -> str:

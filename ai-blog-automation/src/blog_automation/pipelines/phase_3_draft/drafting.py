@@ -1,11 +1,15 @@
 """Article drafting pipeline.
 
 Generates article outlines and full drafts using GPT-4.
+
+Writing voice is a per-blog knob — see :mod:`blog_automation.styles`.
 """
 
+import os
 import re
 from datetime import datetime
 
+from blog_automation import styles
 from blog_automation.errors import ProcessingError
 from blog_automation.integrations.openrouter_client import OpenRouterClient
 from blog_automation.logging_config import get_logger
@@ -15,6 +19,11 @@ logger = get_logger(__name__)
 
 
 # Prompts for drafting
+# Backwards-compat alias: the default voice now lives in blog_automation.styles
+# (preset "warm-editorial"), which is per-blog configurable via BLOG_STYLE /
+# BLOG_STYLE_FILE / ARTICLE_STYLE. This name is kept for any external importers.
+ARTICLE_SYSTEM_PROMPT = styles.DEFAULT_SYSTEM_PROMPT
+
 OUTLINE_GENERATION_PROMPT = """Create a detailed article outline for: {keyword}
 
 Sections to include:
@@ -27,21 +36,10 @@ Requirements:
 - FAQ section at end with 3-5 questions
 - Include internal link opportunities marked as [INTERNAL: topic]
 
+Voice / structure notes for this publication:
+{style_hint}
+
 Return markdown outline only."""
-
-ARTICLE_SYSTEM_PROMPT = """You are a professional blog writer creating engaging, well-researched content.
-
-Guidelines:
-- Conversational tone, avoid robotic language
-- Short paragraphs (2-3 sentences max)
-- Include real-world examples and use cases
-- Natural keyword integration (3-5 times total)
-- No keyword stuffing
-- Cite sources where appropriate using [Source: URL] format
-- Internal link anchors: [anchor text](article-slug)
-- Use bullet points and numbered lists where appropriate
-- Include actionable takeaways
-- Write for humans first, SEO second"""
 
 ARTICLE_USER_PROMPT = """Write a complete blog post following this outline:
 
@@ -63,7 +61,8 @@ Requirements:
 - Use LSI keywords throughout
 - Cite at least 3 external sources
 - Include a compelling introduction
-- End with a clear conclusion and call-to-action"""
+- End with a clear conclusion and call-to-action
+- Follow the voice/format rules from your system instructions exactly"""
 
 
 def generate_outline(brief: ContentBrief) -> str:
@@ -86,6 +85,7 @@ def generate_outline(brief: ContentBrief) -> str:
     prompt = OUTLINE_GENERATION_PROMPT.format(
         keyword=brief.keyword,
         sections=sections_text,
+        style_hint=styles.outline_hint() or "- Keep headings clear and specific.",
     )
 
     response = llm.complete(prompt, temperature=0.7, max_tokens=1500)
@@ -121,7 +121,11 @@ def generate_article_draft(
             word_count=len(mock_content.split()),
         )
 
-    logger.info("Generating article draft", keyword=brief.keyword)
+    logger.info(
+        "Generating article draft",
+        keyword=brief.keyword,
+        style=styles.describe(),
+    )
     llm = OpenRouterClient()
     # ... rest of original logic ...
     # Prepare prompt data
@@ -146,10 +150,16 @@ def generate_article_draft(
 
     response = llm.chat_complete(
         messages=[
-            {"role": "system", "content": ARTICLE_SYSTEM_PROMPT},
+            {
+                "role": "system",
+                "content": styles.build_system_prompt(
+                    site_name=os.environ.get("SITE_NAME"),
+                    author=os.environ.get("SITE_AUTHOR"),
+                ),
+            },
             {"role": "user", "content": user_prompt},
         ],
-        temperature=0.7,
+        temperature=styles.active_temperature(),
         max_tokens=4000,
     )
 
@@ -306,7 +316,14 @@ def revise_article_with_feedback(
 
     response = llm.chat_complete(
         messages=[
-            {"role": "system", "content": REVISION_SYSTEM_PROMPT},
+            {
+                "role": "system",
+                "content": REVISION_SYSTEM_PROMPT
+                + "\n\nThe publication's house voice (must be preserved):\n\n"
+                + styles.build_system_prompt(
+                    site_name=os.environ.get("SITE_NAME")
+                ),
+            },
             {"role": "user", "content": user_prompt},
         ],
         temperature=0.5,  # Lower temperature for more focused revision

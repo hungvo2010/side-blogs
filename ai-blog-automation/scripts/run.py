@@ -20,10 +20,30 @@ from blog_automation.pipelines import (
 )
 
 if len(sys.argv) < 2:
-    print("Usage: python scripts/run.py 'your keyword'")
+    print("Usage: python scripts/run.py 'your keyword' [--style <preset|file:path>]")
+    print("       presets: see `python -c \"from blog_automation.styles import list_styles;print(list_styles())\"`")
     sys.exit(1)
 
-kw = " ".join(sys.argv[1:])
+_argv = sys.argv[1:]
+# --style <name> / --style=<name> overrides BLOG_STYLE for this run only.
+for _i, _a in enumerate(list(_argv)):
+    if _a == "--style" and _i + 1 < len(_argv):
+        os.environ["ARTICLE_STYLE"] = _argv[_i + 1]
+        _argv = [_x for _j, _x in enumerate(_argv) if _j not in (_i, _i + 1)]
+        break
+    if _a.startswith("--style="):
+        os.environ["ARTICLE_STYLE"] = _a.split("=", 1)[1]
+        _argv = [x for x in _argv if x != _a]
+        break
+
+kw = " ".join(_argv).strip()
+if not kw:
+    print("No keyword given. Usage: run.py 'your keyword' [--style <preset>]")
+    sys.exit(1)
+
+from blog_automation.styles import describe as _describe_style
+
+print(f"🎨 Style: {_describe_style()}")
 
 
 def _insert_image_after_h2(content: str, img_url: str, alt: str = "") -> str:
