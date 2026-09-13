@@ -980,6 +980,13 @@ def parse_cli() -> argparse.Namespace:
     p.add_argument("--author", help="Override author")
     p.add_argument("--image", help="OG image URL")
     p.add_argument("--no-push", action="store_true", help="Build only, skip git push")
+    p.add_argument(
+        "--allow-stale",
+        action="store_true",
+        help="Proceed with the build even if the DB sync fails. Dangerous: "
+        "deploys whatever (possibly stale) content/ is on disk — wrong "
+        "featured/hero and missing dashboard-published pages.",
+    )
     return p.parse_args()
 
 
@@ -1008,8 +1015,15 @@ def main():
 
             reconcile_live.sync_published()
         except Exception as e:  # noqa: BLE001
+            if not args.allow_stale:
+                raise SystemExit(
+                    f"❌ DB sync failed ({e.__class__.__name__}: {str(e)[:120]}).\n"
+                    "   Refusing to build from stale content/ — it would deploy the "
+                    "wrong featured/hero and drop dashboard-published pages.\n"
+                    "   Fix DATABASE_URL / network, or pass --allow-stale to override."
+                ) from e
             print(f"⚠️  DB materialize skipped ({e.__class__.__name__}: "
-                  f"{str(e)[:80]}) — building from content/ only")
+                  f"{str(e)[:80]}) — building from content/ only (--allow-stale)")
 
         posts_meta: list[dict] = []
         all_slugs: set[str] = set()

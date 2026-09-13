@@ -7,7 +7,6 @@ tags: Hanoi Old Quarter, Vietnam Travel, Street Food, Vietnamese Culture
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1543355890-20bc0a26fda1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxIYW5vaSUyMDM2JTIwb2xkJTIwcXVhcnRlcnMlMjB0cmF2ZWwlMjBndWlkZXxlbnwwfHx8fDE3ODgwODQ1NDF8MA&ixlib=rb-4.1.0&q=80&w=200
 description: The Living Labyrinth: A Craft-and-Story Walk Through Hanoi's 36 Old Quarters…
-featured: true
 ---
 
 ![Hanoi 36 old quarters travel guide](https://images.unsplash.com/photo-1543355890-20bc0a26fda1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxIYW5vaSUyMDM2JTIwb2xkJTIwcXVhcnRlcnMlMjB0cmF2ZWwlMjBndWlkZXxlbnwwfHx8fDE3ODgwODQ1NDF8MA&ixlib=rb-4.1.0&q=80&w=1080)

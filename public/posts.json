@@ -57,7 +57,7 @@
     "image": "https://images.unsplash.com/photo-1452415005154-c06158558480?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHw2fHxtb2thJTIwcG90fGVufDB8fHx8MTc4OTE4NTk0Nnww&ixlib=rb-4.1.0&q=80&w=1080",
     "date": "2026-09-12T00:00:00Z",
     "word_count": 3565,
-    "featured": false
+    "featured": true
   },
   {
     "title": "Cà Phê Vợt: The Cloth-Filter Coffee That Built Saigon’s Coffee Culture",
@@ -310,7 +310,7 @@
     "image": "https://images.unsplash.com/photo-1543355890-20bc0a26fda1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxIYW5vaSUyMDM2JTIwb2xkJTIwcXVhcnRlcnMlMjB0cmF2ZWwlMjBndWlkZXxlbnwwfHx8fDE3ODgwODQ1NDF8MA&ixlib=rb-4.1.0&q=80&w=200",
     "date": "2026-08-30T00:00:00Z",
     "word_count": 4417,
-    "featured": true
+    "featured": false
   },
   {
     "title": "Vietnamese Food Culture: A Journey Through Balance, History, and Flavor",
