@@ -81,19 +81,45 @@ components.html(
 
 
 def init_db():
-    """Initialize database connection.
+    """Initialize database connection + schema.
 
     DATABASE_URL (and all other settings) are loaded from .env by
-    blog_automation.config at import time, so we just build the engine.
+    blog_automation.config at import time. We also run ``models.init_db`` so
+    ``create_all`` + ``_ensure_columns`` add any post-hoc columns (e.g.
+    ``articles.featured``) on Streamlit Cloud where no CLI runs migrations.
     """
     import os
 
     os.environ.setdefault("ENVIRONMENT", "development")
 
-    from blog_automation.models import get_engine
+    from blog_automation.models import get_engine, init_db as _init_models
 
     engine = get_engine()
+    _init_models(engine)
     return engine
+
+
+def _ensure_fresh_backend() -> None:
+    """Reload the publishing backend if Streamlit cached a stale copy.
+
+    Streamlit re-runs the main script in the same process, so modules imported
+    in a previous run persist. After a git push, ``app.py`` updates but an
+    already-imported ``blog_automation...publishing`` can stay on the old code
+    (e.g. ``ImportError: cannot import name build_site_files_from_db``). If the
+    new symbol is missing, reload the module from the (already-updated) disk.
+    """
+    import importlib
+
+    name = "blog_automation.pipelines.phase_8_publish.publishing"
+    try:
+        mod = importlib.import_module(name)
+    except Exception:
+        return
+    if not hasattr(mod, "build_site_files_from_db"):
+        try:
+            importlib.reload(mod)
+        except Exception:
+            pass
 
 
 def get_articles():
@@ -768,103 +794,45 @@ def _style_control(article: dict) -> None:
             st.markdown(_stext)
 
 
-def _article_md_path(article_id: int) -> str | None:
-    """Find the content/*.md file for an article (match slug, then title)."""
-    from pathlib import Path
-
-    from blog_automation.models import Article, get_session
-    from blog_automation.pipelines.phase_8_publish.publishing import _REPO_ROOT
-
-    content_dir = _REPO_ROOT / "ai-blog-automation" / "content"
-    with get_session() as s:
-        a = s.get(Article, article_id)
-        if not a:
-            return None
-        slug, title = a.slug, a.title
-
-    if not content_dir.exists():
-        return None
-    for p in content_dir.glob("*.md"):
-        if p.stem == slug:
-            return str(p)
-    for p in content_dir.glob("*.md"):
-        if (p.stem or "").startswith((slug or "")[:40]):
-            return str(p)
-    # Match by title
-    for p in content_dir.glob("*.md"):
-        txt = p.read_text(encoding="utf-8")
-        if title and f"title: {title}" in txt:
-            return str(p)
-    return None
-
-
 def _set_featured(article_id: int, make_featured: bool = True) -> dict:
-    """Make ONE article the homepage hero (frontmatter `featured: true`).
+    """Make ONE article the homepage hero (DB `featured` flag).
 
-    Clears `featured` from all other content/*.md, sets it on the target,
-    rebuilds the whole site in-process and deploys to Cloudflare Pages.
-    Returns {file, deployed, url}.
+    Stores the flag on the ``Article`` row (durable — no filesystem), clears
+    it from every other article, rebuilds the whole site from the DB in memory
+    and deploys to Cloudflare Pages. Returns {slug, deployed, method, url}.
     """
-    import re as _re
-
     from blog_automation.models import Article, get_session
     from blog_automation.pipelines.phase_8_publish.publishing import (
-        _build_site_files,
         _deploy_to_cloudflare,
+        build_site_files_from_db,
     )
 
     _load_cloudflare_env()
-    md_path = _article_md_path(article_id)
-    if not md_path:
-        raise RuntimeError(f"Không tìm thấy content/*.md cho bài #{article_id}")
 
-    target_stem = md_path.rsplit("/", 1)[-1]
-    # Clear featured from every content/*.md
-    from pathlib import Path
-
-    cleared = 0
-    for p in Path(md_path).parent.glob("*.md"):
-        txt = p.read_text(encoding="utf-8")
-        if _re.search(r"^featured:\s*(true|1|yes)\s*$", txt, _re.M):
-            new = _re.sub(r"^featured:\s*(true|1|yes)\s*$", "", txt, flags=_re.M)
-            p.write_text(new, encoding="utf-8")
-            cleared += 1
-
-    # Set featured on target if requested
-    if make_featured:
-        txt = Path(md_path).read_text(encoding="utf-8")
-        if not _re.search(r"^featured:", txt, _re.M):
-            # insert right after the opening '---'
-            txt = txt.replace("---\n", "---\nfeatured: true\n", 1)
-        else:
-            txt = _re.sub(
-                r"^featured:\s*(true|1|yes|false|0|no)\s*$",
-                "featured: true",
-                txt,
-                flags=_re.M,
+    with get_session() as s:
+        target = s.get(Article, article_id)
+        if not target:
+            raise RuntimeError(f"Article {article_id} not found")
+        if make_featured and target.status != "published":
+            raise RuntimeError(
+                f"Bài #{article_id} chưa publish — publish trước rồi set featured."
             )
-        Path(md_path).write_text(txt, encoding="utf-8")
+        s.query(Article).filter(Article.featured.is_(True)).update(
+            {Article.featured: False}, synchronize_session=False
+        )
+        if make_featured:
+            target.featured = True
+        slug = target.slug
+        s.commit()
 
-    target_md = Path(md_path).read_text(encoding="utf-8")
-    files = _build_site_files(slug="x", md_content=target_md)
+    files = build_site_files_from_db()
     method, pushed = _deploy_to_cloudflare(files, "featured-set")
-    slug = article_slug_from_id(article_id)
     return {
-        "file": md_path,
-        "deck": "featured",
+        "slug": slug,
         "deployed": pushed,
         "method": method,
         "url": f"{_site_url().rstrip('/')}/{slug}/" if slug else "",
-        "cleared": cleared,
     }
-
-
-def article_slug_from_id(article_id: int) -> str:
-    from blog_automation.models import Article, get_session
-
-    with get_session() as s:
-        a = s.get(Article, article_id)
-        return a.slug if a else ""
 
 
 def _regenerate_layout_block(article_id: int, block_idx: int, instruction: str) -> dict:
@@ -929,6 +897,25 @@ def _approve_and_publish(article_id: int) -> dict:
         a.published_date = datetime.now(timezone.utc)
         s.commit()
         return result
+
+
+def _rebuild_site_from_db() -> dict:
+    """Rebuild every page from published DB rows and deploy to Cloudflare.
+
+    Same disk-free path as Approve/Feature (works on Streamlit Cloud). Useful
+    as a manual resync after a redeploy wiped the container's ephemeral files.
+    Returns ``{files, deploy_method, pushed}``.
+    """
+    _load_cloudflare_env()
+
+    from blog_automation.pipelines.phase_8_publish.publishing import (
+        _deploy_to_cloudflare,
+        build_site_files_from_db,
+    )
+
+    files = build_site_files_from_db()
+    method, pushed = _deploy_to_cloudflare(files, "manual-rebuild")
+    return {"files": len(files), "deploy_method": method, "pushed": pushed}
 
 
 def _run_pipeline_inprocess(keyword: str, style: str | None = None) -> None:
@@ -1159,6 +1146,8 @@ except Exception as e:
     db_connected = False
     st.sidebar.error(f"DB Error: {e}")
 
+_ensure_fresh_backend()
+
 st.sidebar.markdown("---")
 st.sidebar.markdown("### Quick Stats")
 if db_connected:
@@ -1252,7 +1241,7 @@ if page == "🏠 Dashboard":
 
     # Quick Actions
     st.subheader("🚀 Quick Actions")
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         if st.button("📝 New Article", use_container_width=True):
             st.session_state["show_new_article"] = True
@@ -1265,6 +1254,29 @@ if page == "🏠 Dashboard":
         if st.button("📅 Plan Content", use_container_width=True):
             st.session_state["page"] = "📅 Content Calendar"
             st.rerun()
+    with col4:
+        if st.button(
+            "🛠️ Rebuild from DB",
+            use_container_width=True,
+            help="Rebuild every page from the DB and redeploy to Cloudflare Pages "
+            "(no filesystem). Use to resync after a redeploy.",
+        ):
+            try:
+                with st.spinner("Rebuilding from DB & deploying…"):
+                    _res = _rebuild_site_from_db()
+                if _res["pushed"]:
+                    st.success(
+                        f"✅ Rebuilt {_res['files']} files & deployed "
+                        f"({_res['deploy_method']})."
+                    )
+                else:
+                    st.warning(
+                        "Rebuilt but the deploy was NOT confirmed "
+                        f"(method: {_res['deploy_method']}). Check "
+                        "`CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` in secrets."
+                    )
+            except Exception as _e:
+                st.error(f"❌ Rebuild failed: {_e}")
 
     if st.session_state.get("show_new_article"):
         with st.form("quick_new_article"):

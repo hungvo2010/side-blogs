@@ -180,6 +180,7 @@ def init_db(engine=None) -> None:
 _ADDED_COLUMNS: tuple[tuple[str, str, str], ...] = (
     # (table, column, ddl type)
     ("articles", "style", "VARCHAR(64)"),
+    ("articles", "featured", "BOOLEAN DEFAULT FALSE"),
 )
 
 
