@@ -176,23 +176,42 @@ def generate_article_draft(
         sources=sources_text or "Use authoritative sources",
     )
 
-    response = llm.chat_complete(
-        messages=[
-            {
-                "role": "system",
-                "content": styles.build_system_prompt(
-                    style,
-                    site_name=os.environ.get("SITE_NAME"),
-                    author=os.environ.get("SITE_AUTHOR"),
-                ),
-            },
-            {"role": "user", "content": user_prompt},
-        ],
-        temperature=styles.active_temperature(style),
-        max_tokens=4000,
-    )
+    messages = [
+        {
+            "role": "system",
+            "content": styles.build_system_prompt(
+                style,
+                site_name=os.environ.get("SITE_NAME"),
+                author=os.environ.get("SITE_AUTHOR"),
+            ),
+        },
+        {"role": "user", "content": user_prompt},
+    ]
 
-    draft_content = response.get("content", "")
+    # The provider occasionally returns an empty completion (throttle hiccup) —
+    # retry once instead of persisting a blank draft.
+    response: dict = {}
+    draft_content = ""
+    for attempt in (1, 2, 3):
+        response = llm.chat_complete(
+            messages=messages,
+            temperature=styles.active_temperature(style),
+            max_tokens=4000,
+        )
+        draft_content = (response.get("content") or "").strip()
+        if len(draft_content) >= 200:
+            break
+        logger.warning(
+            "Empty/short draft from provider — retrying",
+            attempt=attempt,
+            chars=len(draft_content),
+            keyword=brief.keyword,
+        )
+    if len(draft_content) < 200:
+        raise ProcessingError(
+            f"LLM returned no usable draft for '{brief.keyword}' "
+            f"({len(draft_content)} chars after 3 attempts)"
+        )
 
     # Create article
     article = Article(
