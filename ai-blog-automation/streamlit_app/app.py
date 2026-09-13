@@ -146,6 +146,7 @@ def get_articles():
                 "tags": a.tags or [],
                 "style": a.style,
                 "slug": a.slug,
+                "featured": bool(a.featured),
             }
             for a in articles
         ]
@@ -396,6 +397,7 @@ def _requeue_article(article_id: int, reviewer: str = "Tien Nguyen") -> dict:
         a.status = "pending_review"
         a.pipeline_progress = None
         a.published_date = None
+        a.featured = False
         s.commit()
 
         task = (
@@ -1867,7 +1869,31 @@ elif page == "📄 All Articles":
                         )
 
                     with col_act3:
-                        if st.button(
+                        if article.get("featured"):
+                            if st.button(
+                                "↩️ Bỏ featured (bài mới nhất lên đầu)",
+                                key=f"unsetfeat_{article['id']}",
+                                use_container_width=True,
+                                help="Gỡ 'featured' để trang chủ tự lấy bài "
+                                "mới nhất làm hero (rebuild + deploy).",
+                            ):
+                                try:
+                                    with st.spinner(
+                                        "Đang bỏ featured + rebuild + deploy…"
+                                    ):
+                                        _set_featured(article["id"], False)
+                                    st.session_state["_review_msg"] = (
+                                        "success",
+                                        "↩️ Đã bỏ featured — bài mới nhất sẽ "
+                                        "lên đầu trang và đã deploy xong.",
+                                    )
+                                except Exception as e5:
+                                    st.session_state["_review_msg"] = (
+                                        "error",
+                                        f"❌ Bỏ featured lỗi: {e5}",
+                                    )
+                                st.rerun()
+                        elif st.button(
                             "⭐ Set as Featured (đầu trang)",
                             key=f"setfeat_{article['id']}",
                             use_container_width=True,
