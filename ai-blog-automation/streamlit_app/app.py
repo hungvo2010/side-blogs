@@ -99,6 +99,29 @@ def init_db():
     return engine
 
 
+def _ensure_fresh_backend() -> None:
+    """Reload the publishing backend if Streamlit cached a stale copy.
+
+    Streamlit re-runs the main script in the same process, so modules imported
+    in a previous run persist. After a git push, ``app.py`` updates but an
+    already-imported ``blog_automation...publishing`` can stay on the old code
+    (e.g. ``ImportError: cannot import name build_site_files_from_db``). If the
+    new symbol is missing, reload the module from the (already-updated) disk.
+    """
+    import importlib
+
+    name = "blog_automation.pipelines.phase_8_publish.publishing"
+    try:
+        mod = importlib.import_module(name)
+    except Exception:
+        return
+    if not hasattr(mod, "build_site_files_from_db"):
+        try:
+            importlib.reload(mod)
+        except Exception:
+            pass
+
+
 def get_articles():
     """Get all articles from database."""
     from blog_automation.models import Article, get_session
@@ -1122,6 +1145,8 @@ try:
 except Exception as e:
     db_connected = False
     st.sidebar.error(f"DB Error: {e}")
+
+_ensure_fresh_backend()
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("### Quick Stats")
