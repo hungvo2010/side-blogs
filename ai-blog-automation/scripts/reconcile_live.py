@@ -118,6 +118,8 @@ def import_live_only(slugs: list[str]) -> list[str]:
         fm += f"author: Tien Nguyen\n"
         if image:
             fm += f"image: {image}\n"
+        if getattr(a, "featured", False):
+            fm += "featured: true\n"
         fm += "---\n\n"
         out.write_text(fm + body + "\n", encoding="utf-8")
         imported.append(slug)
@@ -150,7 +152,10 @@ def _frontmatter_from_db(a, body: str, extra_keys: dict) -> str:
         fm += "author: Tien Nguyen\n"
     if image:
         fm += f"image: {image}\n"
-    for k in ("description", "featured", "blocks"):
+    # `featured` now lives in the DB (Article.featured), not the frontmatter.
+    if getattr(a, "featured", False):
+        fm += "featured: true\n"
+    for k in ("description", "blocks"):
         if extra_keys.get(k):
             fm += f"{k}: {extra_keys[k]}\n"
     fm += "---\n\n"
@@ -230,7 +235,7 @@ def sync_published(dry_run: bool = False) -> tuple[list[str], list[str]]:
                         key = key.strip()
                         if key in (
                             "title", "date", "slug", "keyword",
-                            "tags", "author", "image",
+                            "tags", "author", "image", "featured",
                         ):
                             continue
                         if val.strip():

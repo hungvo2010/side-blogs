@@ -137,6 +137,12 @@ class Article(BaseModel):
     featured_image_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     featured_image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
+    # Homepage hero flag. Lives in the DB (not content/*.md frontmatter) so the
+    # DB-driven build can pick the hero even on a diskless host (Streamlit Cloud).
+    featured: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false", nullable=False
+    )
+
     # Performance Tracking (aggregated)
     views_30_days: Mapped[int] = mapped_column(Integer, default=0)
     avg_time_on_page: Mapped[float | None] = mapped_column(Float, nullable=True)

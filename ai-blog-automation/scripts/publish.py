@@ -502,7 +502,36 @@ def build_article(
     author: str | None = None,
     image: str | None = None,
 ) -> tuple[str, str, dict]:
+    """Build a single article page from a markdown FILE path."""
     md_text = Path(filepath).read_text(encoding="utf-8")
+    return build_article_from_text(
+        md_text,
+        title=title,
+        description=description,
+        slug=slug,
+        tags=tags,
+        author=author,
+        image=image,
+    )
+
+
+def build_article_from_text(
+    md_text: str,
+    *,
+    title: str | None = None,
+    description: str | None = None,
+    slug: str | None = None,
+    tags: str | None = None,
+    author: str | None = None,
+    image: str | None = None,
+    known_slugs: set | None = None,
+) -> tuple[str, str, dict]:
+    """Build a single article page from markdown TEXT (no filesystem).
+
+    Used by the DB-driven build on hosts without durable disk (Streamlit
+    Cloud). ``known_slugs`` overrides the on-disk content/ scan used to
+    normalize internal links (pass the DB's published-slug set).
+    """
     fm, body = extract_frontmatter(md_text)
 
     title = title or fm.get("title") or _guess_title(body) or "Untitled"
@@ -536,7 +565,9 @@ def build_article(
         substitute_tokens,
     )
 
-    body = normalize_links(body, _known_slugs())
+    body = normalize_links(
+        body, known_slugs if known_slugs is not None else _known_slugs()
+    )
     body_clean, block_tokens = directives_from_markdown(body)
     html_body = markdown2.markdown(
         body_clean,

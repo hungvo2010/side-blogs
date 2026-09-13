@@ -27,56 +27,26 @@ _DIST_DIR = Path("../public")  # at repo root — served by Cloudflare Pages
 # publishing.py → phase_8_publish/ → pipelines/ → blog_automation/ → src/ → ai-blog-automation/ → side-blogs/
 _REPO_ROOT = Path(__file__).resolve().parents[5]  # side-blogs/
 
+# Bug-artifact slugs that must never become their own page.
+_ARTIFACT_SLUGS = {"x"}
 
-def _delete_article_from_site(slug: str) -> None:
-    """Remove an article's source + built output from the local site tree.
-
-    Deletes ``ai-blog-automation/content/<slug>.md`` and ``public/<slug>/`` so
-    that a subsequent rebuild + deploy drops the article from the live site.
-    """
-    content_md = _REPO_ROOT / "ai-blog-automation" / _CONTENT_DIR / f"{slug}.md"
-    if content_md.exists():
-        content_md.unlink()
-    dist_dir = (_REPO_ROOT / "public") / slug
-    if dist_dir.exists():
-        import shutil
-
-        shutil.rmtree(dist_dir, ignore_errors=True)
+# Non-article static assets kept in the committed public/ checkout. These are
+# read-only: the DB-driven build overlays the dynamic pages on top of them.
+_STATIC_ROOT_FILES = ("favicon.svg", "_redirects", "apple-touch-icon.png")
+_STATIC_DIRS = ("about", "privacy")
 
 
 def delete_article_and_redeploy(slug: str) -> dict[str, Any]:
-    """Delete a published article from the live site and redeploy.
+    """Rebuild the whole site from the DB and redeploy.
 
-    Removes the article's content markdown + built ``public/<slug>/`` dir, then
-    rebuilds the full site from the remaining ``content/*.md`` and deploys via
-    the Cloudflare Direct Upload API. Run this AFTER deleting the article row
-    from the DB (the site is built purely from content/*.md).
+    The site is built purely from ``status='published'`` rows, so the caller
+    MUST delete the row or move it off ``published`` first — then this drops
+    the article's page and refreshes the homepage/sitemap. Works on hosts with
+    no durable disk (Streamlit Cloud) because nothing is written to disk.
 
-    Returns dict with ``slug`` and ``deploy_method``/``pushed`` like
-    ``publish_article``.
+    Returns dict with ``slug`` and ``deploy_method``/``pushed``.
     """
-    _delete_article_from_site(slug)
-
-    # Build the site from the remaining content/*.md files and deploy.
-    # Reuse the in-process builder by publishing a trivial placeholder then
-    # discarding it — simplifies reuse of the exact templates/deploy path.
-    placeholder_md = "# placeholder\n\n(removed)"
-    files = _build_site_files(slug="__deleted__", md_content=placeholder_md)
-
-    # Scrub the placeholder artifacts (source + built page) so they never leak
-    # into content/, public/, or a future build.
-    files.pop("/__deleted__/index.html", None)
-    placeholder_src = (
-        _REPO_ROOT / "ai-blog-automation" / _CONTENT_DIR / "__deleted__.md"
-    )
-    if placeholder_src.exists():
-        placeholder_src.unlink()
-    placeholder_dist = (_REPO_ROOT / "public") / "__deleted__"
-    if placeholder_dist.exists():
-        import shutil
-
-        shutil.rmtree(placeholder_dist, ignore_errors=True)
-
+    files = build_site_files_from_db()
     method, pushed = _deploy_to_cloudflare(files, title=slug)
     return {"slug": slug, "deploy_method": method, "pushed": pushed}
 
@@ -95,8 +65,9 @@ def publish_article(
 ) -> dict[str, Any]:
     """Publish a single article to Cloudflare Pages.
 
-    This is the one-stop function — give it content, it handles everything
-    from markdown generation to git push.
+    The whole site is rebuilt from the DB's published rows (plus this article,
+    which may not be saved in the DB yet) and deployed via the Cloudflare Direct
+    Upload API. Nothing is written to disk, so this works on Streamlit Cloud.
 
     Args:
         title: Article title (H1)
@@ -107,10 +78,10 @@ def publish_article(
         tags: List of tags
         author: Author name
         image: OG image URL
-        auto_push: If True, commit + push to git (Cloudflare auto-deploys)
+        auto_push: If True, build + deploy to Cloudflare Pages
 
     Returns:
-        Dict with ``slug``, ``url``, ``html_path``, ``pushed``
+        Dict with ``slug``, ``url``, ``pushed`` and ``deploy_method``.
     """
     import re
 
@@ -138,86 +109,42 @@ def publish_article(
     if not description:
         description = title
 
-    tags = tags or []
-    author = author or "Tien Nguyen"
+    article = {
+        "slug": slug,
+        "title": title,
+        "keyword": keyword,
+        "description": description,
+        "tags": tags or [],
+        "author": author,
+        "image": image or "",
+        "featured": False,
+        "date": None,
+        "body": content,
+    }
 
-    # ── Build frontmatter markdown ──
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    fm = f"---\ntitle: {title}\ndate: {now}\n"
-    # Pin the slug in frontmatter so build_article produces the SAME URL
-    # (otherwise it derives slugify(title), which keeps Vietnamese diacritics
-    # and silently creates a second URL for the same article)
-    fm += f"slug: {slug}\n"
-    if description:
-        fm += f"description: {description}\n"
-    if keyword:
-        fm += f"keyword: {keyword}\n"
-    if tags:
-        fm += f"tags: {', '.join(tags)}\n"
-    if author:
-        fm += f"author: {author}\n"
-    if image:
-        fm += f"image: {image}\n"
-    fm += "---\n\n"
+    # Rebuild from the DB's published rows + this (possibly unsaved) article.
+    files = build_site_files_from_db(extra_articles=[article])
 
-    md_content = fm + content
+    site_url = os.environ.get("SITE_URL", "https://dripper.top")
 
-    # ── Write markdown to content/ ──
-    content_dir = _REPO_ROOT / "ai-blog-automation" / _CONTENT_DIR
-    content_dir.mkdir(parents=True, exist_ok=True)
-    md_path = content_dir / f"{slug}.md"
-    md_path.write_text(md_content, encoding="utf-8")
-
-    logger.info("Markdown written", path=str(md_path))
-
-    # ── Build the full static site in-process (no subprocess — works on
-    #    Streamlit Cloud where there is no venv / npx / git) ──
-    files = _build_site_files(slug=slug, md_content=md_content)
-
-    site_url = os.environ.get("SITE_URL", "https://side-blogs.pages.dev")
-
-    # ── Deploy: Cloudflare Pages API → wrangler → git push ──
     pushed = False
     deploy_method = "none"
     if auto_push:
         deploy_method, pushed = _deploy_to_cloudflare(files, title)
 
-    # ── Determine live URL ──
-    live_url = f"{site_url}/{slug}"
-
     return {
         "slug": slug,
-        "url": live_url,
-        "html_path": str(_DIST_DIR / slug / "index.html"),
-        "md_path": str(md_path),
+        "url": f"{site_url}/{slug}",
         "pushed": pushed,
         "deploy_method": deploy_method,
         "title": title,
     }
 
 
-def _build_site_files(*, slug: str, md_content: str) -> dict[str, bytes]:
-    """Build the complete static site in-process and return {path: bytes}.
-
-    Renders the new article plus every existing post in ``content/`` using the
-    same templates as ``scripts/publish.py`` (imported in-process — no
-    subprocess). Also writes the outputs to ``content/`` and ``public/`` on
-    disk so the repo and the git/wrangler fallback paths stay consistent.
-
-    Returns a map of ``public/``-relative path → file bytes, ready for a
-    Cloudflare Pages Direct Upload.
-    """
+def _load_publish_module():
+    """Import scripts/publish.py in-process to reuse its templates/builders."""
     import importlib.util
-    import json
 
-    content_dir = _REPO_ROOT / "ai-blog-automation" / _CONTENT_DIR
-    dist = _REPO_ROOT / "public"
-    content_dir.mkdir(parents=True, exist_ok=True)
-    dist.mkdir(parents=True, exist_ok=True)
-
-    (content_dir / f"{slug}.md").write_text(md_content, encoding="utf-8")
-
-    # Import scripts/publish.py in-process so we reuse the exact templates.
     publish_script = _REPO_ROOT / "ai-blog-automation" / "scripts" / "publish.py"
     spec = importlib.util.spec_from_file_location("sideblog_publish", str(publish_script))
     pub = importlib.util.module_from_spec(spec)
@@ -225,49 +152,147 @@ def _build_site_files(*, slug: str, md_content: str) -> dict[str, bytes]:
     pub.DEFAULTS.update(
         {
             "site_url": os.environ.get(
-                "SITE_URL", pub.DEFAULTS.get("site_url", "https://side-blogs.pages.dev")
+                "SITE_URL", pub.DEFAULTS.get("site_url", "https://dripper.top")
             ),
             "site_name": os.environ.get(
                 "SITE_NAME", pub.DEFAULTS.get("site_name", "The Slow Drip")
             ),
         }
     )
+    return pub
 
-    posts_meta: list[dict] = []
-    all_slugs: set[str] = set()
-    post_htmls: dict[str, str] = {}
-    for md_file in sorted(content_dir.glob("*.md")):
-        s, html, meta = pub.build_article(str(md_file))
-        if s in all_slugs:
+
+def _article_markdown(article: dict) -> str:
+    """Render one article dict to frontmatter + body markdown (in memory)."""
+
+    def _one_line(value: Any) -> str:
+        return " ".join(str(value or "").split())
+
+    title = _one_line(article.get("title")) or _one_line(article.get("keyword"))
+    slug = article.get("slug") or ""
+    date = article.get("date") or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    fm = f"---\ntitle: {title or 'Untitled'}\ndate: {date}\nslug: {slug}\n"
+    if article.get("description"):
+        fm += f"description: {_one_line(article['description'])}\n"
+    if article.get("keyword"):
+        fm += f"keyword: {_one_line(article['keyword'])}\n"
+    tags = [_one_line(t) for t in (article.get("tags") or []) if _one_line(t)]
+    if tags:
+        fm += f"tags: {', '.join(tags)}\n"
+    fm += f"author: {_one_line(article.get('author')) or 'Tien Nguyen'}\n"
+    if article.get("image"):
+        fm += f"image: {_one_line(article['image'])}\n"
+    if article.get("featured"):
+        fm += "featured: true\n"
+    fm += "---\n\n"
+    return fm + (article.get("body") or "")
+
+
+def _db_article_dict(a) -> dict:
+    """Normalize an Article row into the dict ``_article_markdown`` expects."""
+    published = a.published_date or a.created_at
+    return {
+        "slug": a.slug,
+        "title": a.title,
+        "keyword": a.keyword,
+        "description": a.meta_description or "",
+        "tags": a.tags or ([a.keyword] if a.keyword else []),
+        "author": None,
+        "image": a.featured_image_url or "",
+        "featured": bool(a.featured),
+        "date": published.strftime("%Y-%m-%d") if published else None,
+        "body": a.content_draft or "",
+    }
+
+
+def _static_site_files() -> dict[str, bytes]:
+    """Read the committed non-article static assets (read-only, no writes)."""
+    public = _REPO_ROOT / "public"
+    files: dict[str, bytes] = {}
+    for name in _STATIC_ROOT_FILES:
+        path = public / name
+        if path.exists():
+            files[f"/{name}"] = path.read_bytes()
+    for dirname in _STATIC_DIRS:
+        base = public / dirname
+        if not base.exists():
             continue
-        all_slugs.add(s)
+        for root, _dirs, fnames in os.walk(base):
+            for fname in fnames:
+                full = Path(root) / fname
+                rel = full.relative_to(public).as_posix()
+                files[f"/{rel}"] = full.read_bytes()
+    return files
+
+
+def build_site_files_from_db(
+    extra_articles: list[dict] | None = None,
+) -> dict[str, bytes]:
+    """Build the ENTIRE static site in memory from the DB (source of truth).
+
+    Article pages come from ``Article`` rows with ``status='published'`` plus
+    any ``extra_articles`` supplied by the caller (used for the article being
+    approved, which is still ``pending_review`` at build time). Non-article
+    static assets are read read-only from the committed ``public/`` checkout.
+    Nothing is written to disk, so this is safe on diskless hosts.
+
+    Returns a ``{"/path": bytes}`` map ready for the Cloudflare Direct Upload.
+    """
+    import json
+
+    from blog_automation.models import Article, get_session
+
+    pub = _load_publish_module()
+
+    marks: dict[str, str] = {}
+    with get_session() as session:
+        rows = (
+            session.query(Article)
+            .filter(Article.status == "published")
+            .filter(Article.content_draft.isnot(None))
+            .order_by(Article.id)
+            .all()
+        )
+        for a in rows:
+            if not a.slug or a.slug in _ARTIFACT_SLUGS:
+                continue
+            if not (a.content_draft or "").strip():
+                continue
+            marks[a.slug] = _article_markdown(_db_article_dict(a))
+
+    # Extra articles override same-slug DB rows (e.g. a fresh re-draft).
+    for art in extra_articles or []:
+        slug = art.get("slug")
+        if slug and (art.get("body") or "").strip():
+            marks[slug] = _article_markdown(art)
+
+    known = set(marks)
+    posts_meta: list[dict] = []
+    post_htmls: dict[str, str] = {}
+    for md_text in marks.values():
+        slug, html, meta = pub.build_article_from_text(md_text, known_slugs=known)
         posts_meta.append(meta)
-        post_htmls[s] = html
+        post_htmls[slug] = html
 
     posts_meta.sort(key=lambda m: m["date"], reverse=True)
 
-    meta_file = dist / "posts.json"
-    meta_file.parent.mkdir(parents=True, exist_ok=True)
-    meta_file.write_text(json.dumps(posts_meta, ensure_ascii=False, indent=2))
+    files = _static_site_files()
+    files["/index.html"] = pub.build_index(posts_meta).encode("utf-8")
+    files["/sitemap.xml"] = pub.build_sitemap(posts_meta).encode("utf-8")
+    files["/rss.xml"] = pub.build_rss(posts_meta).encode("utf-8")
+    files["/robots.txt"] = (
+        f"User-agent: *\nAllow: /\n\nSitemap: {pub.DEFAULTS['site_url']}/sitemap.xml\n"
+    ).encode("utf-8")
+    files["/posts.json"] = json.dumps(
+        posts_meta, ensure_ascii=False, indent=2
+    ).encode("utf-8")
+    for slug, html in post_htmls.items():
+        files[f"/{slug}/index.html"] = html.encode("utf-8")
 
-    # Write site-level files + the new article page to public/ on disk.
-    pub.build_site(dist, posts_meta, slug, post_htmls.get(slug, ""))
-    for s, html in post_htmls.items():
-        pd = dist / s
-        pd.mkdir(parents=True, exist_ok=True)
-        (pd / "index.html").write_text(html, encoding="utf-8")
-
-    logger.info("Built site in-process", posts=len(posts_meta), dist=str(dist))
-
-    # Collect every file under public/ as {relative_path: bytes}.
-    # Keys use a leading "/" — Cloudflare Pages manifest keys are absolute
-    # paths (files without the slash aren't served).
-    files: dict[str, bytes] = {}
-    for root, _dirs, fnames in os.walk(dist):
-        for fname in fnames:
-            full = Path(root) / fname
-            rel = str(full.relative_to(dist))
-            files["/" + rel] = full.read_bytes()
+    logger.info(
+        "Built site from DB (in-memory)", posts=len(posts_meta), files=len(files)
+    )
     return files
 
 
