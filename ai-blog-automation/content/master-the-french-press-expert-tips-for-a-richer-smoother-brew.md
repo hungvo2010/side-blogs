@@ -1,10 +1,12 @@
 ---
 title: Master the French Press: Expert Tips for a Richer, Smoother Brew
 date: 2026-08-03
-description: There is something almost ritualistic about the French Press. Unlike the quick, mechanical buzz of a pod machine, the French Press requires patience. It asks…
+slug: master-the-french-press-expert-tips-for-a-richer-smoother-brew
 keyword: french press brewing tips
+tags: french press brewing tips
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1639906512494-dd4a536abc4e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxmcmVuY2glMjBwcmVzcyUyMGJyZXdpbmclMjB0aXBzfGVufDB8fHx8MTc4NTc3MTk2OXww&ixlib=rb-4.1.0&q=80&w=200
+description: There is something almost ritualistic about the French Press. Unlike the quick, mechanical buzz of a pod machine, the French Press requires patience. It asks…
 ---
 
 ![french press brewing tips](https://images.unsplash.com/photo-1639906512494-dd4a536abc4e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxmcmVuY2glMjBwcmVzcyUyMGJyZXdpbmclMjB0aXBzfGVufDB8fHx8MTc4NTc3MTk2OXww&ixlib=rb-4.1.0&q=80&w=1080)

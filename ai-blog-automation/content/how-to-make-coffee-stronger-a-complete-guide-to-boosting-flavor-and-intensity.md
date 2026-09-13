@@ -1,10 +1,12 @@
 ---
 title: How to Make Coffee Stronger: A Complete Guide to Boosting Flavor and Intensity
 date: 2026-08-17
-description: We have all been there. You pour yourself a steaming mug of morning coffee, take that first anticipated sip, and instead of a bold, mouth-watering experience…
+slug: how-to-make-coffee-stronger-a-complete-guide-to-boosting-flavor-and-intensity
 keyword: how to make coffee stronger
+tags: how to make coffee stronger
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1610632380989-680fe40816c6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMG1ha2UlMjBjb2ZmZWUlMjBzdHJvbmdlcnxlbnwwfHx8fDE3ODY3ODQyMjJ8MA&ixlib=rb-4.1.0&q=80&w=200
+description: We have all been there. You pour yourself a steaming mug of morning coffee, take that first anticipated sip, and instead of a bold, mouth-watering experience…
 ---
 
 ![how to make coffee stronger](https://images.unsplash.com/photo-1610632380989-680fe40816c6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMG1ha2UlMjBjb2ZmZWUlMjBzdHJvbmdlcnxlbnwwfHx8fDE3ODY3ODQyMjJ8MA&ixlib=rb-4.1.0&q=80&w=1080)

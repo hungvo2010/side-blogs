@@ -1,10 +1,12 @@
 ---
 title: Robusta vs. Arabica: The Ultimate Guide to Choosing Your Perfect Coffee Bean
 date: 2026-08-02
-description: Have you ever stood in the coffee aisle, staring at a bag of beans, wondering why one costs five dollars and another costs fifteen? You might have noticed te…
+slug: robusta-vs-arabica-the-ultimate-guide-to-choosing-your-perfect-coffee-bean
 keyword: robusta vs arabica coffee
+tags: robusta vs arabica coffee
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1580933073521-dc49ac0d4e6a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxSb2J1c3RhJTIwdnMuJTIwQXJhYmljYSUzQSUyMFRoZSUyMFVsdGltYXRlJTIwR3VpZGUlMjB0byUyMENob29zaW5nJTIwWW91ciUyMFBlcmZlY3QlMjBDb2ZmZWUlMjBCZWFufGVufDB8fHx8MTc4NjE3OTU5M3ww&ixlib=rb-4.1.0&q=80&w=200
+description: Have you ever stood in the coffee aisle, staring at a bag of beans, wondering why one costs five dollars and another costs fifteen? You might have noticed te…
 ---
 
 # Robusta vs. Arabica: The Ultimate Guide to Choosing Your Perfect Coffee Bean

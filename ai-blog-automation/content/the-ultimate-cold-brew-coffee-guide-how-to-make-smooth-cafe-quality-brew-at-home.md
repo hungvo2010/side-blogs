@@ -1,10 +1,12 @@
 ---
 title: The Ultimate Cold Brew Coffee Guide: How to Make Smooth, Cafe-Quality Brew at Home
 date: 2026-08-03
-description: There is a specific kind of magic that happens when you wake up, grab a glass of ice, and pour a rich, velvety liquid over it. It’s not just coffee; it’s a r…
+slug: the-ultimate-cold-brew-coffee-guide-how-to-make-smooth-cafe-quality-brew-at-home
 keyword: cold brew coffee guide
+tags: cold brew coffee guide
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1522825397800-ddf6405fc258?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxUaGUlMjBVbHRpbWF0ZSUyMENvbGQlMjBCcmV3JTIwQ29mZmVlJTIwR3VpZGUlM0ElMjBIb3clMjB0byUyME1ha2UlMjBTbW9vdGglMkMlMjBDYWZlLVF1YWxpdHklMjBCcmV3JTIwYXQlMjBIb21lfGVufDB8fHx8MTc4NjE3OTU5NXww&ixlib=rb-4.1.0&q=80&w=200
+description: There is a specific kind of magic that happens when you wake up, grab a glass of ice, and pour a rich, velvety liquid over it. It’s not just coffee; it’s a r…
 ---
 
 ![cold brew coffee guide](https://images.unsplash.com/photo-1461023058943-07fcbe16d735?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjb2xkJTIwYnJldyUyMGNvZmZlZSUyMGd1aWRlfGVufDB8fHx8MTc4NTc3MTQxMnww&ixlib=rb-4.1.0&q=80&w=1080)

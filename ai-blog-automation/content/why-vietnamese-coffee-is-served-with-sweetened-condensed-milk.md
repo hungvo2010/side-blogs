@@ -1,9 +1,12 @@
 ---
 title: Why Vietnamese Coffee Is Served With Sweetened Condensed Milk
 date: 2026-08-09
-description: The story of how Vietnam turned European coffee into a uniquely local ritual — and why sweetened condensed milk, a phin filter, and ice became its signature.
+slug: why-vietnamese-coffee-is-served-with-sweetened-condensed-milk
+keyword: Why Vietnamese Coffee Is Served With Sweetened Condensed Milk
 tags: vietnamese coffee, condensed milk, coffee culture, phin
+author: Tien Nguyen
 image: https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwaWNlZCUyMGNvZmZlZSUyMGNvbmRlbnNlZCUyMG1pbGt8ZW58MHx8fHwxNzg1Nzg1OTI1fDA&ixlib=rb-4.1.0&q=80&w=200
+description: The story of how Vietnam turned European coffee into a uniquely local ritual — and why sweetened condensed milk, a phin filter, and ice became its signature.
 ---
 
 There is something quietly remarkable about Vietnamese coffee: order a "cà phê sữa" and almost everyone knows exactly what you mean. Coffee brewed through a phin filter, layered over sweetened condensed milk. Not fresh milk. Not cream. No further explanation needed.

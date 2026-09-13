@@ -1,10 +1,12 @@
 ---
 title: Master the Art of the Perfect Pour Over: A Step-by-Step Brewing Guide
 date: 2026-08-09
-description: Have you ever spent a little extra money on a bag of high-end, single-origin beans, only to have the final cup taste... well, mediocre? Perhaps it’s overly b…
+slug: master-the-art-of-the-perfect-pour-over-a-step-by-step-brewing-guide
 keyword: how to brew pour over coffee
+tags: how to brew pour over coffee
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1442512595331-e89e73853f31?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGJyZXclMjBwb3VyJTIwb3ZlciUyMGNvZmZlZXxlbnwwfHx8fDE3ODYyNjYwOTF8MA&ixlib=rb-4.1.0&q=80&w=200
+description: Have you ever spent a little extra money on a bag of high-end, single-origin beans, only to have the final cup taste... well, mediocre? Perhaps it’s overly b…
 ---
 
 ![how to brew pour over coffee](https://images.unsplash.com/photo-1442512595331-e89e73853f31?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGJyZXclMjBwb3VyJTIwb3ZlciUyMGNvZmZlZXxlbnwwfHx8fDE3ODYyNjYwOTF8MA&ixlib=rb-4.1.0&q=80&w=1080)

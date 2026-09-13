@@ -1,10 +1,12 @@
 ---
 title: Vietnamese Food Culture: A Journey Through Balance, History, and Flavor
 date: 2026-08-29
-description: The steam rises from a battered aluminum pot at 5:30 a.m. in Hanoi's Old Quarter. A woman in a conical hat ladles clear broth into a bowl of rice noodles, th…
+slug: vietnamese-food-culture-a-journey-through-balance-history-and-flavor
 keyword: vietnamese food culture
+tags: vietnamese food culture
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1616438096679-620332ede3a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwZm9vZCUyMGN1bHR1cmV8ZW58MHx8fHwxNzg4MDAwOTI5fDA&ixlib=rb-4.1.0&q=80&w=200
+description: The steam rises from a battered aluminum pot at 5:30 a.m. in Hanoi's Old Quarter. A woman in a conical hat ladles clear broth into a bowl of rice noodles, th…
 ---
 
 ![vietnamese food culture](https://images.unsplash.com/photo-1616438096679-620332ede3a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwZm9vZCUyMGN1bHR1cmV8ZW58MHx8fHwxNzg4MDAwOTI5fDA&ixlib=rb-4.1.0&q=80&w=1080)
