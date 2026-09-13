@@ -876,6 +876,25 @@ def _approve_and_publish(article_id: int) -> dict:
         return result
 
 
+def _rebuild_site_from_db() -> dict:
+    """Rebuild every page from published DB rows and deploy to Cloudflare.
+
+    Same disk-free path as Approve/Feature (works on Streamlit Cloud). Useful
+    as a manual resync after a redeploy wiped the container's ephemeral files.
+    Returns ``{files, deploy_method, pushed}``.
+    """
+    _load_cloudflare_env()
+
+    from blog_automation.pipelines.phase_8_publish.publishing import (
+        _deploy_to_cloudflare,
+        build_site_files_from_db,
+    )
+
+    files = build_site_files_from_db()
+    method, pushed = _deploy_to_cloudflare(files, "manual-rebuild")
+    return {"files": len(files), "deploy_method": method, "pushed": pushed}
+
+
 def _run_pipeline_inprocess(keyword: str, style: str | None = None) -> None:
     """Run full pipeline inside Streamlit — no subprocess needed.
 
@@ -1197,7 +1216,7 @@ if page == "🏠 Dashboard":
 
     # Quick Actions
     st.subheader("🚀 Quick Actions")
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         if st.button("📝 New Article", use_container_width=True):
             st.session_state["show_new_article"] = True
@@ -1210,6 +1229,29 @@ if page == "🏠 Dashboard":
         if st.button("📅 Plan Content", use_container_width=True):
             st.session_state["page"] = "📅 Content Calendar"
             st.rerun()
+    with col4:
+        if st.button(
+            "🛠️ Rebuild from DB",
+            use_container_width=True,
+            help="Rebuild every page from the DB and redeploy to Cloudflare Pages "
+            "(no filesystem). Use to resync after a redeploy.",
+        ):
+            try:
+                with st.spinner("Rebuilding from DB & deploying…"):
+                    _res = _rebuild_site_from_db()
+                if _res["pushed"]:
+                    st.success(
+                        f"✅ Rebuilt {_res['files']} files & deployed "
+                        f"({_res['deploy_method']})."
+                    )
+                else:
+                    st.warning(
+                        "Rebuilt but the deploy was NOT confirmed "
+                        f"(method: {_res['deploy_method']}). Check "
+                        "`CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` in secrets."
+                    )
+            except Exception as _e:
+                st.error(f"❌ Rebuild failed: {_e}")
 
     if st.session_state.get("show_new_article"):
         with st.form("quick_new_article"):
