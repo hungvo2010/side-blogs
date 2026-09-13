@@ -119,6 +119,7 @@ def get_articles():
                 "featured_image_url": a.featured_image_url,
                 "tags": a.tags or [],
                 "style": a.style,
+                "slug": a.slug,
             }
             for a in articles
         ]
@@ -429,6 +430,19 @@ _IMAGE_HOSTS = (
 
 def _site_url() -> str:
     return os.environ.get("SITE_URL") or "https://dripper.top"
+
+
+def _published_url(article: dict) -> str:
+    """Live URL of a published article: canonical domain + REAL db slug.
+
+    Never derive the slug from the keyword and never link `*.pages.dev` — the
+    old code did both, so every dashboard link pointed at a URL that doesn't
+    exist and silently served the homepage (looked like the post was lost).
+    """
+    slug = article.get("slug")
+    if not slug:
+        slug = (article.get("keyword") or "").replace(" ", "-").lower()
+    return f"{_site_url().rstrip('/')}/{slug}/"
 
 
 def _extract_links(md: str, site_url: str = "") -> dict:
@@ -840,7 +854,7 @@ def _set_featured(article_id: int, make_featured: bool = True) -> dict:
         "deck": "featured",
         "deployed": pushed,
         "method": method,
-        "url": f"{os.environ.get('SITE_URL','https://dripper.top')}/{slug}" if slug else "",
+        "url": f"{_site_url().rstrip('/')}/{slug}/" if slug else "",
         "cleared": cleared,
     }
 
@@ -1214,8 +1228,7 @@ if page == "🏠 Dashboard":
                         with col1:
                             title = article['title'] or 'Untitled'
                             if article['status'] == 'published':
-                                slug = (article.get('keyword', '') or '').replace(' ', '-').lower()
-                                url = f"https://side-blogs.pages.dev/{slug}"
+                                url = _published_url(article)
                                 st.markdown(f"**[{title}]({url})**")
                             else:
                                 st.markdown(f"**{title}**")
@@ -1981,8 +1994,7 @@ elif page == "📄 All Articles":
                         with col1:
                             title = article['title'] or 'Untitled'
                             if article['status'] == 'published':
-                                slug = (article.get('keyword', '') or '').replace(' ', '-').lower()
-                                url = f"https://side-blogs.pages.dev/{slug}"
+                                url = _published_url(article)
                                 st.markdown(f"**[{title}]({url})**")
                             else:
                                 st.markdown(f"**{title}**")
