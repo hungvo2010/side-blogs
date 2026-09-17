@@ -1,0 +1,10 @@
+Article title: {title}
+Keyword: {keyword}
+
+Article content (first 2500 chars):
+{content}
+
+Choose 2-4 layout blocks that BEST enrich this article (a comparison table, recipe steps, FAQ, pros/cons, callout, etc.) that are relevant to the content. Available components + JSON schemas:
+{catalog}
+
+Return ONLY a JSON object with a 'blocks' array. Provide up to {max_blocks} blocks. Each block is an object with 'type' (the component id) and 'data' (exactly that component's schema fields, relevant to the article). No other text.

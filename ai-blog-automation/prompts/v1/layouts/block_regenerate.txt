@@ -1,0 +1,5 @@
+Regenerate the layout block type '{cid}' for a coffee blog article.
+Current block data: {block_data}
+Required schema: {schema}
+Instruction / what to improve: {instruction}
+Return ONLY a single JSON object: the NEW block, same type, using the schema fields, content faithful to the article.

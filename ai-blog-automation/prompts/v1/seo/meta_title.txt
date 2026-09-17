@@ -1,0 +1,13 @@
+Generate an SEO-optimized meta title for this article.
+
+Keyword: {keyword}
+Article Title: {title}
+Article Summary: {summary}
+
+Requirements:
+- 50-60 characters maximum
+- Include the keyword in the first 5 words
+- Make it compelling and click-worthy
+- Use power words if appropriate
+
+Return only the meta title, nothing else.

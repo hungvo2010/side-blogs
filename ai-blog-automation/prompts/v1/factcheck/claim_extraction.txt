@@ -1,0 +1,24 @@
+Extract factual, verifiable claims from this article.
+Filter out common knowledge, opinions, and subjective statements.
+
+Article:
+{content}
+
+Requirements:
+- Extract at most 12 of the most distinctive, verifiable factual claims
+- Keep each claim concise (max 25 words)
+- Include statistics, dates, technical specifications, quotes
+- Exclude obvious common knowledge and subjective opinions
+- Prioritize specific, checkable claims over general statements
+
+Return JSON:
+{{
+  "claims": [
+    {{
+      "claim": "Exact claim text from article",
+      "type": "historical|statistic|technical|definition|quote",
+      "confidence": "high|medium|low",
+      "context": "Brief context of where this appears"
+    }}
+  ]
+}}

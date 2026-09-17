@@ -10,55 +10,9 @@ from blog_automation.errors import ProcessingError, VerificationFailureError
 from blog_automation.integrations.openrouter_client import OpenRouterClient
 from blog_automation.logging_config import get_logger
 from blog_automation.models import Article, get_session
+from blog_automation.prompting import render_prompt
 
 logger = get_logger(__name__)
-
-
-# Prompts for fact-checking
-CLAIM_EXTRACTION_PROMPT = """Extract factual, verifiable claims from this article.
-Filter out common knowledge, opinions, and subjective statements.
-
-Article:
-{content}
-
-Requirements:
-- Extract at most 12 of the most distinctive, verifiable factual claims
-- Keep each claim concise (max 25 words)
-- Include statistics, dates, technical specifications, quotes
-- Exclude obvious common knowledge and subjective opinions
-- Prioritize specific, checkable claims over general statements
-
-Return JSON:
-{{
-  "claims": [
-    {{
-      "claim": "Exact claim text from article",
-      "type": "historical|statistic|technical|definition|quote",
-      "confidence": "high|medium|low",
-      "context": "Brief context of where this appears"
-    }}
-  ]
-}}"""
-
-CLAIM_VERIFICATION_PROMPT = """Verify this claim against the provided evidence.
-
-Claim: {claim}
-
-Evidence:
-{evidence}
-
-Analyze the evidence and determine:
-1. Does the evidence support, contradict, or neither support nor contradict the claim?
-2. How confident are you in this assessment?
-3. If the claim is inaccurate, what would be the correct information?
-
-Return JSON:
-{{
-  "verdict": "supported|contradicted|unclear",
-  "confidence": 0-100,
-  "explanation": "Brief explanation of your reasoning",
-  "suggested_revision": "Corrected claim if needed, or null if accurate"
-}}"""
 
 
 def extract_claims(content: str) -> list[dict[str, Any]]:
@@ -88,7 +42,7 @@ def extract_claims(content: str) -> list[dict[str, Any]]:
     if len(content) > max_content:
         content = content[:max_content] + "..."
 
-    prompt = CLAIM_EXTRACTION_PROMPT.format(content=content)
+    prompt = render_prompt("factcheck/claim_extraction", content=content)
 
     response = llm.extract_json(prompt)
     claims = response.get("claims", [])
@@ -192,7 +146,8 @@ def verify_claim(claim: str, evidence: list[dict]) -> dict[str, Any]:
         evidence_text += f"Title: {source.get('title', 'N/A')}\n"
         evidence_text += f"Content: {source.get('snippet', 'N/A')}\n"
 
-    prompt = CLAIM_VERIFICATION_PROMPT.format(
+    prompt = render_prompt(
+        "factcheck/claim_verification",
         claim=claim,
         evidence=evidence_text or "No evidence found",
     )

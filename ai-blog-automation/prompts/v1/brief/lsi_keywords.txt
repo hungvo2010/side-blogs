@@ -1,0 +1,14 @@
+Generate LSI (Latent Semantic Indexing) keywords related to the main keyword.
+
+Main keyword: {keyword}
+Search intent: {intent}
+
+Requirements:
+- Generate 10-15 related keywords and phrases
+- Include synonyms, related concepts, and common questions
+- Focus on terms that would naturally appear in comprehensive content
+
+Return JSON:
+{{
+  "lsi_keywords": ["keyword1", "keyword2", ...]
+}}

@@ -1,0 +1,19 @@
+Verify this claim against the provided evidence.
+
+Claim: {claim}
+
+Evidence:
+{evidence}
+
+Analyze the evidence and determine:
+1. Does the evidence support, contradict, or neither support nor contradict the claim?
+2. How confident are you in this assessment?
+3. If the claim is inaccurate, what would be the correct information?
+
+Return JSON:
+{{
+  "verdict": "supported|contradicted|unclear",
+  "confidence": 0-100,
+  "explanation": "Brief explanation of your reasoning",
+  "suggested_revision": "Corrected claim if needed, or null if accurate"
+}}

@@ -1,0 +1,15 @@
+Analyze these competitor articles and suggest a unique angle for our content.
+
+Keyword: {keyword}
+Intent: {intent}
+
+Competitor content summaries:
+{competitor_summaries}
+
+Requirements:
+- Identify gaps in existing content
+- Suggest a fresh perspective or approach
+- Consider what would make our content stand out
+- Be specific and actionable
+
+Return a single paragraph describing the unique angle.

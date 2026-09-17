@@ -1,0 +1,22 @@
+Write a complete blog post following this outline:
+
+{outline}
+
+Target keyword: {keyword}
+Unique angle: {unique_angle}
+Target word count: {word_count} words minimum
+
+LSI keywords to include naturally:
+{lsi_keywords}
+
+External sources to cite:
+{sources}
+
+Requirements:
+- Minimum {word_count} words
+- Include the keyword naturally 3-5 times
+- Use LSI keywords throughout
+- Cite at least 3 external sources
+- Include a compelling introduction
+- End with a clear conclusion and call-to-action
+- Follow the voice/format rules from your system instructions exactly

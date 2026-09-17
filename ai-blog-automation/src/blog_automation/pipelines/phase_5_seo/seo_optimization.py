@@ -10,38 +10,9 @@ from blog_automation.integrations.openrouter_client import OpenRouterClient
 from blog_automation.integrations.rankmath_client import RankMathClient
 from blog_automation.logging_config import get_logger
 from blog_automation.models import Article, ContentBrief, get_session
+from blog_automation.prompting import render_prompt
 
 logger = get_logger(__name__)
-
-
-# Prompts for SEO optimization
-META_TITLE_PROMPT = """Generate an SEO-optimized meta title for this article.
-
-Keyword: {keyword}
-Article Title: {title}
-Article Summary: {summary}
-
-Requirements:
-- 50-60 characters maximum
-- Include the keyword in the first 5 words
-- Make it compelling and click-worthy
-- Use power words if appropriate
-
-Return only the meta title, nothing else."""
-
-META_DESCRIPTION_PROMPT = """Generate an SEO-optimized meta description for this article.
-
-Keyword: {keyword}
-Article Title: {title}
-Article Summary: {summary}
-
-Requirements:
-- 150-160 characters maximum
-- Include the keyword naturally
-- Include a call-to-action
-- Make it compelling to encourage clicks
-
-Return only the meta description, nothing else."""
 
 
 def analyze_content(article: Article) -> dict[str, Any]:
@@ -211,7 +182,8 @@ def generate_meta_title(
     # Create summary from first 500 chars
     summary = content[:500].replace("\n", " ").strip()
 
-    prompt = META_TITLE_PROMPT.format(
+    prompt = render_prompt(
+        "seo/meta_title",
         keyword=keyword,
         title=title,
         summary=summary,
@@ -243,7 +215,8 @@ def generate_meta_description(
     # Create summary from first 500 chars
     summary = content[:500].replace("\n", " ").strip()
 
-    prompt = META_DESCRIPTION_PROMPT.format(
+    prompt = render_prompt(
+        "seo/meta_description",
         keyword=keyword,
         title=title,
         summary=summary,

@@ -15,6 +15,7 @@ from blog_automation.errors import ProcessingError
 from blog_automation.integrations.openrouter_client import OpenRouterClient
 from blog_automation.logging_config import get_logger
 from blog_automation.models import Article, ContentBrief, get_session
+from blog_automation.prompting import Prompts, render_prompt
 
 logger = get_logger(__name__)
 
@@ -41,47 +42,6 @@ class BriefLike(Protocol):
 # BLOG_STYLE_FILE / ARTICLE_STYLE. This name is kept for any external importers.
 ARTICLE_SYSTEM_PROMPT = styles.DEFAULT_SYSTEM_PROMPT
 
-OUTLINE_GENERATION_PROMPT = """Create a detailed article outline for: {keyword}
-
-Sections to include:
-{sections}
-
-Requirements:
-- H1: Main title (compelling, includes keyword)
-- H2 for each section
-- 2-3 H3 subsections per H2
-- FAQ section at end with 3-5 questions
-- Include internal link opportunities marked as [INTERNAL: topic]
-
-Voice / structure notes for this publication:
-{style_hint}
-
-Return markdown outline only."""
-
-ARTICLE_USER_PROMPT = """Write a complete blog post following this outline:
-
-{outline}
-
-Target keyword: {keyword}
-Unique angle: {unique_angle}
-Target word count: {word_count} words minimum
-
-LSI keywords to include naturally:
-{lsi_keywords}
-
-External sources to cite:
-{sources}
-
-Requirements:
-- Minimum {word_count} words
-- Include the keyword naturally 3-5 times
-- Use LSI keywords throughout
-- Cite at least 3 external sources
-- Include a compelling introduction
-- End with a clear conclusion and call-to-action
-- Follow the voice/format rules from your system instructions exactly"""
-
-
 def generate_outline(brief: BriefLike, style: str | None = None) -> str:
     """Generate article outline from content brief.
 
@@ -102,7 +62,8 @@ def generate_outline(brief: BriefLike, style: str | None = None) -> str:
         sections_text += f"\n  Purpose: {section.get('purpose', '')}"
         sections_text += f"\n  Key points: {', '.join(section.get('key_points', []))}"
 
-    prompt = OUTLINE_GENERATION_PROMPT.format(
+    prompt = render_prompt(
+        "draft/outline",
         keyword=brief.keyword,
         sections=sections_text,
         style_hint=styles.outline_hint(style) or "- Keep headings clear and specific.",
@@ -167,7 +128,8 @@ def generate_article_draft(
     for source in brief.get_sources()[:5]:
         sources_text += f"\n- {source.get('title', 'Source')}: {source.get('url', '')}"
 
-    user_prompt = ARTICLE_USER_PROMPT.format(
+    user_prompt = render_prompt(
+        "draft/article_user",
         outline=outline,
         keyword=brief.keyword,
         unique_angle=unique_angle,
@@ -518,37 +480,6 @@ def validate_draft_quality(
     return is_valid, errors
 
 
-REVISION_SYSTEM_PROMPT = """You are a professional blog editor. Your task is to revise an existing blog post based on specific human feedback.
-
-Maintain the original structure where possible, but strictly address all points in the feedback.
-Ensure the final output is high-quality, follows the original guidelines, and improves upon the initial draft.
-
-Guidelines:
-- Address ALL points in the feedback
-- Maintain the conversational tone
-- Keep short paragraphs
-- Ensure proper markdown formatting
-- Do not add meta-commentary about the changes (just return the revised article)"""
-
-REVISION_USER_PROMPT = """Please revise the following blog post.
-
---- ORIGINAL CONTENT ---
-{content}
---- END ORIGINAL CONTENT ---
-
---- HUMAN FEEDBACK ---
-{feedback}
---- END HUMAN FEEDBACK ---
-
-Target keyword: {keyword}
-
-Requirements for the revision:
-- Address all feedback points
-- Keep the length similar unless requested otherwise
-- Ensure all H2/H3 headings are still present and improved
-- Return the full revised article in markdown format."""
-
-
 def revise_article_with_feedback(
     article: Article,
     feedback: str,
@@ -566,7 +497,8 @@ def revise_article_with_feedback(
 
     llm = OpenRouterClient()
 
-    user_prompt = REVISION_USER_PROMPT.format(
+    user_prompt = render_prompt(
+        "draft/revision_user",
         content=article.content_draft or "",
         feedback=feedback,
         keyword=article.keyword,
@@ -576,7 +508,7 @@ def revise_article_with_feedback(
         messages=[
             {
                 "role": "system",
-                "content": REVISION_SYSTEM_PROMPT
+                "content": Prompts().get("draft/revision_system")
                 + "\n\nThe publication's house voice (must be preserved):\n\n"
                 + styles.build_system_prompt(
                     site_name=os.environ.get("SITE_NAME")

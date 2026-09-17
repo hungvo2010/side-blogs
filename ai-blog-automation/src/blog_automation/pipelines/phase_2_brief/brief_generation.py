@@ -11,72 +11,12 @@ from blog_automation.integrations.openrouter_client import OpenRouterClient
 from blog_automation.logging_config import get_logger
 from blog_automation.models import ContentBrief, get_session
 from blog_automation.pipelines.phase_1_research.keyword_research import research_keyword
+from blog_automation.prompting import render_prompt
 
 logger = get_logger(__name__)
 
 
-# Prompts for brief generation
-SECTION_GENERATION_PROMPT = """\
-Based on this keyword research, suggest H2 sections for a comprehensive blog post.
-
-Keyword: {keyword}
-Search Intent: {intent}
-Difficulty: {difficulty}
-Search Volume: {volume}
-
-Top competitor H2 patterns:
-{competitor_h2s}
-
-Requirements:
-- Suggest 4-6 H2 sections that cover the topic comprehensively
-- Each section should serve a clear purpose
-- Include a FAQ section at the end
-- Consider the search intent when structuring
-
-Return JSON:
-{{
-  "sections": [
-    {{
-      "h2": "Section Title",
-      "purpose": "Why this section is important",
-      "target_length": "200-300 words",
-      "key_points": ["point1", "point2", "point3"]
-    }}
-  ]
-}}"""
-
-LSI_KEYWORD_PROMPT = """\
-Generate LSI (Latent Semantic Indexing) keywords related to the main keyword.
-
-Main keyword: {keyword}
-Search intent: {intent}
-
-Requirements:
-- Generate 10-15 related keywords and phrases
-- Include synonyms, related concepts, and common questions
-- Focus on terms that would naturally appear in comprehensive content
-
-Return JSON:
-{{
-  "lsi_keywords": ["keyword1", "keyword2", ...]
-}}"""
-
-UNIQUE_ANGLE_PROMPT = """\
-Analyze these competitor articles and suggest a unique angle for our content.
-
-Keyword: {keyword}
-Intent: {intent}
-
-Competitor content summaries:
-{competitor_summaries}
-
-Requirements:
-- Identify gaps in existing content
-- Suggest a fresh perspective or approach
-- Consider what would make our content stand out
-- Be specific and actionable
-
-Return a single paragraph describing the unique angle."""
+# Prompts are versioned under prompts/ and loaded via the shared prompt loader.
 
 
 def generate_content_brief(
@@ -259,7 +199,8 @@ def _generate_sections(
             f"- {p.get('title', 'Unknown')}" for p in competitor_analysis["top_pages"]
         )
 
-    prompt = SECTION_GENERATION_PROMPT.format(
+    prompt = render_prompt(
+        "brief/section_generation",
         keyword=keyword,
         intent=intent,
         difficulty=difficulty,
@@ -320,7 +261,7 @@ def _generate_lsi_keywords(
             f"{keyword} reviews",
         ]
 
-    prompt = LSI_KEYWORD_PROMPT.format(keyword=keyword, intent=intent)
+    prompt = render_prompt("brief/lsi_keywords", keyword=keyword, intent=intent)
 
     response = llm.extract_json(prompt)
     lsi_keywords = response.get("lsi_keywords", [])
@@ -392,7 +333,8 @@ def _generate_unique_angle(
             for p in competitor_analysis["top_pages"][:5]
         )
 
-    prompt = UNIQUE_ANGLE_PROMPT.format(
+    prompt = render_prompt(
+        "brief/unique_angle",
         keyword=keyword,
         intent=intent,
         competitor_summaries=competitor_summaries or "No competitor data available",

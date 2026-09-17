@@ -1,0 +1,17 @@
+Please revise the following blog post.
+
+--- ORIGINAL CONTENT ---
+{content}
+--- END ORIGINAL CONTENT ---
+
+--- HUMAN FEEDBACK ---
+{feedback}
+--- END HUMAN FEEDBACK ---
+
+Target keyword: {keyword}
+
+Requirements for the revision:
+- Address all feedback points
+- Keep the length similar unless requested otherwise
+- Ensure all H2/H3 headings are still present and improved
+- Return the full revised article in markdown format.

@@ -34,6 +34,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Callable, Literal
 
+from blog_automation.prompting import render_prompt
+
 
 @dataclass
 class LayoutComponent:
@@ -445,17 +447,13 @@ def generate_blocks(llm, title: str, keyword: str, content: str,
     ``llm`` is any object exposing ``extract_json(prompt, system_prompt=...)``
     (e.g. OpenRouterClient / deepseek-v4-flash).
     """
-    prompt = (
-        f"Article title: {title}\nKeyword: {keyword}\n\n"
-        f"Article content (first 2500 chars):\n{content[:2500]}\n\n"
-        "Choose 2-4 layout blocks that BEST enrich this article (a comparison "
-        "table, recipe steps, FAQ, pros/cons, callout, etc.) that are relevant "
-        "to the content. Available components + JSON schemas:\n"
-        f"{_component_catalog()}\n\n"
-        "Return ONLY a JSON object with a 'blocks' array. Provide up to "
-        f"{max_blocks} blocks. Each block is an object with "
-        "'type' (the component id) and 'data' (exactly that component's "
-        "schema fields, relevant to the article). No other text."
+    prompt = render_prompt(
+        "layouts/block_selection",
+        title=title,
+        keyword=keyword,
+        content=content[:2500],
+        max_blocks=max_blocks,
+        catalog=_component_catalog(),
     )
     if BLOCKS_SCHEMA is None:
         return []
@@ -491,13 +489,12 @@ def regenerate_block(llm, md: str, idx: int, instruction: str) -> "tuple[str, di
     cid = old.get("type")
     comp = COMPONENTS.get(cid)
     schema = comp.data_schema if comp else {}
-    prompt = (
-        f"Regenerate the layout block type '{cid}' for a coffee blog article.\n"
-        f"Current block data: {json.dumps(old, ensure_ascii=False)}\n"
-        f"Required schema: {schema}\n"
-        f"Instruction / what to improve: {instruction}\n"
-        "Return ONLY a single JSON object: the NEW block, same type, using the "
-        "schema fields, content faithful to the article."
+    prompt = render_prompt(
+        "layouts/block_regenerate",
+        cid=cid,
+        block_data=json.dumps(old, ensure_ascii=False),
+        schema=schema,
+        instruction=instruction,
     )
     if BLOCK_SCHEMA is None:
         raise RuntimeError("pydantic/structured-output unavailable for regeneration")

@@ -1,0 +1,16 @@
+Create a detailed article outline for: {keyword}
+
+Sections to include:
+{sections}
+
+Requirements:
+- H1: Main title (compelling, includes keyword)
+- H2 for each section
+- 2-3 H3 subsections per H2
+- FAQ section at end with 3-5 questions
+- Include internal link opportunities marked as [INTERNAL: topic]
+
+Voice / structure notes for this publication:
+{style_hint}
+
+Return markdown outline only.

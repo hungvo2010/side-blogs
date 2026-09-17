@@ -1,0 +1,27 @@
+Based on this keyword research, suggest H2 sections for a comprehensive blog post.
+
+Keyword: {keyword}
+Search Intent: {intent}
+Difficulty: {difficulty}
+Search Volume: {volume}
+
+Top competitor H2 patterns:
+{competitor_h2s}
+
+Requirements:
+- Suggest 4-6 H2 sections that cover the topic comprehensively
+- Each section should serve a clear purpose
+- Include a FAQ section at the end
+- Consider the search intent when structuring
+
+Return JSON:
+{{
+  "sections": [
+    {{
+      "h2": "Section Title",
+      "purpose": "Why this section is important",
+      "target_length": "200-300 words",
+      "key_points": ["point1", "point2", "point3"]
+    }}
+  ]
+}}
