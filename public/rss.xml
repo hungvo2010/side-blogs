@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
-  <title>The Slow Drip</title>
+  <title>The Daily Brew</title>
   <link>https://dripper.top</link>
   <description>A blog about coffee, brewing, and the perfect cup.</description>
   <atom:link href="https://dripper.top/rss.xml" rel="self" type="application/rss+xml"/>
-  <lastBuildDate>Fri, 18 Sep 2026 07:00:00 +0700</lastBuildDate>
+  <lastBuildDate>Sun, 20 Sep 2026 07:00:00 +0700</lastBuildDate>
+    <item>
+      <title>The Science and Soul of Vietnamese Iced Coffee: A Field Guide to Flavor, Ritual, and Regional Variations</title>
+      <link>https://dripper.top/vietnamese-iced-coffee-20260920-9759/</link>
+      <guid isPermaLink="true">https://dripper.top/vietnamese-iced-coffee-20260920-9759/</guid>
+      <pubDate>Sun, 20 Sep 2026 07:00:00 +0700</pubDate>
+      <description>There's a moment in every first sip of cà phê sữa đá that stops you mid-conversation. The bitterness hits first—dark, almost chocolatey—then the sweet,…</description>
+      <enclosure url="https://images.unsplash.com/photo-1662105489808-f3dd79b7f13c?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHw2fHx2aWV0bmFtZXNlJTIwaWNlZCUyMGNvZmZlZXxlbnwwfHx8fDE3ODk5MTc2NDZ8MA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" type="image/jpeg"/>
+    </item>
     <item>
       <title>The Best Espresso Beans for Your Machine, Milk Habit, and Taste Profile</title>
       <link>https://dripper.top/best-coffee-beans-for-espresso-20260918-c605/</link>

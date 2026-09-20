@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://dripper.top/</loc><changefreq>daily</changefreq></url>
+  <url><loc>https://dripper.top/about/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://dripper.top/contributors/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://dripper.top/contact/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://dripper.top/newsletter/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://dripper.top/pay-it-forward/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://dripper.top/sustainability/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://dripper.top/privacy/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://dripper.top/vietnamese-iced-coffee-20260920-9759/</loc><lastmod>2026-09-20</lastmod></url>
   <url><loc>https://dripper.top/best-coffee-beans-for-espresso-20260918-c605/</loc><lastmod>2026-09-18</lastmod></url>
   <url><loc>https://dripper.top/how-to-brew-cold-brew-coffee-20260918-8f86/</loc><lastmod>2026-09-18</lastmod></url>
   <url><loc>https://dripper.top/coffee-at-work-20260916-7890/</loc><lastmod>2026-09-17</lastmod></url>
