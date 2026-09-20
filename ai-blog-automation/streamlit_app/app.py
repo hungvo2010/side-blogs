@@ -284,6 +284,7 @@ def _find_candidate_images(
     article_id: int,
     count: int = 6,
     keyword_override: str | None = None,
+    provider: str | None = None,
 ) -> list[dict]:
     """Search the configured image provider using the article's keywords.
 
@@ -291,11 +292,13 @@ def _find_candidate_images(
     replacement images (skips the current featured image if it reappears).
     When ``keyword_override`` is given (non-empty), it replaces the saved
     keywords for this single search — it is NOT persisted to the article.
+    ``provider`` overrides the image provider (unsplash/pexels/pixabay) for
+    THIS search only — None uses IMAGE_PROVIDER env (dashboard default).
     """
     from blog_automation.integrations.image_provider import get_image_provider
 
     _load_image_env()
-    provider = get_image_provider()
+    _provider = get_image_provider(provider or None)
     terms = (
         [keyword_override.strip()]
         if (keyword_override and keyword_override.strip())
@@ -307,7 +310,7 @@ def _find_candidate_images(
         if not term:
             continue
         try:
-            for r in provider.search(term, count=count):
+            for r in _provider.search(term, count=count):
                 if r.url and r.url != current:
                     candidates.append(
                         {
@@ -1381,11 +1384,19 @@ elif page == "📋 Review Queue":
                                 st.markdown(f"**Meta Description:** {desc}")
                             st.markdown("---")
                             content = article["content_draft"] or "No content yet"
-                            st.markdown(
-                                content[:3000] + "..."
-                                if len(content) > 3000
-                                else content
+                            _show_full = st.toggle(
+                                "👁️ Xem đầy đủ nội dung (không cắt 3000 ký tự)",
+                                value=True,
+                                key=f"fullcontent_{article['id']}",
                             )
+                            if _show_full or len(content) <= 3000:
+                                st.markdown(content)
+                            else:
+                                st.markdown(content[:3000] + "…")
+                                st.caption(
+                                    f"Đang hiện {min(3000, len(content))}/{len(content)} "
+                                    "ký tự — bật toggle trên để xem đầy đủ."
+                                )
 
                         with tab2:
                             st.markdown("### Fact-Check Report")
@@ -1602,6 +1613,26 @@ elif page == "📋 Review Queue":
                                 "KHÔNG đổi keyword gốc / tags của bài trong DB.",
                             )
 
+                            # ── image provider selector (this search only) ────────
+                            import os as _os_img
+                            _cfg_provider = _os_img.getenv(
+                                "IMAGE_PROVIDER", "pexels"
+                            )
+                            _img_provider = st.selectbox(
+                                "📡 Nguồn ảnh (provider)",
+                                ["unsplash", "pexels", "pixabay"],
+                                index=["unsplash", "pexels", "pixabay"].index(
+                                    _cfg_provider
+                                )
+                                if _cfg_provider
+                                in ("unsplash", "pexels", "pixabay")
+                                else 1,
+                                key=f"imgprovider_{article['id']}",
+                                help="Chọn provider tìm ảnh cho bài này: Unsplash / "
+                                "Pexels / Pixabay. Chọn per-bài, KHÔNG đổi cấu hình "
+                                "mặc định (IMAGE_PROVIDER secret).",
+                            )
+
                             # ── Avatar / cover image ──────────────────────────────
                             st.markdown("#### 🖼️ Ảnh bìa (avatar)")
                             _avatar = article.get("featured_image_url") or ""
@@ -1623,6 +1654,7 @@ elif page == "📋 Review Queue":
                                         _av_cs = _find_candidate_images(
                                             article["id"],
                                             keyword_override=_override_kw or None,
+                                            provider=_img_provider,
                                         )
                                     if not _av_cs:
                                         st.error(
@@ -1703,6 +1735,7 @@ elif page == "📋 Review Queue":
                                                     _cs = _find_candidate_images(
                                                         article["id"],
                                                         keyword_override=_override_kw or None,
+                                                        provider=_img_provider,
                                                     )
                                                 if not _cs:
                                                     st.error(
