@@ -3,7 +3,7 @@ title: What Is Egg Coffee? Hanoi's Velvet Café Trứng (Recipe + Culture)
 date: 2026-09-01
 slug: what-is-egg-coffee-hanois-velvet-cafe-trung-recipe-culture
 keyword: egg coffee
-tags: [, v, i, e, t, n, a, m, e, s, e,  , c, o, f, f, e, e, ,,  , e, g, g,  , c, o, f, f, e, e, ,,  , h, a, n, o, i, ,,  , r, e, c, i, p, e, ,,  , c, u, l, t, u, r, e, ]
+tags: vietnamese coffee, egg coffee, hanoi, recipe, culture
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1751569543716-70c5fb9a8298?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxlZ2clMjBjb2ZmZWV8ZW58MHx8fHwxNzg4MjM3MzI3fDA&ixlib=rb-4.1.0&q=80&w=1080
 description: Egg coffee — cá phê trứng — is Vietnam's most famous surprise: rich Vietnamese coffee crowned with a silky, sweet whipped-egg foam. Here's the story, the recipe, and where the trend began in Hanoi.

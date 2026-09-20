@@ -36,11 +36,11 @@ import markdown2
 # ---------------------------------------------------------------------------
 LAYOUT_CSS = """\
 .layout-hero img{width:100%;border-radius:16px;display:block}
-.layout-hero p{color:#8a7a6a;font-size:1.05rem;margin:.5rem 0 0}
+.layout-hero p{color:var(--muted);font-size:1.05rem;margin:.5rem 0 0}
 .layout-figure{margin:1.4rem 0}
 .layout-figure img{max-width:100%;border-radius:14px}
-.layout-figure figcaption{font-size:.85rem;color:#8a7a6a;text-align:center;margin-top:.5rem}
-.layout-callout{border-left:4px solid #b07840;background:#f7efe3;padding:14px 18px;border-radius:12px;margin:1.2rem 0}
+.layout-figure figcaption{font-size:.85rem;color:var(--muted);text-align:center;margin-top:.5rem}
+.layout-callout{border-left:4px solid var(--accent);background:#f7efe3;padding:14px 18px;border-radius:12px;margin:1.2rem 0}
 .layout-callout.warn{border-color:#b8860b;background:#fbf3e0}
 .layout-callout.danger{border-color:#b00020;background:#fbeeea}
 .layout-callout.tip{border-color:#2e7d32;background:#eef6ee}
@@ -59,16 +59,53 @@ LAYOUT_CSS = """\
 .layout-comparison th{background:#faf6ef}
 .layout-recipe{border:1px solid #e6dccb;border-radius:14px;padding:18px 20px;margin:1.4rem 0;background:#fbf7ef}
 .layout-recipe h3,.layout-recipe h4{margin:.3rem 0}
-.layout-recipe .meta{color:#8a7a6a;font-size:.9rem}
+.layout-recipe .meta{color:var(--muted);font-size:.9rem}
 .layout-faq{margin:1.2rem 0}
 .layout-faq details{border:1px solid #e6dccb;border-radius:10px;padding:12px 16px;margin:.5rem 0}
 .layout-faq summary{cursor:pointer;font-weight:600}
 .layout-faq-item p{margin:.5rem 0 0}
-.layout-quote{border-left:4px solid #b07840;padding-left:16px;color:#5b5240;font-style:italic;margin:1.2rem 0}
-.layout-quote cite{display:block;font-style:normal;font-size:.85rem;color:#8a7a6a;margin-top:.4rem}
+.layout-quote{border-left:4px solid var(--accent);padding-left:16px;color:#5b5240;font-style:italic;margin:1.2rem 0}
+.layout-quote cite{display:block;font-style:normal;font-size:.85rem;color:var(--muted);margin-top:.4rem}
 .layout-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:1.2rem 0}
 .layout-card{border:1px solid #e6dccb;border-radius:12px;padding:16px;background:#fff}
 .layout-card h4{margin:.2rem 0}
+"""
+
+# ---------------------------------------------------------------------------
+# Shared site CSS — tokens, reset, nav, container, footer, a11y.
+# Single source of truth for BOTH templates (PAGE_TEMPLATE + INDEX_TEMPLATE) via
+# the `{site_css}` slot — before this existed the two templates duplicated the
+# nav/container/footer rules and had DRIFTED (nav 1080px on articles vs 1360px
+# on the homepage, `width:min(75%,…)` that broke the header on phones).
+# Braces are literal here (substituted as a value, not re-formatted).
+# Contrast (WCAG AA, verified): --muted #7a6a58 = 5.21 on #fff / 4.84 on --bg;
+# --accent #96632b = 5.10 / 4.74. The old muted #8a7a6a (4.14/3.84) and accent
+# #b07840 (3.75/3.48) both FAILED AA for body text.
+# ---------------------------------------------------------------------------
+SITE_CSS = """\
+:root{--bg:#faf6ef;--surface:#fff;--ink:#3a2f28;--muted:#7a6a58;--accent:#96632b;--accent-soft:#e8dcc9;--line:#e6dccb;--serif:"Fraunces",Georgia,serif;--sans:"Inter",-apple-system,sans-serif;--wrap:1200px;--gut:20px}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);font-size:1rem;line-height:1.7;color:var(--ink);background:var(--bg);margin:0}
+a{color:var(--accent)}
+img{max-width:100%;height:auto}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+nav{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+nav .inner{max-width:var(--wrap);margin:0 auto;padding:10px var(--gut);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+nav .brand{font-family:var(--serif);font-weight:700;font-size:1.25rem;line-height:1.15;color:var(--ink);text-decoration:none;white-space:nowrap}
+nav .nav-links{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+nav .nav-links a{color:var(--muted);text-decoration:none;font-size:.92rem;font-weight:500;min-height:44px;display:inline-flex;align-items:center;padding:0 12px;border-radius:999px}
+nav .nav-links a:hover{color:var(--accent);background:var(--accent-soft)}
+.container{max-width:var(--wrap);margin:0 auto;padding:0 var(--gut)}
+footer{color:var(--muted);font-size:.85rem;text-align:center;padding:36px 0;margin-top:24px;border-top:1px solid var(--line)}
+footer .cols{max-width:var(--wrap);margin:16px auto 0;padding:0 var(--gut);display:flex;flex-wrap:wrap;gap:12px 18px;justify-content:center}
+footer a{color:var(--muted)}footer a:hover{color:var(--accent)}
+@media(max-width:480px){
+  nav .inner{padding:8px var(--gut);gap:6px}
+  nav .brand{font-size:1.05rem}
+  nav .nav-links a{font-size:.85rem;padding:0 9px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 """
 
 # ---------------------------------------------------------------------------
@@ -104,33 +141,23 @@ PAGE_TEMPLATE = """\
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>{layout_css}</style>
+    <style>{site_css}</style>
     <style>
-        :root{{--bg:#faf6ef;--surface:#fff;--ink:#3a2f28;--muted:#8a7a6a;--accent:#b07840;--accent-soft:#e8dcc9;--line:#e6dccb;--serif:"Fraunces",Georgia,serif;--sans:"Inter",-apple-system,sans-serif}}
-        *{{box-sizing:border-box}}
-        html{{-webkit-font-smoothing:antialiased}}
-        body{{font-family:var(--sans);line-height:1.75;color:var(--ink);background:var(--bg);margin:0}}
-        a{{color:var(--accent)}}
-        nav{{background:var(--surface);border-bottom:1px solid var(--line);padding:14px 0;position:sticky;top:0;z-index:10}}
-        nav .inner{{width:min(75%,1080px);margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}}
-        nav .brand{{font-family:var(--serif);font-weight:700;font-size:1.3rem;color:var(--ink);text-decoration:none}}
-        nav .nav-links a{{color:var(--muted);text-decoration:none;margin-left:20px;font-size:.92rem;font-weight:500}}
-        nav .nav-links a:hover{{color:var(--accent)}}
-        .container{{width:min(94%,1360px);margin:0 auto;padding:0 24px}}
         .article{{padding:48px 0 64px}}
         .hero{{margin:0 0 22px}}
-        .hero img{{width:100%;height:auto;max-height:560px;object-fit:cover;border-radius:18px;display:block}}
-        .hero figcaption{{color:#8a7a6a;font-size:.82rem;margin-top:.5rem}}
+        .hero img{{width:100%;aspect-ratio:16/10;max-height:560px;object-fit:cover;border-radius:18px;display:block}}
+        .hero figcaption{{color:var(--muted);font-size:.82rem;margin-top:.5rem}}
         header{{margin-bottom:32px}}
         .kicker{{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:12px}}
-        h1{{font-family:var(--serif);font-weight:700;font-size:2.5rem;line-height:1.12;margin:0 0 14px;color:var(--ink);letter-spacing:-.01em}}
-        .deck{{font-size:1.25rem;line-height:1.55;color:#8a7a6a;max-width:680px;margin:0 0 22px}}
-        .byline{{display:flex;flex-wrap:wrap;align-items:center;gap:10px;color:#8a7a6a;font-size:.85rem;padding-bottom:22px;border-bottom:1px solid var(--line)}}
+        h1{{font-family:var(--serif);font-weight:700;font-size:clamp(1.85rem,1.3rem + 2.2vw,2.5rem);line-height:1.12;margin:0 0 14px;color:var(--ink);letter-spacing:-.01em}}
+        .deck{{font-size:clamp(1.05rem,.6vw + .9rem,1.25rem);line-height:1.55;color:var(--muted);max-width:680px;margin:0 0 22px}}
+        .byline{{display:flex;flex-wrap:wrap;align-items:center;gap:10px;color:var(--muted);font-size:.85rem;padding-bottom:22px;border-bottom:1px solid var(--line)}}
         .byline .avatar{{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #e8dcc9}}
         .byline .by{{font-weight:600;color:var(--ink)}}
         .byline .dot{{width:3px;height:3px;border-radius:50%;background:#b8aa96;display:inline-block}}
         .tags{{margin-top:16px}}
         .tags span{{display:inline-block;padding:4px 12px;border-radius:999px;font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:var(--accent-soft);color:#7a5a34;margin-right:6px}}
-        .content{{font-size:1.1rem;max-width:1000px;margin:0 auto}}
+        .content{{font-size:clamp(1rem,.35vw + .93rem,1.1rem);max-width:1000px;margin:0 auto}}
         .content p{{margin:1.15em 0}}
         .content>p:first-of-type::first-letter{{font-family:var(--serif);font-weight:700;font-size:3.6em;float:left;line-height:.82;padding:.06em .12em 0 0;color:var(--accent)}}
         .content h2{{font-family:var(--serif);font-size:1.7rem;font-weight:600;margin:2.4rem 0 .8rem;color:var(--ink)}}
@@ -139,30 +166,26 @@ PAGE_TEMPLATE = """\
         .content img{{max-width:100%;height:auto;border-radius:14px;margin:1.2em 0}}
         .content pre{{background:#f4ede1;padding:18px;border-radius:12px;overflow-x:auto;font-size:.9rem;line-height:1.6}}
         .content code{{font-family:"SF Mono",Monaco,"Cascadia Code",monospace}}
-        .content blockquote{{border-left:3px solid #b07840;padding-left:18px;margin:1.4em 0;color:#5b5240;font-style:italic}}
+        .content blockquote{{border-left:3px solid var(--accent);padding-left:18px;margin:1.4em 0;color:#5b5240;font-style:italic}}
         .content table{{width:100%;border-collapse:collapse;margin:1.4em 0}}
         .content th,.content td{{padding:10px 14px;border:1px solid var(--line)}}
         .content th{{background:var(--surface);font-weight:600}}
         .related{{margin-top:44px;padding-top:28px;border-top:1px solid var(--line)}}
-        .related .label{{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:#b07840;font-weight:600;margin-bottom:14px}}
+        .related .label{{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:14px}}
         .share{{margin-top:40px;padding-top:24px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:8px}}
         .hashtags{{margin-top:34px;padding:18px 0;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px}}
-        .hashtags span{{font-size:.85rem;font-weight:600;color:#b07840}}
+        .hashtags span{{font-size:.85rem;font-weight:600;color:var(--accent)}}
         .hashtags span::before{{content:"#"}}
-        .share .share-label{{color:#8a7a6a;font-size:.9rem;font-weight:600;margin-right:6px}}
+        .share .share-label{{color:var(--muted);font-size:.9rem;font-weight:600;margin-right:6px}}
         .share a,.share button{{display:inline-block;padding:8px 18px;border-radius:999px;font-size:.82rem;font-weight:600;background:var(--surface);color:var(--ink);text-decoration:none;border:1px solid var(--line);cursor:pointer;font-family:inherit}}
-        .share a:hover,.share button:hover{{background:#b07840;color:#fff;border-color:#b07840}}
-        footer{{text-align:center;color:#8a7a6a;font-size:.85rem;padding:42px 0;margin-top:24px;border-top:1px solid var(--line)}}
-        footer .cols{{width:min(75%,1080px);margin:16px auto 0;padding:0 24px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center}}
-        footer a{{color:#8a7a6a}}footer a:hover{{color:#b07840}}
+        .share a:hover,.share button:hover{{background:var(--accent);color:#fff;border-color:var(--accent)}}
         @media(max-width:640px){{
-            .container{{padding:0 18px}}
-            h1{{font-size:1.8rem}}
-            .deck{{font-size:1.12rem}}
-            .content{{font-size:1rem}}
+            h1{{font-size:clamp(1.65rem,1.25rem + 3vw,2.1rem)}}
+            .deck{{font-size:1.02rem}}
             .content h2{{font-size:1.3rem}}
             .content h3{{font-size:1.15rem}}
-            .hero img{{max-height:none}}
+            .hero img{{aspect-ratio:4/3;border-radius:14px}}
+            .content>p:first-of-type::first-letter{{font-size:2.9em}}
         }}
     </style>
 </head>
@@ -176,7 +199,7 @@ PAGE_TEMPLATE = """\
     {hero_html}
     <header>
         <div class="kicker">{kicker}</div>
-        <h1>{title}</h1>
+        <h1>{h1_title}</h1>
         <p class="deck">{description}</p>
         <div class="byline">
             <img class="avatar" src="{author_avatar}" alt="{author}" loading="lazy">
@@ -234,72 +257,53 @@ INDEX_TEMPLATE = """\
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>{layout_css}</style>
+    <style>{site_css}</style>
     <style>
-        :root{{--bg:#faf6ef;--surface:#fff;--ink:#3a2f28;--muted:#8a7a6a;--accent:#b07840;--accent-soft:#e8dcc9;--line:#e6dccb;--serif:"Fraunces",Georgia,serif;--sans:"Inter",-apple-system,sans-serif}}
-        *{{box-sizing:border-box}}
-        body{{font-family:var(--sans);line-height:1.7;color:var(--ink);background:var(--bg);margin:0}}
-        a{{color:var(--accent)}}
-        nav{{background:var(--surface);border-bottom:1px solid var(--line);padding:14px 0;position:sticky;top:0;z-index:10}}
-        nav .inner{{width:min(75%,1360px);margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}}
-        nav .brand{{font-family:var(--serif);font-weight:700;font-size:1.3rem;color:var(--ink);text-decoration:none}}
-        nav .nav-links a{{color:var(--muted);text-decoration:none;margin-left:20px;font-size:.92rem;font-weight:500}}
-        nav .nav-links a:hover{{color:var(--accent)}}
-        .container{{width:min(75%,1360px);margin:40px auto 60px;padding:0 24px}}
-        .hero-mag{{position:relative;border-radius:20px;overflow:hidden;margin-bottom:44px;background:var(--surface);box-shadow:0 10px 30px rgba(58,47,40,.08)}}
-        .hero-mag .hero-photo{{width:100%;height:420px;object-fit:cover;display:block}}
-        .hero-mag .hero-body{{padding:32px 36px}}
-        .hero-mag .hero-kicker{{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:10px}}
-        .hero-mag h1{{font-family:var(--serif);font-weight:700;font-size:2.3rem;line-height:1.15;margin:0 0 12px}}
-        .hero-mag h1 a{{color:var(--ink);text-decoration:none}}
-        .hero-mag h1 a:hover{{color:var(--accent)}}
-        .hero-mag p{{color:var(--muted);font-size:1.05rem;margin:0 0 18px;max-width:720px}}
-        .hero-mag .meta{{color:var(--muted);font-size:.85rem;display:flex;gap:16px;flex-wrap:wrap;align-items:center}}
-        .hero-mag .read-link{{font-weight:600;color:var(--accent);text-decoration:none}}
-        .topics{{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:40px}}
-        .chip{{background:var(--accent-soft);color:#7a5a34;font-size:.8rem;font-weight:600;padding:6px 14px;border-radius:999px;letter-spacing:.02em}}
-        .section-heading{{display:flex;align-items:center;gap:14px;margin:0 0 26px;font-family:var(--serif);font-size:1.1rem;color:var(--ink);font-weight:600}}
-        .section-heading:after{{content:"";flex:1;height:1px;background:var(--line)}}
-        .mag-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:28px;list-style:none;margin:0;padding:0}}
-        .hero-mag .thumb-link img{{width:100%;height:420px;object-fit:cover;display:block;cursor:pointer}}
-        .thumb-link{{display:block;cursor:pointer;text-decoration:none}}
-        .thumb-link img{{width:100%;display:block}}
-        .card .thumb{{height:210px;object-fit:cover}}
-        .mini-list{{list-style:none;margin:0 0 46px;padding:0;max-width:840px}}
-        .mini-item{{display:flex;gap:20px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}}
-        .mini-item:last-child{{border-bottom:none}}
-        .mini-item .mini-thumb{{width:180px;height:120px;flex-shrink:0;object-fit:cover;border-radius:14px;cursor:pointer}}
-        .mini-item .mini-thumb.placeholder{{background:var(--accent-soft);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.75rem}}
-        .mini-item .mini-body{{min-width:0;flex:1}}
-        .mini-item .mini-kicker{{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600}}
-        .mini-item h4{{margin:5px 0 8px}}
-        .mini-item h4 a{{font-family:var(--serif);font-weight:600;font-size:1.25rem;line-height:1.3;color:var(--ink);text-decoration:none}}
-        .mini-item h4 a:hover{{color:var(--accent)}}
-        .mini-item .meta{{color:var(--muted);font-size:.85rem}}
-        .avatar{{width:26px;height:26px;border-radius:50%;object-fit:cover;vertical-align:middle}}
-        .byline{{display:inline-flex;align-items:center;gap:7px;margin-right:14px;vertical-align:middle}}
-        .byline .author-name{{color:var(--ink);font-weight:600;font-size:.82rem;letter-spacing:.01em}}
-        @media(max-width:640px){{.mini-item{{gap:14px}}.mini-item .mini-thumb{{width:104px;height:80px}}}}
-        .card{{background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(58,47,40,.06);transition:transform .18s,box-shadow .18s;display:flex;flex-direction:column;border:1px solid var(--line);position:relative}}
-        .card h3 a::after{{content:"";position:absolute;inset:0;z-index:1;cursor:pointer}}
-        .card:hover{{transform:translateY(-5px);box-shadow:0 14px 32px rgba(58,47,40,.14)}}
-        .card .thumb{{width:100%;height:210px;object-fit:cover;display:block}}
-        .card .thumb.placeholder{{display:flex;align-items:center;justify-content:center;background:var(--accent-soft);color:var(--muted);font-size:.85rem}}
-        .card .body{{flex:1;min-width:0;padding:20px 22px 24px;display:flex;flex-direction:column}}
-        .card .kicker{{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:8px}}
-        .card h3{{margin:0 0 10px}}
-        .card h3 a{{font-family:var(--serif);font-weight:600;font-size:1.22rem;line-height:1.3;color:var(--ink);text-decoration:none}}
-        .card h3 a:hover{{color:var(--accent)}}
-        .card .desc{{color:var(--muted);font-size:.92rem;flex:1}}
-        .card .meta{{color:var(--muted);font-size:.8rem;margin-top:16px;padding-top:12px;border-top:1px solid var(--line);display:flex;gap:12px;align-items:center}}
-        footer{{text-align:center;color:var(--muted);font-size:.85rem;padding:36px 0}}
-        footer .cols{{width:min(75%,1360px);margin:16px auto 0;padding:0 24px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center}}
-        footer a{{color:var(--muted)}}footer a:hover{{color:var(--accent)}}
-        @media(max-width:640px){{
-            .container{{padding:0 18px}}
-            .hero-mag .hero-photo{{height:260px}}
-            .hero-mag h1{{font-size:1.7rem}}
-            .hero-mag .hero-body{{padding:24px 22px}}
-            .mag-grid{{grid-template-columns:1fr}}
+        .container{{margin:34px auto 60px}}
+        .intro{{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin:0 0 18px}}
+        .intro h1{{font-family:var(--serif);font-weight:700;font-size:clamp(1.7rem,1.15rem + 2.3vw,2.4rem);line-height:1.1;letter-spacing:-.02em;margin:0 0 8px;max-width:24ch}}
+        .intro p{{color:var(--muted);margin:0;max-width:58ch}}
+        .cta{{display:inline-flex;align-items:center;min-height:46px;padding:0 22px;border-radius:999px;background:var(--accent);color:#fff;font-weight:600;font-size:.92rem;white-space:nowrap}}
+        .cta:hover{{background:#7d5223}}
+        .filters{{display:flex;gap:8px;flex-wrap:wrap;padding:6px 0 20px}}
+        .filters button{{min-height:40px;padding:0 15px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-family:inherit;font-size:.86rem;font-weight:600;cursor:pointer;transition:border-color .18s,color .18s,background .18s}}
+        .filters button:hover{{border-color:var(--accent);color:var(--accent)}}
+        .filters button[aria-pressed="true"]{{background:var(--accent);border-color:var(--accent);color:#fff}}
+        .bento{{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:206px;gap:16px}}
+        .tile{{position:relative;display:block;border-radius:20px;overflow:hidden;background:var(--surface);border:1px solid var(--line);box-shadow:0 6px 22px rgba(58,47,40,.07);transition:transform .2s,box-shadow .2s}}
+        .tile:hover{{transform:translateY(-4px);box-shadow:0 16px 34px rgba(58,47,40,.14)}}
+        .tile img{{width:100%;height:100%;object-fit:cover;display:block}}
+        .tile .cap{{position:absolute;left:0;right:0;bottom:0;padding:20px 18px 16px;color:#fff;background:linear-gradient(transparent,rgba(28,20,14,.88))}}
+        .tile .cap .k{{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#f0dcc0}}
+        .tile .cap h3{{font-family:var(--serif);font-weight:600;font-size:1.18rem;line-height:1.26;margin:6px 0 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}}
+        .tile.big{{grid-column:span 2;grid-row:span 2}}
+        .tile.big .cap h3{{font-size:clamp(1.35rem,2.1vw,1.85rem);-webkit-line-clamp:4}}
+        .tile.wide{{grid-column:span 2}}
+        .tile.flat{{display:flex;flex-direction:column;justify-content:center;gap:8px;padding:22px;background:var(--accent-soft);border-color:var(--accent-soft)}}
+        .tile.flat h3{{font-family:var(--serif);font-size:1.15rem;line-height:1.25;margin:0}}
+        .tile.flat p{{color:#6d4f2b;font-size:.9rem;margin:0}}
+        .tile.flat code{{background:#fff;border-radius:8px;padding:6px 10px;font-size:.8rem;align-self:flex-start}}
+        .tile.dark{{display:flex;flex-direction:column;justify-content:center;padding:22px;background:var(--ink);color:#f7f1e8;border-color:var(--ink)}}
+        .tile.dark h3{{font-family:var(--serif);font-size:1.15rem;line-height:1.25;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}}
+        .tile.dark p{{opacity:.82;font-size:.9rem;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}}
+        .tile.hide{{display:none}}
+        .sec{{font-family:var(--serif);font-size:1.15rem;font-weight:600;margin:44px 0 16px;display:flex;align-items:center;gap:14px}}
+        .sec:after{{content:"";flex:1;height:1px;background:var(--line)}}
+        .morelist{{list-style:none;margin:0;padding:0;columns:2;column-gap:34px}}
+        .morelist li{{padding:9px 0;border-bottom:1px solid var(--line);break-inside:avoid;font-size:.95rem}}
+        .morelist .mk{{display:block;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:2px}}
+        .morelist a{{font-weight:500}}
+        .morelist a:hover{{color:var(--accent)}}
+        .morelist .mmeta{{color:var(--muted);font-size:.78rem;display:block;margin-top:2px}}
+        @media(max-width:980px){{
+            .bento{{grid-template-columns:repeat(2,1fr);grid-auto-rows:190px}}
+            .tile.big{{grid-column:span 2;grid-row:span 1}}
+            .morelist{{columns:1}}
+        }}
+        @media(max-width:560px){{
+            .bento{{grid-template-columns:1fr;grid-auto-rows:200px}}
+            .tile.wide,.tile.big{{grid-column:span 1}}
+            .tile.big .cap h3{{font-size:1.3rem}}
         }}
     </style>
 </head>
@@ -309,15 +313,34 @@ INDEX_TEMPLATE = """\
     <div class="nav-links"><a href="/">Home</a><a href="/sitemap.xml">Archive</a><a href="/rss.xml">RSS</a></div>
 </div></nav>
 <main class="container">
-    {hero_html}
-    <div class="topics">{topics_html}</div>
-    <h2 class="section-heading">Latest stories</h2>
-    <ul class="mag-grid">{post_items}</ul>
-    <h2 class="section-heading">Popular this Month</h2>
-    <ul class="mini-list">{popular_html}</ul>
-    <h2 class="section-heading">Editors Picks</h2>
-    <ul class="mini-list">{editors_html}</ul>
+    <section class="intro">
+        <div>
+            <h1>Latest posts and articles on coffee, brewing and the home barista</h1>
+            <p>Fresh guides on brewing, espresso, Vietnamese coffee and honest gear reviews — {post_count} stories and counting.</p>
+        </div>
+        <a class="cta" href="/rss.xml">Follow by RSS →</a>
+    </section>
+    <div class="filters" id="filters" role="group" aria-label="Filter stories by topic">{filters_html}</div>
+    <div class="bento" id="bento">{tiles_html}</div>
+    <h2 class="sec" id="stories">More stories</h2>
+    <ul class="morelist">{more_html}</ul>
 </main>
+<script>
+(function(){{
+  var bar=document.getElementById('filters'), grid=document.getElementById('bento');
+  if(!bar||!grid) return;
+  bar.addEventListener('click',function(e){{
+    var b=e.target.closest('button'); if(!b) return;
+    var f=b.dataset.topic, tiles=grid.querySelectorAll('.tile'), shown=0;
+    bar.querySelectorAll('button').forEach(function(x){{x.setAttribute('aria-pressed', x===b ? 'true':'false');}});
+    tiles.forEach(function(t){{
+      var hit = f==='all' || t.dataset.topic===f;
+      t.classList.toggle('hide', !hit); if(hit) shown++;
+    }});
+    grid.setAttribute('data-shown', shown);
+  }});
+}})();
+</script>
 <footer><p>&copy; 2026 {site_name}.</p>
 <div class="cols"><a href="/about">About Us</a><a href="/contributors">Contributors</a><a href="/contact">Contact</a><a href="/newsletter">Newsletter</a><a href="/pay-it-forward">Pay it Forward</a><a href="/sustainability">Sustainability</a><a href="/sitemap.xml">Sitemap</a><a href="/rss.xml">RSS</a></div>
 </footer>
@@ -367,6 +390,32 @@ def _byline_html(author: str | None) -> str:
         f'<span class="byline"><img class="avatar" src="{_avatar(author)}" '
         f'alt="{a}" loading="lazy"><span class="author-name">{a}</span></span>'
     )
+
+
+def parse_tags(raw: Any) -> list[str]:
+    """Parse a frontmatter `tags:` value into clean tags.
+
+    Accepts the plain form (`a, b, c`) and the accidental list-literal form
+    (`['a', 'b']`), and repairs the degenerate per-character list
+    (`[, v, i, e, ...]`) that a bad join once wrote into a content file — that
+    bug leaked single letters onto the homepage topic chips.
+    """
+    if isinstance(raw, (list, tuple)):
+        s = ", ".join(str(x) for x in raw)
+    else:
+        s = str(raw or "")
+    s = s.strip()
+    if s.startswith("["):
+        s = s[1:]
+    if s.endswith("]"):
+        s = s[:-1]
+    parts = [x.strip().strip("'\"").strip() for x in s.split(",")]
+    parts = [x for x in parts if x]
+    if len(parts) > 8 and sum(1 for x in parts if len(x) <= 1) >= len(parts) - 2:
+        # per-character garbage (a bad `", ".join(str(tags))` upstream): the original
+        # word boundaries are already destroyed, so drop it instead of emitting letters
+        return []
+    return parts
 
 
 def slugify(text: str) -> str:
@@ -537,9 +586,7 @@ def build_article_from_text(
     title = title or fm.get("title") or _guess_title(body) or "Untitled"
     slug = slug or fm.get("slug") or slugify(title or "untitled")
     description = description or fm.get("description") or auto_description(body)
-    tags_list = [
-        t.strip() for t in (tags or fm.get("tags", "")).split(",") if t.strip()
-    ]
+    tags_list = parse_tags(tags if tags is not None else fm.get("tags", ""))
     author = author or fm.get("author") or DEFAULTS["author"]
     image = image or fm.get("image") or ""
     # featured: true in frontmatter -> this post becomes the homepage hero
@@ -611,6 +658,8 @@ def build_article_from_text(
 
     html = PAGE_TEMPLATE.format(
         layout_css=LAYOUT_CSS,
+        site_css=SITE_CSS,
+        h1_title=title,
         lang=DEFAULTS["lang"],
         title=f"{title} — {DEFAULTS['site_name']}",
         description=description,
@@ -655,7 +704,32 @@ def build_article_from_text(
 # ---------------------------------------------------------------------------
 # Site-level files
 # ---------------------------------------------------------------------------
+# Homepage topic buckets — drive both the bento tiles' `data-topic` and the
+# filter chips. First match wins, so list the most specific needles first.
+TOPIC_DEFS = [
+    ("espresso", "Espresso", ("espresso", "moka", "cortado", "latte", "americano", "crema", "sua da")),
+    ("vietnamese", "Vietnamese", ("vietnamese", "phin", "cà phê", "ca phe", "egg coffee", "robusta", "hanoi")),
+    ("brewing", "Brewing", ("pour over", "french press", "bloom", "grind", "ratio", "brew", "filter", "drip", "strong")),
+    ("gear", "Beans & gear", ("best ", "review", "machine", "grinder", "beans", "brands", "budget", "descale", "clean")),
+    ("culture", "Culture", ("culture", "travel", "food", "history", "hue", "pho")),
+]
+
+
+def topic_of(p: dict) -> str:
+    """Bucket a post into one homepage topic (drives bento filters)."""
+    hay = (p.get("title", "") + " " + " ".join(p.get("tags") or [])).lower()
+    for key, _label, needles in TOPIC_DEFS:
+        if any(n in hay for n in needles):
+            return key
+    return "brewing"
+
+
 def build_index(posts_meta: list[dict]) -> str:
+    """Homepage = bento grid (photo-led) + filter chips + compact 'More stories' list.
+
+    The bento keeps imagery + scanning; the trailing list keeps the internal-link
+    count (and crawl paths) that the old card grid provided.
+    """
     from collections import Counter
 
     def _url(p, width):
@@ -663,13 +737,6 @@ def build_index(posts_meta: list[dict]) -> str:
         if img:
             return re.sub(r"w=\d+", f"w={width}", img)
         return ""
-
-    def _thumb(p, width, cls="thumb"):
-        alt = p["title"].replace('"', "&quot;")
-        url = _url(p, width)
-        if url:
-            return f'<img class="{cls}" src="{url}" alt="{alt}" loading="lazy">'
-        return f'<div class="{cls} placeholder">No image</div>'
 
     def _meta(p):
         wc = p.get("word_count") or 0
@@ -680,93 +747,97 @@ def build_index(posts_meta: list[dict]) -> str:
         tags = p.get("tags") or []
         return tags[0].title() if tags else "Coffee"
 
-    def _mini_item(p):
+    def _tile(p, cls, width=800):
+        topic = topic_of(p)
         alt = p["title"].replace('"', "&quot;")
-        url = _url(p, 400)
-        thumb = (
-            f'<a class="mini-thumb-link" href="/{p["slug"]}/">'
-            f'<img class="mini-thumb" src="{url}" alt="{alt}" loading="lazy"></a>'
-            if url
-            else '<div class="mini-thumb placeholder">No image</div>'
-        )
+        url = _url(p, width)
+        if not url:  # no image -> text tile (still clickable)
+            return (
+                f'<a class="tile flat" href="/{p["slug"]}/" data-topic="{topic}">'
+                f'<h3>{p["title"]}</h3><p>{_kicker(p)} · {_meta(p)}</p></a>'
+            )
+        kick = f'<div class="k">{_kicker(p)}</div>' if cls in ("big", "wide") else ""
         return (
-            f'<li class="mini-item">{thumb}<div class="mini-body">'
-            f'<div class="mini-kicker">{_kicker(p)}</div>'
-            f'<h4><a href="/{p["slug"]}/">{p["title"]}</a></h4>'
-            f'<div class="meta">{_byline_html(p.get("author"))}<span>{_meta(p)}</span></div></div></li>'
+            f'<a class="tile {cls}" href="/{p["slug"]}/" data-topic="{topic}">'
+            f'<img src="{url}" alt="{alt}" loading="lazy" width="800" height="600">'
+            f'<div class="cap">{kick}<h3>{p["title"]}</h3></div></a>'
         )
 
-    # Hero = featured post if any (frontmatter `featured: true`), else newest
-    hero_html = ""
+    def _dark(p):
+        return (
+            f'<a class="tile dark" href="/{p["slug"]}/" data-topic="{topic_of(p)}">'
+            f'<div class="k" style="font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;'
+            f'color:#f0dcc0;font-weight:700;margin-bottom:6px">{_kicker(p)}</div>'
+            f'<h3>{p["title"]}</h3><p>{p.get("description", "")[:110]}…</p></a>'
+        )
+
     featured = next((p for p in posts_meta if p.get("featured")), None)
     if not featured and posts_meta:
         featured = posts_meta[0]
-    if featured:
-        f = featured
-        hero_html = (
-            '<section class="hero-mag">'
-            f'<a class="thumb-link" href="/{f["slug"]}/">{_thumb(f, 1200)}</a>'
-            '<div class="hero-body">'
-            + f'<div class="hero-kicker">Featured · {_kicker(f)}</div>'
-            + f'<h1><a href="/{f["slug"]}/">{f["title"]}</a></h1>'
-            + f'<p>{f["description"]}</p>'
-            + f'<div class="meta">{_byline_html(f.get("author"))}<span>{_meta(f)}</span>'
-            + f'<a class="read-link" href="/{f["slug"]}/">Read the story →</a></div>'
-            + "</div></section>"
-        )
-
     rest = [p for p in posts_meta if p is not featured]
 
-    # Topic chips
-    tag_counts = Counter()
-    for p in posts_meta:
-        for t in (p.get("tags") or []):
-            tag_counts[t.title()] += 1
-    topics_html = "".join(
-        f'<span class="chip">{t}</span>' for t, _ in tag_counts.most_common(8)
-    )
+    tiles = []
+    if featured:
+        tiles.append(_tile(featured, "big", 1200))
+    wide, small, spotlight = rest[:2], rest[2:10], rest[10:12]
+    more = rest[12:]
 
-    # Card grid for the rest
-    items = []
-    for p in rest:
-        items.append(
-            f'<li class="card"><a class="thumb-link" href="/{p["slug"]}/">{_thumb(p, 800)}</a><div class="body">'
-            f'<div class="kicker">{_kicker(p)}</div>'
-            f'<h3><a href="/{p["slug"]}/">{p["title"]}</a></h3>'
-            f'<div class="desc">{p["description"]}</div>'
-            f'<div class="meta">{_byline_html(p.get("author"))}<span>{_meta(p)}</span></div></div></li>'
+    tiles += [_tile(p, "wide") for p in wide]
+    tiles += [_tile(p, "") for p in small[:3]]
+
+    # Static recipe tile (real numbers), linked to the cold-brew guide when present
+    cold = next((p for p in posts_meta if "cold-brew" in p["slug"] or "cold brew" in p["title"].lower()), None)
+    if cold:
+        tiles.append(
+            f'<a class="tile flat" href="/{cold["slug"]}/" data-topic="brewing">'
+            '<h3>Try the 1:4 cold brew ratio</h3>'
+            '<p>Coarse grind, 16 hours in the fridge — smooth, never bitter.</p>'
+            '<code>50 g coffee · 200 g water</code></a>'
         )
 
-    # Popular this Month = top by word count (proxy for depth)
-    popular = sorted(rest, key=lambda p: p.get("word_count") or 0, reverse=True)[:3]
-    popular_html = "".join(_mini_item(p) for p in popular)
+    tiles += [_tile(p, "") for p in small[3:8]]
+    tiles += [_dark(p) for p in spotlight]
+    tiles.append(
+        '<a class="tile flat" href="/rss.xml" data-topic="all">'
+        '<h3>Every new guide, straight to your reader</h3>'
+        '<p>No tracking, no popups — just the posts.</p><code>/rss.xml</code></a>'
+    )
 
-    # Editors Picks = culture/curated tags first, fill from remaining
-    culture_tags = {"Vietnamese Coffee", "Coffee Culture", "Phin"}
-    picked, seen = [], {p["slug"] for p in ([featured] + popular) if p}
-    for p in rest:
-        if any(t in culture_tags for t in (p.get("tags") or [])) and p["slug"] not in seen and len(picked) < 3:
-            picked.append(p)
-            seen.add(p["slug"])
-    for p in rest:
-        if p["slug"] not in seen and len(picked) < 3:
-            picked.append(p)
-    editors_html = "".join(_mini_item(p) for p in picked)
+    # Filter chips from the same buckets the tiles use
+    counts = Counter(topic_of(p) for p in posts_meta)
+    labels = {k: lbl for k, lbl, _ in TOPIC_DEFS}
+    filters_html = f'<button data-topic="all" aria-pressed="true">All ({len(posts_meta)})</button>'
+    for key, n in counts.most_common():
+        if n < 2:
+            continue
+        filters_html += f'<button data-topic="{key}" aria-pressed="false">{labels.get(key, key.title())} ({n})</button>'
+
+    more_html = "".join(
+        f'<li data-topic="{topic_of(p)}"><span class="mk">{_kicker(p)}</span>'
+        f'<a href="/{p["slug"]}/">{p["title"]}</a>'
+        f'<span class="mmeta">{_meta(p)}</span></li>'
+        for p in more
+    )
 
     return INDEX_TEMPLATE.format(
         layout_css=LAYOUT_CSS,
+        site_css=SITE_CSS,
         lang=DEFAULTS["lang"],
         site_name=DEFAULTS["site_name"],
         title=f"{DEFAULTS['site_name']} — Latest Posts & Articles on Coffee, Brewing & Home Barista Tips",
         site_url=DEFAULTS["site_url"],
         description=DEFAULTS["description"],
         post_count=len(posts_meta),
-        hero_html=hero_html,
-        topics_html=topics_html,
-        post_items="\n".join(items) if items else '<li class="card">No posts yet.</li>',
-        popular_html=popular_html or '<li class="mini-item">No posts yet.</li>',
-        editors_html=editors_html or '<li class="mini-item">No posts yet.</li>',
+        filters_html=filters_html,
+        tiles_html="".join(tiles),
+        more_html=more_html or '<li>No posts yet.</li>',
+        hero_html="",
+        topics_html="",
+        post_items="",
+        popular_html="",
+        editors_html="",
     )
+
 
 def build_sitemap(posts_meta: list[dict]) -> str:
     entries = [

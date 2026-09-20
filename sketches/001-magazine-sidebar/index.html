@@ -1,0 +1,76 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sketch A — Magazine + sidebar</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><style>
+:root{--bg:#faf6ef;--surface:#fff;--ink:#3a2f28;--muted:#7a6a58;--accent:#96632b;--accent-soft:#e8dcc9;--line:#e6dccb;--serif:"Fraunces",Georgia,serif;--sans:"Inter",-apple-system,sans-serif}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}img{display:block;max-width:100%}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+nav{position:sticky;top:0;z-index:9;background:var(--surface);border-bottom:1px solid var(--line)}
+nav .in{max-width:1200px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+nav .brand{font-family:var(--serif);font-weight:700;font-size:1.25rem;white-space:nowrap}
+nav .links{display:flex;gap:8px}
+nav .links a{padding:0 12px;min-height:44px;display:inline-flex;align-items:center;color:var(--muted);font-size:.92rem;font-weight:500;border-radius:999px}
+nav .links a:hover{color:var(--accent);background:var(--accent-soft)}
+.wrap{max-width:1200px;margin:28px auto 0;padding:0 20px}
+.lead{display:grid;grid-template-columns:1.15fr .85fr;gap:32px;align-items:center;padding-bottom:30px;border-bottom:1px solid var(--line)}
+.lead .kicker{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:14px}
+.lead h1{font-family:var(--serif);font-size:clamp(2rem,3.4vw,3.1rem);line-height:1.08;letter-spacing:-.02em;margin:0 0 16px}
+.lead p{color:var(--muted);font-size:1.06rem;max-width:52ch;margin:0 0 18px}
+.lead img{aspect-ratio:4/3;object-fit:cover;border-radius:16px}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;font-weight:600;font-size:.9rem;padding:12px 20px;border-radius:999px}
+.btn:hover{background:#7d5223}
+.cols{display:grid;grid-template-columns:1fr 340px;gap:44px;margin-top:36px}
+h2.sec{font-family:var(--serif);font-size:1.15rem;margin:0 0 20px;display:flex;align-items:center;gap:14px;font-weight:600}
+h2.sec:after{content:"";flex:1;height:1px;background:var(--line)}
+.row{display:grid;grid-template-columns:190px 1fr;gap:22px;padding:20px 0;border-bottom:1px solid var(--line);align-items:center}
+.row img{aspect-ratio:16/11;object-fit:cover;border-radius:12px}
+.row .k{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.row h3{font-family:var(--serif);font-size:1.32rem;line-height:1.25;margin:6px 0 8px;font-weight:600}
+.row:hover h3{color:var(--accent)}
+.row .meta{color:var(--muted);font-size:.82rem}
+.row .d{color:var(--muted);font-size:.95rem;margin:8px 0 0}
+.side{position:sticky;top:88px;align-self:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px}
+.most ol{margin:0;padding:0;list-style:none;counter-reset:m}
+.most li{counter-increment:m;display:flex;gap:14px;padding:12px 0;border-bottom:1px dashed var(--line);font-size:.95rem}
+.most li:last-child{border-bottom:none}
+.most li:before{content:counter(m);font-family:var(--serif);font-size:1.4rem;color:var(--accent-soft);font-weight:700;line-height:1}
+.most li strong{display:block;font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips a{background:var(--accent-soft);color:#6d4f2b;font-size:.8rem;font-weight:600;padding:7px 13px;border-radius:999px}
+.chips a:hover{background:var(--accent);color:#fff}
+.news{margin-top:22px;background:#f3ece0}
+.news h3{font-family:var(--serif);font-size:1.15rem;margin:0 0 8px}
+.news p{color:var(--muted);font-size:.92rem;margin:0 0 14px}
+.news form{display:flex;gap:8px;flex-wrap:wrap}
+.news input{flex:1;min-width:150px;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:10px;background:#fff;font-family:inherit;font-size:.9rem}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,140%);opacity:0;pointer-events:none;transition:transform .28s ease,opacity .28s ease;background:var(--ink);color:#fff;padding:12px 20px;border-radius:999px;font-size:.88rem;transition:transform .28s ease;z-index:20}
+.toast.on{transform:translate(-50%,0);opacity:1}
+footer{color:var(--muted);font-size:.85rem;text-align:center;padding:36px 20px;border-top:1px solid var(--line);margin-top:56px}
+nav .brand{white-space:nowrap}
+@media(max-width:560px){
+  nav .in{padding:8px 16px;gap:6px}
+  nav .brand{font-size:1.05rem}
+  nav .links a{padding:0 9px;font-size:.82rem;min-height:44px}
+  nav .links a:nth-child(4){display:none}
+}
+@media(max-width:900px){.lead{grid-template-columns:1fr}.cols{grid-template-columns:1fr;gap:32px}.side{position:static}}
+@media(max-width:520px){.row{grid-template-columns:1fr}.row img{aspect-ratio:16/9}}
+</style></head><body>
+<nav><div class="in"><a class="brand" href="#">The Slow Drip</a><div class="links"><a href="#">Home</a><a href="#">Brew Guides</a><a href="#">Reviews</a><a href="#">Vietnamese Coffee</a><a href="#">RSS</a></div></div></nav>
+<div class="wrap">
+  <section class="lead">
+    <div><div class="kicker">Featured · Stovetop Espresso Maker</div><h1><a href="#">The Complete Guide to Moka Pot Coffee: Brewing, Tips, and Maintenance</a></h1><p>Let's be honest: the moka pot has a reputation problem. For every Italian nonna who produces a perfect, syrupy stovetop espresso in under four minutes, there's…</p><a class="btn" href="#">Read the guide →</a></div>
+    <img src="https://images.unsplash.com/photo-1452415005154-c06158558480?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHw2fHxtb2thJTIwcG90fGVufDB8fHx8MTc4OTE4NTk0Nnww&ixlib=rb-4.1.0&q=80&w=1200" alt="">
+  </section>
+  <div class="cols">
+    <div><h2 class="sec">Latest stories</h2><div class="row"><img src="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGJyZXclMjBjb2xkJTIwYnJldyUyMGNvZmZlZXxlbnwwfHx8fDE3ODk3MDYxNzB8MA&ixlib=rb-4.1.0&q=80&w=800" alt="" loading="lazy"><div><div class="k">Cold Brew Coffee Ratio</div><h3><a href="#">How to Brew Cold Brew Coffee: The Ultimate Guide to Smooth…</a></h3><div class="d">Cold brew has taken over café menus, grocery shelves, and home kitchens for good reason: it's smooth, sweet, and almost…</div><div class="meta">Tien Nguyen   2026-09-18 · 11 min read</div></div></div><div class="row"><img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjb2ZmZWUlMjBhdCUyMHdvcmt8ZW58MHx8fHwxNzg5NTc5NDEzfDA&ixlib=rb-4.1.0&q=80&w=800" alt="" loading="lazy"><div><div class="k">Office Coffee</div><h3><a href="#">The Science of the Coffee Break: How to Time, Pair, and…</a></h3><div class="d">The office coffee machine is not a beverage appliance. It is productivity infrastructure, social architecture, and a daily morale…</div><div class="meta">Tien Nguyen   2026-09-17 · 18 min read</div></div></div><div class="row"><img src="https://images.unsplash.com/photo-1536914561643-9e3a7a8d063d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjb2ZmZWUlMjBiZWZvcmUlMjB3b3Jrb3V0fGVufDB8fHx8MTc4OTI4ODY1NXww&ixlib=rb-4.1.0&q=80&w=800" alt="" loading="lazy"><div><div class="k">Caffeine And Exercise Performance</div><h3><a href="#">Coffee Before Workout: The Complete Protocol for Timing…</a></h3><div class="d">Bottom line: 3–6 mg of caffeine per kg of body weight, 45–60 minutes before training, black coffee, no sugar. That's the…</div><div class="meta">Tien Nguyen   2026-09-13 · 12 min read</div></div></div><div class="row"><img src="https://images.unsplash.com/photo-1670217756837-34134e2e9e60?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjb3J0YWRvJTIwY29mZmVlfGVufDB8fHx8MTc4OTE4MzM5Nnww&ixlib=rb-4.1.0&q=80&w=800" alt="" loading="lazy"><div><div class="k">Espresso And Milk</div><h3><a href="#">The Cortado Coffee: A Complete Guide to the Balanced…</a></h3><div class="d">You know that moment when you walk into a coffee shop and stare at the menu, feeling the familiar tug-of-war between a bold…</div><div class="meta">Tien Nguyen   2026-09-12 · 12 min read</div></div></div><div class="row"><img src="https://images.unsplash.com/photo-1677625031788-3f5ea2a3ab5f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHw2fHxjYSUyMHBoZSUyMHZvdHxlbnwwfHx8fDE3ODg5NjQwMDF8MA&ixlib=rb-4.1.0&q=80&w=800" alt="" loading="lazy"><div><div class="k">Cà Phê Phin</div><h3><a href="#">Cà Phê Vợt: The Cloth-Filter Coffee That Built Saigon’s…</a></h3><div class="d">The first sip hits you like a memory you never…</div><div class="meta">Tien Nguyen   2026-09-09 · 14 min read</div></div></div><div class="row"><img src="https://images.unsplash.com/photo-1627835171402-f7655f44a808?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMHJlbW92ZSUyMGNvZmZlZSUyMHN0YWluJTIwZnJvbSUyMGNhcnBldHxlbnwwfHx8fDE3ODg5NjYwOTd8MA&ixlib=rb-4.1.0&q=80&w=800" alt="" loading="lazy"><div><div class="k">Coffee Stain Removal From Carpet</div><h3><a href="#">How to Remove Coffee Stain from Carpet: Fast, Easy, and…</a></h3><div class="d">That moment happens to the best of us. You're balancing a hot mug, checking your email, and—suddenly—your morning coffee is…</div><div class="meta">Tien Nguyen   2026-09-09 · 9 min read</div></div></div></div>
+    <aside class="side">
+      <div class="card most"><h2 class="sec" style="margin-bottom:8px">Most read</h2><ol><li><div><strong>Mushroom Coffee: A Complete Guide to Benefits, Brands, and…</strong><span class="meta" style="color:var(--muted);font-size:.8rem">Tien Nguyen   2026-09-09 ·</span></div></li><li><div><strong>The Ultimate Guide to Coffee Filter Paper: Types, Sizes…</strong><span class="meta" style="color:var(--muted);font-size:.8rem">Tien Nguyen   2026-09-07 ·</span></div></li><li><div><strong>The Art of Thinness: Inside Thanh Tri's Banh Cuon Craftaft</strong><span class="meta" style="color:var(--muted);font-size:.8rem">Tien Nguyen   2026-09-06 ·</span></div></li><li><div><strong>Mocha Coffee: The Complete Guide to Recipes, Variations…</strong><span class="meta" style="color:var(--muted);font-size:.8rem">Tien Nguyen   2026-09-06 ·</span></div></li><li><div><strong>Pho Bo vs Pho Ga: The Ultimate Guide to Vietnam's Beef and…</strong><span class="meta" style="color:var(--muted);font-size:.8rem">Tien Nguyen   2026-09-06 ·</span></div></li></ol></div>
+      <div class="card news"><h3>One good cup, every Sunday</h3><p>Brew tips and bean picks. No spam, unsubscribe anytime.</p>
+        <form onsubmit="event.preventDefault();document.getElementById('t').classList.add('on');setTimeout(()=>document.getElementById('t').classList.remove('on'),2200);"><input type="email" placeholder="you@email.com" required><button class="btn" type="submit">Subscribe</button></form></div>
+      <div class="card" style="margin-top:22px"><h2 class="sec" style="margin-bottom:14px">Topics</h2><div class="chips"><a href="#">Espresso</a><a href="#">Pour Over</a><a href="#">Cold Brew</a><a href="#">Vietnamese</a><a href="#">Beans</a><a href="#">Gear</a><a href="#">Culture</a></div></div>
+    </aside>
+  </div>
+</div>
+<div class="toast" id="t">Subscribed — check your inbox ☕</div>
+<footer>© 2026 The Slow Drip · About · Privacy · Sitemap · RSS</footer></body></html>

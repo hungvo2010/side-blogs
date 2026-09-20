@@ -1,0 +1,75 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sketch C — Bento photo-led</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><style>
+:root{--bg:#faf6ef;--surface:#fff;--ink:#3a2f28;--muted:#7a6a58;--accent:#96632b;--accent-soft:#e8dcc9;--line:#e6dccb;--serif:"Fraunces",Georgia,serif;--sans:"Inter",-apple-system,sans-serif}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}img{display:block;max-width:100%}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+nav{position:sticky;top:0;z-index:9;background:var(--surface);border-bottom:1px solid var(--line)}
+nav .in{max-width:1240px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+nav .brand{font-family:var(--serif);font-weight:700;font-size:1.25rem;white-space:nowrap}
+nav .links{display:flex;gap:8px;flex-wrap:wrap}
+nav .links a{padding:0 12px;min-height:44px;display:inline-flex;align-items:center;color:var(--muted);font-size:.92rem;font-weight:500;border-radius:999px}
+nav .links a:hover{color:var(--accent);background:var(--accent-soft)}
+main{max-width:1240px;margin:0 auto;padding:26px 20px 40px}
+.intro{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:18px}
+.intro h1{font-family:var(--serif);font-weight:700;font-size:clamp(1.6rem,2.6vw,2.2rem);line-height:1.12;margin:0 0 6px;letter-spacing:-.02em}
+.intro p{color:var(--muted);margin:0;max-width:56ch}
+.filters{display:flex;gap:8px;flex-wrap:wrap;padding:14px 0 20px}
+.filters button{min-height:40px;padding:0 15px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-family:inherit;font-size:.86rem;font-weight:600;cursor:pointer;transition:all .18s}
+.filters button:hover{border-color:var(--accent);color:var(--accent)}
+.filters button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.bento{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:212px;gap:16px}
+.tile{position:relative;border-radius:20px;overflow:hidden;background:var(--surface);box-shadow:0 6px 22px rgba(58,47,40,.07);transition:transform .2s,box-shadow .2s}
+.tile:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(58,47,40,.14)}
+.tile img{width:100%;height:100%;object-fit:cover}
+.tile .cap{position:absolute;left:0;right:0;bottom:0;padding:22px 20px 18px;color:#fff;background:linear-gradient(transparent,rgba(28,20,14,.86))}
+.tile .cap .k{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;opacity:.92}
+.tile .cap h3{font-family:var(--serif);font-weight:600;font-size:1.2rem;line-height:1.26;margin:6px 0 0}
+.tile.big{grid-column:span 2;grid-row:span 2}
+.tile.big .cap h3{font-size:clamp(1.35rem,2.1vw,1.9rem)}
+.tile.wide{grid-column:span 2}
+.tile.text{display:flex;flex-direction:column;justify-content:center;gap:8px;padding:22px;background:var(--accent-soft)}
+.tile.text h3{font-family:var(--serif);font-size:1.2rem;margin:0}
+.tile.text p{color:#6d4f2b;font-size:.9rem;margin:0}
+.tile.text code{background:#fff;border-radius:8px;padding:6px 10px;font-size:.8rem}
+.tile.on-dark{background:var(--ink);color:#f7f1e8}
+.tile.on-dark h3{font-family:var(--serif);font-size:1.2rem;margin:0 0 6px}
+.tile.on-dark p{opacity:.82;margin:0}
+.tile.hide{display:none}
+.bento .tile.on-dark{display:flex;flex-direction:column;justify-content:center;padding:22px}
+.btn{display:inline-flex;align-items:center;min-height:46px;padding:0 24px;border-radius:999px;background:var(--accent);color:#fff;font-weight:600}
+.btn:hover{background:#7d5223}
+footer{max-width:1240px;margin:0 auto;padding:26px 20px 44px;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+@media(max-width:980px){.bento{grid-template-columns:repeat(2,1fr);grid-auto-rows:190px}.tile.big{grid-column:span 2;grid-row:span 1}}
+@media(max-width:560px){
+  nav .in{padding:8px 16px;gap:6px}
+  nav .brand{font-size:1.05rem}
+  nav .links a{padding:0 9px;font-size:.82rem}
+  nav .links a:not(:first-child):not(:last-child){display:none}
+  .bento{grid-template-columns:1fr;grid-auto-rows:200px}
+  .tile.wide,.tile.big{grid-column:span 1}
+}
+</style></head><body>
+<nav><div class="in"><a class="brand" href="#">The Slow Drip</a><div class="links"><a href="#">Home</a><a href="#">Brew Guides</a><a href="#">Reviews</a><a href="#">Vietnamese</a><a href="#">RSS</a></div></div></nav>
+<main>
+  <div class="intro">
+    <div><h1>Brew better coffee at home</h1><p>Guides, ratios and honest reviews — from $20 drippers to the machine on your counter.</p></div>
+    <a class="btn" href="#">Start here →</a>
+  </div>
+  <div class="filters" id="f">
+    <button class="on" data-f="all">All</button><button data-f="espresso">Espresso</button><button data-f="brew">Brewing</button><button data-f="cold brew">Cold brew</button><button data-f="vietnamese">Vietnamese</button><button data-f="gear">Gear</button><button data-f="culture">Culture</button>
+  </div>
+  <div class="bento" id="b"><a class="tile big" href="#" data-topic="brewing"><img src="https://images.unsplash.com/photo-1452415005154-c06158558480?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHw2fHxtb2thJTIwcG90fGVufDB8fHx8MTc4OTE4NTk0Nnww&ixlib=rb-4.1.0&q=80&w=1200" alt=""><div class="cap"><div class="k">Featured · Stovetop Espresso Maker</div><h3>The Complete Guide to Moka Pot Coffee: Brewing, Tips, and Maintenance</h3></div></a><a class="tile wide" href="#" data-topic="top rated espresso beans"><img src="https://images.unsplash.com/photo-1621782967300-337e387d0c39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwzfHxjb2xkYnJld3xlbnwwfHx8fDE3ODk3MDcyOTN8MA&ixlib=rb-4.1.0&q=80&w=800" alt="" loading="lazy"><div class="cap"><div class="k">Top Rated Espresso Beans</div><h3>The Best Espresso Beans for Your Machine, Milk Habit, and…</h3></div></a><a class="tile " href="#" data-topic="cold brew coffee ratio"><img src="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGJyZXclMjBjb2xkJTIwYnJldyUyMGNvZmZlZXxlbnwwfHx8fDE3ODk3MDYxNzB8MA&ixlib=rb-4.1.0&q=80&w=800" alt="" loading="lazy"><div class="cap"><h3>How to Brew Cold Brew Coffee: The Ultimate…</h3></div></a><a class="tile " href="#" data-topic="office coffee"><img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjb2ZmZWUlMjBhdCUyMHdvcmt8ZW58MHx8fHwxNzg5NTc5NDEzfDA&ixlib=rb-4.1.0&q=80&w=800" alt="" loading="lazy"><div class="cap"><h3>The Science of the Coffee Break: How to Time…</h3></div></a><a class="tile " href="#" data-topic="caffeine and exercise performance"><img src="https://images.unsplash.com/photo-1536914561643-9e3a7a8d063d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjb2ZmZWUlMjBiZWZvcmUlMjB3b3Jrb3V0fGVufDB8fHx8MTc4OTI4ODY1NXww&ixlib=rb-4.1.0&q=80&w=800" alt="" loading="lazy"><div class="cap"><h3>Coffee Before Workout: The Complete Protocol…</h3></div></a><div class="tile text"><h3>Try the 1:4 cold brew ratio</h3><p>Coarse grind, 16 hours in the fridge — smooth, never bitter. Full numbers in the guide.</p><code>50 g coffee · 200 g water</code></div><a class="tile on-dark" href="#" data-topic="culture"><h3>Cà phê sữa đá, decoded</h3><p>Why condensed milk — and the phin ritual behind it.</p></a><a class="tile " href="#" data-topic="espresso and milk"><img src="https://images.unsplash.com/photo-1670217756837-34134e2e9e60?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjb3J0YWRvJTIwY29mZmVlfGVufDB8fHx8MTc4OTE4MzM5Nnww&ixlib=rb-4.1.0&q=80&w=800" alt="" loading="lazy"><div class="cap"><h3>The Cortado Coffee: A Complete Guide to the…</h3></div></a><a class="tile wide" href="#" data-topic="cà phê phin"><img src="https://images.unsplash.com/photo-1677625031788-3f5ea2a3ab5f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHw2fHxjYSUyMHBoZSUyMHZvdHxlbnwwfHx8fDE3ODg5NjQwMDF8MA&ixlib=rb-4.1.0&q=80&w=800" alt="" loading="lazy"><div class="cap"><div class="k">Cà Phê Phin</div><h3>Cà Phê Vợt: The Cloth-Filter Coffee That Built Saigon’s…</h3></div></a><a class="tile text on-dark" href="#" data-topic="gear"><h3>Hands-on reviews</h3><p>Every grinder, dripper and machine we tested this season — with the ratios that actually worked.</p></a><a class="tile " href="#" data-topic="coffee stain removal from carpet"><img src="https://images.unsplash.com/photo-1627835171402-f7655f44a808?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMHJlbW92ZSUyMGNvZmZlZSUyMHN0YWluJTIwZnJvbSUyMGNhcnBldHxlbnwwfHx8fDE3ODg5NjYwOTd8MA&ixlib=rb-4.1.0&q=80&w=800" alt="" loading="lazy"><div class="cap"><h3>How to Remove Coffee Stain from Carpet: Fast…</h3></div></a><a class="tile " href="#" data-topic="benefits of mushroom coffee"><img src="https://images.unsplash.com/photo-1559052593-e9ade85c53d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwyfHxtdXNocm9vbSUyMGNvZmZlZXxlbnwwfHx8fDE3ODg5NjY5NTZ8MA&ixlib=rb-4.1.0&q=80&w=800" alt="" loading="lazy"><div class="cap"><h3>Mushroom Coffee: A Complete Guide to…</h3></div></a></div>
+</main>
+<footer><span>© 2026 The Slow Drip</span><span>About · Privacy · Sitemap · RSS</span></footer>
+<script>
+document.getElementById('f').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#f button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  const f=b.dataset.f;
+  document.querySelectorAll('#b .tile').forEach(t=>{
+    const hide = !(f==='all' || (t.dataset.topic||'').includes(f) || f.includes(t.dataset.topic||'@@'));
+    t.classList.toggle('hide', hide);
+  });
+});
+</script></body></html>

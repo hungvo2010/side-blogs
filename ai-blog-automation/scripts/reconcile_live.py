@@ -101,7 +101,7 @@ def import_live_only(slugs: list[str]) -> list[str]:
                 continue
             title = a.title or slug
             keyword = a.keyword or ""
-            tags = a.tags or ([keyword] if keyword else [])
+            tags = _tags_list(a.tags) or ([keyword] if keyword else [])
             image = a.featured_image_url or ""
             published = a.published_date
             date_str = (
@@ -114,7 +114,7 @@ def import_live_only(slugs: list[str]) -> list[str]:
         if keyword:
             fm += f"keyword: {keyword}\n"
         if tags:
-            fm += f"tags: {', '.join(str(t) for t in tags)}\n"
+            fm += f"tags: {', '.join(tags)}\n"
         fm += f"author: Tien Nguyen\n"
         if image:
             fm += f"image: {image}\n"
@@ -133,7 +133,7 @@ def _frontmatter_from_db(a, body: str, extra_keys: dict) -> str:
     for, so hand-set flags survive a sync."""
     title = a.title or ""
     keyword = a.keyword or ""
-    tags = a.tags or ([keyword] if keyword else [])
+    tags = _tags_list(a.tags) or ([keyword] if keyword else [])
     image = a.featured_image_url or ""
     published = a.published_date or a.created_at
     date_str = (
@@ -145,7 +145,7 @@ def _frontmatter_from_db(a, body: str, extra_keys: dict) -> str:
     if keyword:
         fm += f"keyword: {keyword}\n"
     if tags:
-        fm += f"tags: {', '.join(str(t) for t in tags)}\n"
+        fm += f"tags: {', '.join(tags)}\n"
     if extra_keys.get("author"):
         fm += f"author: {extra_keys['author']}\n"
     else:
@@ -165,6 +165,34 @@ def _frontmatter_from_db(a, body: str, extra_keys: dict) -> str:
 def _body_without_frontmatter(text: str) -> str:
     m = re.match(r"^---\n.*?\n---\n(.*)$", text, re.S)
     return m.group(1).strip() if m else text.strip()
+
+
+def _tags_list(tags) -> list[str]:
+    """Normalize an article's `tags` into a list of strings.
+
+    Legacy rows stored tags as a JSON *string* (`"[a, b]"`) instead of an array;
+    iterating that string produced per-character tags in frontmatter
+    (`tags: [, v, i, e, ...]`) which then leaked single letters onto the homepage.
+    """
+    import json as _json
+
+    if tags is None:
+        return []
+    if isinstance(tags, str):
+        s = tags.strip()
+        if s.startswith("["):
+            try:
+                parsed = _json.loads(s.replace("'", '"'))
+            except Exception:  # noqa: BLE001
+                parsed = [x.strip() for x in s.strip("[]").split(",")]
+            return [str(x).strip() for x in parsed if str(x).strip()]
+        return [x.strip() for x in s.split(",") if x.strip()]
+    if isinstance(tags, (list, tuple)):
+        out = []
+        for t in tags:
+            out.extend(_tags_list(t) if isinstance(t, str) and t.strip().startswith("[") else [str(t).strip()])
+        return [x for x in out if x]
+    return [str(tags)]
 
 
 def sync_published(dry_run: bool = False) -> tuple[list[str], list[str]]:

@@ -27,11 +27,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>.layout-hero img{width:100%;border-radius:16px;display:block}
-.layout-hero p{color:#8a7a6a;font-size:1.05rem;margin:.5rem 0 0}
+.layout-hero p{color:var(--muted);font-size:1.05rem;margin:.5rem 0 0}
 .layout-figure{margin:1.4rem 0}
 .layout-figure img{max-width:100%;border-radius:14px}
-.layout-figure figcaption{font-size:.85rem;color:#8a7a6a;text-align:center;margin-top:.5rem}
-.layout-callout{border-left:4px solid #b07840;background:#f7efe3;padding:14px 18px;border-radius:12px;margin:1.2rem 0}
+.layout-figure figcaption{font-size:.85rem;color:var(--muted);text-align:center;margin-top:.5rem}
+.layout-callout{border-left:4px solid var(--accent);background:#f7efe3;padding:14px 18px;border-radius:12px;margin:1.2rem 0}
 .layout-callout.warn{border-color:#b8860b;background:#fbf3e0}
 .layout-callout.danger{border-color:#b00020;background:#fbeeea}
 .layout-callout.tip{border-color:#2e7d32;background:#eef6ee}
@@ -50,44 +50,57 @@
 .layout-comparison th{background:#faf6ef}
 .layout-recipe{border:1px solid #e6dccb;border-radius:14px;padding:18px 20px;margin:1.4rem 0;background:#fbf7ef}
 .layout-recipe h3,.layout-recipe h4{margin:.3rem 0}
-.layout-recipe .meta{color:#8a7a6a;font-size:.9rem}
+.layout-recipe .meta{color:var(--muted);font-size:.9rem}
 .layout-faq{margin:1.2rem 0}
 .layout-faq details{border:1px solid #e6dccb;border-radius:10px;padding:12px 16px;margin:.5rem 0}
 .layout-faq summary{cursor:pointer;font-weight:600}
 .layout-faq-item p{margin:.5rem 0 0}
-.layout-quote{border-left:4px solid #b07840;padding-left:16px;color:#5b5240;font-style:italic;margin:1.2rem 0}
-.layout-quote cite{display:block;font-style:normal;font-size:.85rem;color:#8a7a6a;margin-top:.4rem}
+.layout-quote{border-left:4px solid var(--accent);padding-left:16px;color:#5b5240;font-style:italic;margin:1.2rem 0}
+.layout-quote cite{display:block;font-style:normal;font-size:.85rem;color:var(--muted);margin-top:.4rem}
 .layout-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:1.2rem 0}
 .layout-card{border:1px solid #e6dccb;border-radius:12px;padding:16px;background:#fff}
 .layout-card h4{margin:.2rem 0}
 </style>
+    <style>:root{--bg:#faf6ef;--surface:#fff;--ink:#3a2f28;--muted:#7a6a58;--accent:#96632b;--accent-soft:#e8dcc9;--line:#e6dccb;--serif:"Fraunces",Georgia,serif;--sans:"Inter",-apple-system,sans-serif;--wrap:1200px;--gut:20px}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);font-size:1rem;line-height:1.7;color:var(--ink);background:var(--bg);margin:0}
+a{color:var(--accent)}
+img{max-width:100%;height:auto}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+nav{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+nav .inner{max-width:var(--wrap);margin:0 auto;padding:10px var(--gut);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+nav .brand{font-family:var(--serif);font-weight:700;font-size:1.25rem;line-height:1.15;color:var(--ink);text-decoration:none;white-space:nowrap}
+nav .nav-links{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+nav .nav-links a{color:var(--muted);text-decoration:none;font-size:.92rem;font-weight:500;min-height:44px;display:inline-flex;align-items:center;padding:0 12px;border-radius:999px}
+nav .nav-links a:hover{color:var(--accent);background:var(--accent-soft)}
+.container{max-width:var(--wrap);margin:0 auto;padding:0 var(--gut)}
+footer{color:var(--muted);font-size:.85rem;text-align:center;padding:36px 0;margin-top:24px;border-top:1px solid var(--line)}
+footer .cols{max-width:var(--wrap);margin:16px auto 0;padding:0 var(--gut);display:flex;flex-wrap:wrap;gap:12px 18px;justify-content:center}
+footer a{color:var(--muted)}footer a:hover{color:var(--accent)}
+@media(max-width:480px){
+  nav .inner{padding:8px var(--gut);gap:6px}
+  nav .brand{font-size:1.05rem}
+  nav .nav-links a{font-size:.85rem;padding:0 9px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+</style>
     <style>
-        :root{--bg:#faf6ef;--surface:#fff;--ink:#3a2f28;--muted:#8a7a6a;--accent:#b07840;--accent-soft:#e8dcc9;--line:#e6dccb;--serif:"Fraunces",Georgia,serif;--sans:"Inter",-apple-system,sans-serif}
-        *{box-sizing:border-box}
-        html{-webkit-font-smoothing:antialiased}
-        body{font-family:var(--sans);line-height:1.75;color:var(--ink);background:var(--bg);margin:0}
-        a{color:var(--accent)}
-        nav{background:var(--surface);border-bottom:1px solid var(--line);padding:14px 0;position:sticky;top:0;z-index:10}
-        nav .inner{width:min(75%,1080px);margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-        nav .brand{font-family:var(--serif);font-weight:700;font-size:1.3rem;color:var(--ink);text-decoration:none}
-        nav .nav-links a{color:var(--muted);text-decoration:none;margin-left:20px;font-size:.92rem;font-weight:500}
-        nav .nav-links a:hover{color:var(--accent)}
-        .container{width:min(94%,1360px);margin:0 auto;padding:0 24px}
         .article{padding:48px 0 64px}
         .hero{margin:0 0 22px}
-        .hero img{width:100%;height:auto;max-height:560px;object-fit:cover;border-radius:18px;display:block}
-        .hero figcaption{color:#8a7a6a;font-size:.82rem;margin-top:.5rem}
+        .hero img{width:100%;aspect-ratio:16/10;max-height:560px;object-fit:cover;border-radius:18px;display:block}
+        .hero figcaption{color:var(--muted);font-size:.82rem;margin-top:.5rem}
         header{margin-bottom:32px}
         .kicker{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:12px}
-        h1{font-family:var(--serif);font-weight:700;font-size:2.5rem;line-height:1.12;margin:0 0 14px;color:var(--ink);letter-spacing:-.01em}
-        .deck{font-size:1.25rem;line-height:1.55;color:#8a7a6a;max-width:680px;margin:0 0 22px}
-        .byline{display:flex;flex-wrap:wrap;align-items:center;gap:10px;color:#8a7a6a;font-size:.85rem;padding-bottom:22px;border-bottom:1px solid var(--line)}
+        h1{font-family:var(--serif);font-weight:700;font-size:clamp(1.85rem,1.3rem + 2.2vw,2.5rem);line-height:1.12;margin:0 0 14px;color:var(--ink);letter-spacing:-.01em}
+        .deck{font-size:clamp(1.05rem,.6vw + .9rem,1.25rem);line-height:1.55;color:var(--muted);max-width:680px;margin:0 0 22px}
+        .byline{display:flex;flex-wrap:wrap;align-items:center;gap:10px;color:var(--muted);font-size:.85rem;padding-bottom:22px;border-bottom:1px solid var(--line)}
         .byline .avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #e8dcc9}
         .byline .by{font-weight:600;color:var(--ink)}
         .byline .dot{width:3px;height:3px;border-radius:50%;background:#b8aa96;display:inline-block}
         .tags{margin-top:16px}
         .tags span{display:inline-block;padding:4px 12px;border-radius:999px;font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:var(--accent-soft);color:#7a5a34;margin-right:6px}
-        .content{font-size:1.1rem;max-width:1000px;margin:0 auto}
+        .content{font-size:clamp(1rem,.35vw + .93rem,1.1rem);max-width:1000px;margin:0 auto}
         .content p{margin:1.15em 0}
         .content>p:first-of-type::first-letter{font-family:var(--serif);font-weight:700;font-size:3.6em;float:left;line-height:.82;padding:.06em .12em 0 0;color:var(--accent)}
         .content h2{font-family:var(--serif);font-size:1.7rem;font-weight:600;margin:2.4rem 0 .8rem;color:var(--ink)}
@@ -96,30 +109,26 @@
         .content img{max-width:100%;height:auto;border-radius:14px;margin:1.2em 0}
         .content pre{background:#f4ede1;padding:18px;border-radius:12px;overflow-x:auto;font-size:.9rem;line-height:1.6}
         .content code{font-family:"SF Mono",Monaco,"Cascadia Code",monospace}
-        .content blockquote{border-left:3px solid #b07840;padding-left:18px;margin:1.4em 0;color:#5b5240;font-style:italic}
+        .content blockquote{border-left:3px solid var(--accent);padding-left:18px;margin:1.4em 0;color:#5b5240;font-style:italic}
         .content table{width:100%;border-collapse:collapse;margin:1.4em 0}
         .content th,.content td{padding:10px 14px;border:1px solid var(--line)}
         .content th{background:var(--surface);font-weight:600}
         .related{margin-top:44px;padding-top:28px;border-top:1px solid var(--line)}
-        .related .label{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:#b07840;font-weight:600;margin-bottom:14px}
+        .related .label{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:14px}
         .share{margin-top:40px;padding-top:24px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:8px}
         .hashtags{margin-top:34px;padding:18px 0;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px}
-        .hashtags span{font-size:.85rem;font-weight:600;color:#b07840}
+        .hashtags span{font-size:.85rem;font-weight:600;color:var(--accent)}
         .hashtags span::before{content:"#"}
-        .share .share-label{color:#8a7a6a;font-size:.9rem;font-weight:600;margin-right:6px}
+        .share .share-label{color:var(--muted);font-size:.9rem;font-weight:600;margin-right:6px}
         .share a,.share button{display:inline-block;padding:8px 18px;border-radius:999px;font-size:.82rem;font-weight:600;background:var(--surface);color:var(--ink);text-decoration:none;border:1px solid var(--line);cursor:pointer;font-family:inherit}
-        .share a:hover,.share button:hover{background:#b07840;color:#fff;border-color:#b07840}
-        footer{text-align:center;color:#8a7a6a;font-size:.85rem;padding:42px 0;margin-top:24px;border-top:1px solid var(--line)}
-        footer .cols{width:min(75%,1080px);margin:16px auto 0;padding:0 24px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center}
-        footer a{color:#8a7a6a}footer a:hover{color:#b07840}
+        .share a:hover,.share button:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
         @media(max-width:640px){
-            .container{padding:0 18px}
-            h1{font-size:1.8rem}
-            .deck{font-size:1.12rem}
-            .content{font-size:1rem}
+            h1{font-size:clamp(1.65rem,1.25rem + 3vw,2.1rem)}
+            .deck{font-size:1.02rem}
             .content h2{font-size:1.3rem}
             .content h3{font-size:1.15rem}
-            .hero img{max-height:none}
+            .hero img{aspect-ratio:4/3;border-radius:14px}
+            .content>p:first-of-type::first-letter{font-size:2.9em}
         }
     </style>
 </head>
@@ -133,7 +142,7 @@
     <figure class="hero"><img src="https://images.unsplash.com/photo-1543355890-20bc0a26fda1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxIYW5vaSUyMDM2JTIwb2xkJTIwcXVhcnRlcnMlMjB0cmF2ZWwlMjBndWlkZXxlbnwwfHx8fDE3ODgwODQ1NDF8MA&ixlib=rb-4.1.0&q=80&w=1600" alt="Hanoi 36 Old Quarters Travel Guide: Exploring the Ancient Heart of Vietnam's Capital" loading="eager"></figure>
     <header>
         <div class="kicker">HANOI OLD QUARTER</div>
-        <h1>Hanoi 36 Old Quarters Travel Guide: Exploring the Ancient Heart of Vietnam's Capital — The Slow Drip</h1>
+        <h1>Hanoi 36 Old Quarters Travel Guide: Exploring the Ancient Heart of Vietnam's Capital</h1>
         <p class="deck">The Living Labyrinth: A Craft-and-Story Walk Through Hanoi's 36 Old Quarters…</p>
         <div class="byline">
             <img class="avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=crop&w=160&h=160" alt="Tien Nguyen" loading="lazy">
