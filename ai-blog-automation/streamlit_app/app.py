@@ -147,6 +147,9 @@ def get_articles():
                 "style": a.style,
                 "slug": a.slug,
                 "featured": bool(a.featured),
+                "page_layout": getattr(a, "page_layout", "article") or "article",
+                "home_slot": getattr(a, "home_slot", "auto") or "auto",
+                "home_weight": int(getattr(a, "home_weight", 0) or 0),
             }
             for a in articles
         ]
@@ -838,6 +841,115 @@ def _set_featured(article_id: int, make_featured: bool = True) -> dict:
         "method": method,
         "url": f"{_site_url().rstrip('/')}/{slug}/" if slug else "",
     }
+
+
+LAYOUT_SLOTS = ["auto", "hero", "wide", "small", "text", "list", "none"]
+PAGE_LAYOUTS = ["article", "bento", "page"]
+SLOT_HELP = {
+    "auto": "tự động: bài mới nhất lấp chỗ trống (hero → wide → small → text)",
+    "hero": "ô to 2×2 trên cùng — tối đa 1 bài",
+    "wide": "ô rộng 2 cột — tối đa 2 bài",
+    "small": "ô 1 cột có ảnh",
+    "text": "ô chữ nền mực (không ảnh)",
+    "list": "chỉ nằm trong 'More stories' (list chữ, vẫn có link)",
+    "none": "ẩn khỏi trang chủ hoàn toàn",
+}
+
+
+def _set_layout(
+    article_id: int,
+    page_layout: str,
+    home_slot: str,
+    home_weight: int = 0,
+) -> dict:
+    """Persist the layout columns and redeploy the site.
+
+    The DB is the source of truth: these columns are read back by
+    `build_site_files_from_db()` (dashboard deploy) and by `reconcile_live.py`
+    when materializing `content/*.md` for a local build. Rebuilds + deploys so
+    the homepage changes immediately.
+    """
+    from blog_automation.models import Article, get_session
+    from blog_automation.pipelines.phase_8_publish.publishing import (
+        _deploy_to_cloudflare,
+        build_site_files_from_db,
+    )
+
+    if page_layout not in PAGE_LAYOUTS:
+        raise RuntimeError(f"page_layout không hợp lệ: {page_layout}")
+    if home_slot not in LAYOUT_SLOTS:
+        raise RuntimeError(f"home_slot không hợp lệ: {home_slot}")
+
+    _load_cloudflare_env()
+    with get_session() as s:
+        target = s.get(Article, article_id)
+        if not target:
+            raise RuntimeError(f"Article {article_id} not found")
+        target.page_layout = page_layout
+        target.home_slot = home_slot
+        target.home_weight = int(home_weight or 0)
+        slug = target.slug
+        s.commit()
+
+    files = build_site_files_from_db()
+    method, pushed = _deploy_to_cloudflare(files, "layout-set")
+    return {
+        "slug": slug,
+        "deployed": pushed,
+        "method": method,
+        "url": f"{_site_url().rstrip('/')}/{slug}/" if slug else "",
+    }
+
+
+def _layout_controls(article: dict) -> None:
+    """Homepage layout controls for one article (page_layout / home_slot / weight)."""
+    aid = article["id"]
+    with st.expander("🎨 Layout (trang chủ)", expanded=False):
+        st.caption(
+            "Cột `page_layout` / `home_slot` / `home_weight` trong DB — mặc định "
+            "`article` / `auto` / `0` cho mọi bài mới. Lưu là rebuild + deploy ngay."
+        )
+        c1, c2, c3 = st.columns([2, 3, 1])
+        with c1:
+            page_layout = st.selectbox(
+                "page_layout",
+                PAGE_LAYOUTS,
+                index=PAGE_LAYOUTS.index(article.get("page_layout") or "article"),
+                key=f"pl_{aid}",
+                help="article = trang bài thường · bento = trang dạng homepage "
+                "(chỉ homepage dùng) · page = trang tĩnh (gen_pages.py)",
+            )
+        with c2:
+            home_slot = st.selectbox(
+                "home_slot",
+                LAYOUT_SLOTS,
+                index=LAYOUT_SLOTS.index(article.get("home_slot") or "auto"),
+                key=f"hs_{aid}",
+                format_func=lambda s: f"{s} — {SLOT_HELP.get(s, '')}",
+            )
+        with c3:
+            home_weight = st.number_input(
+                "weight",
+                min_value=0,
+                max_value=100,
+                value=int(article.get("home_weight") or 0),
+                key=f"hw_{aid}",
+                help="Ưu tiên trong cùng slot (số lớn lên trước).",
+            )
+        if st.button("💾 Lưu layout + deploy", key=f"savelayout_{aid}"):
+            try:
+                with st.spinner("Đang lưu layout + rebuild + deploy…"):
+                    res = _set_layout(aid, page_layout, home_slot, int(home_weight))
+                st.session_state["_review_msg"] = (
+                    "success",
+                    f"🎨 Đã lưu layout (page_layout={page_layout}, "
+                    f"home_slot={home_slot}, weight={int(home_weight)})"
+                    + (" và deploy xong." if res.get("deployed") else
+                       " — DB đã lưu nhưng deploy KHÔNG xác nhận được."),
+                )
+                st.rerun()
+            except Exception as e:  # noqa: BLE001
+                st.error(f"❌ Lưu layout lỗi: {e}")
 
 
 def _regenerate_layout_block(article_id: int, block_idx: int, instruction: str) -> dict:
@@ -1867,6 +1979,8 @@ elif page == "📄 All Articles":
                     m3.metric("SEO Score", article["seo_score"] or "N/A")
                     m4.metric("Keyword", article["keyword"])
 
+                    _layout_controls(article)
+
                     # Quick Actions for Article
                     st.markdown("### 🛠️ Article Actions")
                     col_act1, col_act2, col_act3 = st.columns(3)
@@ -1949,6 +2063,8 @@ elif page == "📄 All Articles":
                                     f"❌ Set featured lỗi: {e5}",
                                 )
                             st.rerun()
+
+                    _layout_controls(article)
 
                     # Requeue-to-review-queue action
                     na1, na2, na3, na4 = st.columns(4)

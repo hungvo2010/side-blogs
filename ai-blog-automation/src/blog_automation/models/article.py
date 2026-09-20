@@ -143,6 +143,23 @@ class Article(BaseModel):
         Boolean, default=False, server_default="false", nullable=False
     )
 
+    # Layout attributes. DB is the source of truth and every row carries a
+    # default, so a freshly generated page always renders somewhere sane without
+    # anyone editing frontmatter.
+    #   page_layout : which template renders the page (article | bento | page)
+    #   home_slot   : where it appears on the bento homepage
+    #                 (auto | hero | wide | small | text | list | none)
+    #   home_weight : tie-break inside a slot, higher first
+    page_layout: Mapped[str] = mapped_column(
+        String(32), default="article", server_default="article", nullable=False
+    )
+    home_slot: Mapped[str] = mapped_column(
+        String(16), default="auto", server_default="auto", nullable=False
+    )
+    home_weight: Mapped[int] = mapped_column(
+        Integer, default=0, server_default="0", nullable=False
+    )
+
     # Performance Tracking (aggregated)
     views_30_days: Mapped[int] = mapped_column(Integer, default=0)
     avg_time_on_page: Mapped[float | None] = mapped_column(Float, nullable=True)

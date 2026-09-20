@@ -185,6 +185,14 @@ def _article_markdown(article: dict) -> str:
         fm += f"image: {_one_line(article['image'])}\n"
     if article.get("featured"):
         fm += "featured: true\n"
+    # Layout attributes straight from the DB columns (defaults omitted so the
+    # in-memory markdown stays readable; publish.py applies the same defaults).
+    if (article.get("page_layout") or "article") != "article":
+        fm += f"page_layout: {article['page_layout']}\n"
+    if (article.get("home_slot") or "auto") != "auto":
+        fm += f"home_slot: {article['home_slot']}\n"
+    if int(article.get("home_weight") or 0):
+        fm += f"home_weight: {int(article['home_weight'])}\n"
     fm += "---\n\n"
     return fm + (article.get("body") or "")
 
@@ -202,6 +210,9 @@ def _db_article_dict(a) -> dict:
         "image": a.featured_image_url or "",
         "featured": bool(a.featured),
         "date": published.strftime("%Y-%m-%d") if published else None,
+        "page_layout": getattr(a, "page_layout", "article") or "article",
+        "home_slot": getattr(a, "home_slot", "auto") or "auto",
+        "home_weight": int(getattr(a, "home_weight", 0) or 0),
         "body": a.content_draft or "",
     }
 

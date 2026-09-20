@@ -17,6 +17,20 @@ Get token: https://dash.cloudflare.com/profile/api-tokens
 
 from __future__ import annotations
 
+# Load .env here as well: this script reads CLOUDFLARE_* / SITE_URL straight from
+# os.environ, so a shell that failed to source .env (one bad line is enough) made
+# the deploy die with KeyError: 'CLOUDFLARE_API_TOKEN'. override=False keeps any
+# explicitly exported value.
+try:  # pragma: no cover — optional dependency
+    from pathlib import Path as _Path
+
+    from dotenv import load_dotenv as _load_dotenv
+
+    _load_dotenv(_Path(__file__).resolve().parent.parent / ".env", override=False)
+except Exception:  # noqa: BLE001
+    pass
+
+
 import base64
 import hashlib
 import json

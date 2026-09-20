@@ -120,6 +120,7 @@ def import_live_only(slugs: list[str]) -> list[str]:
             fm += f"image: {image}\n"
         if getattr(a, "featured", False):
             fm += "featured: true\n"
+        fm += _layout_frontmatter(a)
         fm += "---\n\n"
         out.write_text(fm + body + "\n", encoding="utf-8")
         imported.append(slug)
@@ -158,7 +159,27 @@ def _frontmatter_from_db(a, body: str, extra_keys: dict) -> str:
     for k in ("description", "blocks"):
         if extra_keys.get(k):
             fm += f"{k}: {extra_keys[k]}\n"
+    fm += _layout_frontmatter(a)
     fm += "---\n\n"
+    return fm
+
+
+def _layout_frontmatter(a) -> str:
+    """Serialize the layout columns, skipping defaults.
+
+    Defaults (`page_layout=article`, `home_slot=auto`, `home_weight=0`) are
+    omitted so the content files stay readable; publish.py applies the same
+    defaults, which is why a page materialized straight from a fresh DB row
+    needs no frontmatter at all.
+    """
+    fm = ""
+    if getattr(a, "page_layout", "article") not in (None, "", "article"):
+        fm += f"page_layout: {a.page_layout}\n"
+    slot = (getattr(a, "home_slot", "auto") or "auto").strip()
+    if slot and slot != "auto":
+        fm += f"home_slot: {slot}\n"
+    if int(getattr(a, "home_weight", 0) or 0):
+        fm += f"home_weight: {int(a.home_weight)}\n"
     return fm
 
 
