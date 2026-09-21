@@ -332,16 +332,26 @@ INDEX_TEMPLATE = """\
         .tile.hide{{display:none}}
         .sec{{font-family:var(--serif);font-size:1.15rem;font-weight:600;margin:44px 0 16px;display:flex;align-items:center;gap:14px}}
         .sec:after{{content:"";flex:1;height:1px;background:var(--line)}}
-        .morelist{{list-style:none;margin:0;padding:0;columns:2;column-gap:34px}}
-        .morelist li{{padding:9px 0;border-bottom:1px solid var(--line);break-inside:avoid;font-size:.95rem}}
-        .morelist .mk{{display:block;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:2px}}
-        .morelist a{{font-weight:500}}
-        .morelist a:hover{{color:var(--accent)}}
-        .morelist .mmeta{{color:var(--muted);font-size:.78rem;display:block;margin-top:2px}}
+        /* "More stories": grid (row-major, so reading order == chronology), one
+           hairline per row, numbered for scanability. Titles are ink and NOT
+           underlined until hover — a wall of underlined accent links read as a
+           sitemap dump (the UA default underline + body link colour). */
+        .morelist{{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:0 44px}}
+        .morelist li{{display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:start;padding:14px 0;border-bottom:1px solid var(--line)}}
+        .morelist .mn{{font-family:var(--serif);font-size:.95rem;line-height:1.4;color:#c3ad90;font-variant-numeric:tabular-nums;padding-top:1px}}
+        .morelist li:hover .mn{{color:var(--accent)}}
+        .morelist .mk{{display:block;font-size:.62rem;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:4px}}
+        .morelist a{{font-family:var(--serif);font-weight:600;font-size:1.05rem;line-height:1.35;color:var(--ink);text-decoration:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}}
+        .morelist a:hover{{color:var(--accent);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}}
+        .morelist .mmeta{{display:block;color:var(--muted);font-size:.76rem;margin-top:4px}}
+        .moreall{{display:inline-flex;align-items:center;gap:8px;margin-top:22px;font-weight:600;font-size:.92rem;color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-soft);padding-bottom:2px}}
+        .moreall:hover{{border-bottom-color:var(--accent)}}
         @media(max-width:980px){{
             .bento{{grid-template-columns:repeat(2,1fr);grid-auto-rows:190px}}
             .tile.big{{grid-column:span 2;grid-row:span 1}}
-            .morelist{{columns:1}}
+        }}
+        @media(max-width:700px){{
+            .morelist{{grid-template-columns:1fr;gap:0}}
         }}
         @media(max-width:560px){{
             .bento{{grid-template-columns:1fr;grid-auto-rows:200px}}
@@ -957,12 +967,23 @@ def build_index(posts_meta: list[dict]) -> str:
             continue
         filters_html += f'<button data-topic="{key}" aria-pressed="false">{labels.get(key, key.title())} ({n})</button>'
 
+    # Cap the list so the homepage stays scannable; the sitemap holds the rest
+    # and stays the archive entry point.
+    MORE_CAP = 18
+    more_shown = more[:MORE_CAP]
     more_html = "".join(
-        f'<li data-topic="{topic_of(p)}"><span class="mk">{_kicker(p)}</span>'
+        f'<li data-topic="{topic_of(p)}"><span class="mn">{i:02d}</span>'
+        f'<div><span class="mk">{_kicker(p)}</span>'
         f'<a href="/{p["slug"]}/">{p["title"]}</a>'
-        f'<span class="mmeta">{_meta(p)}</span></li>'
-        for p in more
+        f'<span class="mmeta">{_meta(p)}</span></div></li>'
+        for i, p in enumerate(more_shown, 1)
     )
+    if len(more) > MORE_CAP:
+        more_html += (
+            '<li style="grid-column:1/-1;border-bottom:0;padding-top:6px">'
+            f'<a class="moreall" href="/sitemap.xml">All {len(more) + len(more_shown)} '
+            'stories in the archive →</a></li>'
+        )
 
     return INDEX_TEMPLATE.format(
         layout_css=LAYOUT_CSS,
