@@ -3,6 +3,7 @@
 Analyzes and optimizes articles for search engine visibility.
 """
 
+import re
 from typing import Any
 
 from blog_automation.errors import ProcessingError
@@ -166,6 +167,42 @@ def generate_seo_recommendations(
     return recommendations
 
 
+META_TITLE_MIN = 10
+META_DESC_MIN = 40
+META_ATTEMPTS = 3
+
+
+def _complete_meta(
+    prompt: str,
+    *,
+    max_tokens: int,
+    min_len: int,
+    label: str,
+    keyword: str = "",
+) -> str:
+    """Run a meta-field prompt with a length floor and bounded retry.
+
+    The provider occasionally returns an EMPTY completion without raising, which
+    used to be persisted verbatim — leaving articles with an empty ``meta_title``
+    or ``meta_description`` (seen on ids 55 and 57). Retry like the drafting
+    phase does, then let the caller fall back to something non-empty.
+    """
+    llm = OpenRouterClient()
+    for attempt in range(1, META_ATTEMPTS + 1):
+        response = llm.complete(prompt, temperature=0.7, max_tokens=max_tokens)
+        text = (response.get("content") or "").strip().strip('"').strip()
+        if len(text) >= min_len:
+            return text
+        logger.warning(
+            "Empty/short meta output from provider — retrying",
+            field=label,
+            attempt=attempt,
+            got_chars=len(text),
+            keyword=keyword,
+        )
+    return ""
+
+
 def generate_meta_title(
     keyword: str,
     title: str,
@@ -177,8 +214,6 @@ def generate_meta_title(
     if get_settings().mock_mode:
         return f"{title} | Expert Guide to {keyword}"
 
-    llm = OpenRouterClient()
-
     # Create summary from first 500 chars
     summary = content[:500].replace("\n", " ").strip()
 
@@ -189,8 +224,18 @@ def generate_meta_title(
         summary=summary,
     )
 
-    response = llm.complete(prompt, temperature=0.7, max_tokens=100)
-    meta_title = response.get("content", "").strip()
+    meta_title = _complete_meta(
+        prompt,
+        max_tokens=100,
+        min_len=META_TITLE_MIN,
+        label="meta title",
+        keyword=keyword,
+    )
+    if not meta_title:
+        logger.warning(
+            "Meta title still empty — falling back to article title", keyword=keyword
+        )
+        meta_title = (title or keyword).strip()
 
     # Ensure length constraint
     if len(meta_title) > 60:
@@ -210,8 +255,6 @@ def generate_meta_description(
     if get_settings().mock_mode:
         return f"Discover everything you need to know about {keyword}. Our expert guide covers the best tips, strategies, and insights for success."
 
-    llm = OpenRouterClient()
-
     # Create summary from first 500 chars
     summary = content[:500].replace("\n", " ").strip()
 
@@ -222,8 +265,21 @@ def generate_meta_description(
         summary=summary,
     )
 
-    response = llm.complete(prompt, temperature=0.7, max_tokens=200)
-    meta_desc = response.get("content", "").strip()
+    meta_desc = _complete_meta(
+        prompt,
+        max_tokens=200,
+        min_len=META_DESC_MIN,
+        label="meta description",
+        keyword=keyword,
+    )
+    if not meta_desc:
+        # Strip markdown noise, then fall back to the article's opening text.
+        plain = re.sub(r"[#*_>`\[\]()!|]", " ", content or "")
+        plain = " ".join(plain.split())[:155].strip()
+        logger.warning(
+            "Meta description still empty — using content fallback", keyword=keyword
+        )
+        meta_desc = plain or f"{title} — {keyword}"
 
     # Ensure length constraint
     if len(meta_desc) > 160:

@@ -39,6 +39,43 @@ from pathlib import Path
 PROMPTS_ROOT = Path(__file__).resolve().parents[2] / "prompts"
 DEFAULT_VERSION = os.environ.get("PROMPT_VERSION", "v1")
 
+# --- Output-language pin ---------------------------------------------------
+# No prompt ever stated which language to write in, so the model mirrored the
+# input: the Vietnamese keyword "ca phe muoi" produced a fully Vietnamese
+# article (title, body, meta) on an English site (SITE_LANG=en). Pin the
+# publication language on EVERY rendered prompt instead of trusting the model.
+LANGUAGE_NAMES = {
+    "en": "English",
+    "vi": "Vietnamese",
+    "es": "Spanish",
+    "fr": "French",
+    "de": "German",
+    "pt": "Portuguese",
+    "it": "Italian",
+    "ja": "Japanese",
+    "ko": "Korean",
+    "zh": "Chinese",
+    "th": "Thai",
+    "id": "Indonesian",
+}
+
+
+def language_name(lang: str | None = None) -> str:
+    """Human-readable publication language, from ``lang`` or ``SITE_LANG``."""
+    code = (lang or os.environ.get("SITE_LANG") or "en").strip().lower()
+    code = code.split("-")[0].split("_")[0]
+    return LANGUAGE_NAMES.get(code, code or "en")
+
+
+def language_directive(lang: str | None = None) -> str:
+    """One-line instruction that keeps every phase in the publication language."""
+    name = language_name(lang)
+    return (
+        f"Language rule: write ALL output in {name} — the publication's language. "
+        f"Never switch language to match the keyword, the sources or the locale. "
+        f"Keep proper nouns and brand names in their original form."
+    )
+
 
 class PromptError(FileNotFoundError):
     """A named prompt template could not be loaded."""
@@ -84,8 +121,13 @@ class Prompts:
     def render(
         self, name: str, *, version: str | None = None, **variables: object
     ) -> str:
-        """Load ``name`` (at ``version``) and fill its ``{placeholders}``."""
-        return self.get(name, version=version).format(**variables)
+        """Load ``name`` (at ``version``) and fill its ``{placeholders}``.
+
+        Every rendered prompt is prefixed with the publication-language rule so
+        no phase can drift into the keyword's language (see ``language_directive``).
+        """
+        body = self.get(name, version=version).format(**variables)
+        return f"{language_directive()}\n\n{body}"
 
 
 # Shared instance + module-level convenience helper so phases just do:

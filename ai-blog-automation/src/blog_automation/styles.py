@@ -31,6 +31,8 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
+from blog_automation.prompting import language_directive
+
 # The original drafting system prompt. Kept as the `warm-editorial` preset and
 # as the fallback so nothing changes for sites that don't set a style.
 DEFAULT_SYSTEM_PROMPT = """\
@@ -303,6 +305,7 @@ def build_system_prompt(
     """Build the drafting system prompt for the active (or named) style."""
     resolved = resolve_style(style)
     parts = [resolved.system_prompt.rstrip()]
+    parts.append(language_directive())
     site = site_name or os.environ.get("SITE_NAME")
     if site:
         parts.append(
