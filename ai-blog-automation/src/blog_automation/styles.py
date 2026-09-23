@@ -44,7 +44,7 @@ Guidelines:
 - Include real-world examples and use cases
 - Natural keyword integration (3-5 times total)
 - No keyword stuffing
-- Cite sources where appropriate using [Source: URL] format
+- Cite sources as real markdown links with descriptive anchor text: [anchor text](URL). Never write a bare bracketed URL like [Source: URL] and never paste a raw URL as anchor text.
 - Internal link anchors: [anchor text](article-slug)
 - Use bullet points and numbered lists where appropriate
 - Include actionable takeaways
@@ -114,7 +114,7 @@ Voice:
 - Include concrete numbers, configs, versions and measurements where they exist
 - Name tradeoffs explicitly (cost, latency, complexity, ops burden)
 - State uncertainty honestly; separate measured facts from inference
-- Cite sources with [Source: URL] for anything non-obvious
+- Cite sources for anything non-obvious as [anchor text](URL) — descriptive anchor, never a bare [Source: URL]
 - Assume the reader knows the basics; skip definitions of common terms
 
 Structure:
@@ -170,7 +170,7 @@ Voice:
 - Never diagnose, never promise fat loss/performance miracles; say plainly when
   something is individual (tolerance, meds, pregnancy, heart conditions) and tell
   the reader to check with a professional for those cases
-- Cite sources as [Source: URL] for anything beyond common knowledge
+- Cite sources for anything beyond common knowledge as [anchor text](URL) — descriptive anchor, never a bare [Source: URL]
 
 Structure:
 - Open with the one-line bottom line (how much, when)
@@ -195,7 +195,7 @@ Voice:
 - Anticipate the reader's next question and answer it right there
 - Scannable: bullets, numbered steps, bold key terms
 - Concede where things are genuinely confusing; never condescend
-- Cite [Source: URL] for factual claims
+- Cite factual claims as [anchor text](URL) — descriptive anchor, never a bare [Source: URL]
 
 Structure:
 - Open by naming the reader's actual confusion

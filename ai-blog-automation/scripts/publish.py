@@ -22,7 +22,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 
 # Add src to path
 _SRC = Path(__file__).resolve().parent.parent / "src"
@@ -606,6 +606,48 @@ def normalize_links(md: str, known_slugs: set) -> str:
     return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", _sub, md)
 
 
+# Legacy citation form the drafting prompt used to ask for: `[Source: URL]` — a
+# bracketed URL, NOT a markdown link. markdown2 runs without the autolink extra,
+# so those refs shipped as dead text (85 refs across 26 pages, stray `]` visible).
+_SOURCE_REF = re.compile(r"\[Source:\s*(https?://[^\s\]]+)\](?!\()", re.I)
+# External anchors without an explicit target= (share buttons already set it).
+_EXTERNAL_A = re.compile(r'<a href="(https?://[^"]+)"(?![^>]*\btarget=)')
+
+
+def _readable_domain(url: str) -> str:
+    """`https://www.ncausa.org/x` -> `ncausa.org` (anchor text for a citation)."""
+    host = urlparse(url).netloc.lower()
+    return host[4:] if host.startswith("www.") else host
+
+
+def linkify_source_refs(md: str) -> str:
+    """Rewrite `[Source: URL]` into a real markdown link: `Source: [domain](URL)`.
+
+    Leaves the already-correct `[Source: URL](URL)` form alone (negative lookahead
+    on the opening paren) so double-linking can't happen.
+    """
+    def _sub(m):
+        url = m.group(1).rstrip(".,;:")
+        return f"Source: [{_readable_domain(url)}]({url})"
+
+    return _SOURCE_REF.sub(_sub, md)
+
+
+def externalize_links(html: str) -> str:
+    """Open outbound content links in a new tab with rel=noopener.
+
+    Applied to the rendered body only; same-site hrefs and anchors that already
+    declare a target are left untouched.
+    """
+    def _sub(m):
+        href = m.group(1)
+        if "dripper.top" in href:
+            return m.group(0)
+        return f'<a href="{href}" target="_blank" rel="noopener">'
+
+    return _EXTERNAL_A.sub(_sub, html)
+
+
 def build_article(
     filepath: str,
     title: str | None = None,
@@ -696,12 +738,13 @@ def build_article_from_text(
     body = normalize_links(
         body, known_slugs if known_slugs is not None else _known_slugs()
     )
+    body = linkify_source_refs(body)
     body_clean, block_tokens = directives_from_markdown(body)
     html_body = markdown2.markdown(
         body_clean,
         extras=["fenced-code-blocks", "tables", "strike", "task_list", "header-ids"],
     )
-    html_body = substitute_tokens(html_body, block_tokens)
+    html_body = externalize_links(substitute_tokens(html_body, block_tokens))
     frontmatter_blocks = parse_frontmatter_blocks(fm.get("blocks"))
     if frontmatter_blocks:
         html_body += "\n" + render_blocks(frontmatter_blocks)
