@@ -83,19 +83,21 @@ class PromptError(FileNotFoundError):
 
 @functools.lru_cache(maxsize=256)
 def _load(base: Path, version: str, rel: str) -> str:
-    path = base / version / f"{rel}.txt"
-    if not path.is_file():
-        avail = ", ".join(
-            sorted(
-                str(p.relative_to(base / version))
-                for p in (base / version).rglob("*.txt")
-            )
+    for ext in (".md", ".txt"):
+        path = base / version / f"{rel}{ext}"
+        if path.is_file():
+            return path.read_text(encoding="utf-8")
+    avail = ", ".join(
+        sorted(
+            str(p.relative_to(base / version))
+            for p in (base / version).rglob("*")
+            if p.suffix in (".md", ".txt")
         )
-        raise PromptError(
-            f"Prompt '{rel}' not found under {base / version}/. "
-            f"Available in this version: {avail or '(none)'}"
-        )
-    return path.read_text(encoding="utf-8")
+    )
+    raise PromptError(
+        f"Prompt '{rel}' not found under {base / version}/. "
+        f"Available in this version: {avail or '(none)'}"
+    )
 
 
 class Prompts:
