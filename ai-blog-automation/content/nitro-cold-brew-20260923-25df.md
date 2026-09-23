@@ -6,6 +6,7 @@ keyword: nitro cold brew
 tags: nitro coffee, cold brew coffee, nitrogen infusion, nitro draft coffee, how is nitro cold brew made, nitro cold brew vs regular cold brew, nitro cold brew caffeine content, nitro cold brew benefits
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1644764399224-f7d18b1e8d1c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxuaXRybyUyMGNvbGQlMjBicmV3fGVufDB8fHx8MTc5MDE3MjA1N3ww&ixlib=rb-4.1.0&q=80&w=200
+description: Nitro Cold Brew: The Velvet Pour That Changed How We Drink Coffee By Tien Nguyen The first time you see a nitro cold brew poured, it looks like a magic tri
 ---
 
 ![nitro cold brew](https://images.unsplash.com/photo-1644764399224-f7d18b1e8d1c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxuaXRybyUyMGNvbGQlMjBicmV3fGVufDB8fHx8MTc5MDE3MjA1N3ww&ixlib=rb-4.1.0&q=80&w=1080)

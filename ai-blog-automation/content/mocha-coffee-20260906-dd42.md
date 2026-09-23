@@ -6,6 +6,7 @@ keyword: mocha coffee
 tags: cafe mocha recipe, what is mocha coffee, mocha vs latte, mochaccino, chocolate coffee drink, mocha coffee beans, mocha coffee history, how to make a mocha
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1592663527359-cf6642f54cff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxtb2NoYSUyMGNvZmZlZXxlbnwwfHx8fDE3ODg2NzQ0NTZ8MA&ixlib=rb-4.1.0&q=80&w=200
+description: mocha coffee https://images.unsplash.com/photo-1592663527359-cf6642f54cff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxtb2No
 ---
 
 ![mocha coffee](https://images.unsplash.com/photo-1592663527359-cf6642f54cff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxtb2NoYSUyMGNvZmZlZXxlbnwwfHx8fDE3ODg2NzQ0NTZ8MA&ixlib=rb-4.1.0&q=80&w=1080)

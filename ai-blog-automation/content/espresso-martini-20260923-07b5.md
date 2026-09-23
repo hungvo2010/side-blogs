@@ -6,6 +6,7 @@ keyword: espresso martini
 tags: espresso martini recipe, how to make an espresso martini, espresso martini ingredients, espresso martini variations, espresso martini history, espresso martini calories, espresso martini glass, espresso martini garnish
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1607687633950-c745bdb4da70?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxlc3ByZXNzbyUyMG1hcnRpbml8ZW58MHx8fHwxNzkwMTcxNDYwfDA&ixlib=rb-4.1.0&q=80&w=200
+description: The Espresso Martini, Deconstructed: A Science-Backed Guide to Dialing In Crema, Temperature, and Foam Most people learn the espresso martini the way they
 ---
 
 ![espresso martini](https://images.unsplash.com/photo-1607687633950-c745bdb4da70?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxlc3ByZXNzbyUyMG1hcnRpbml8ZW58MHx8fHwxNzkwMTcxNDYwfDA&ixlib=rb-4.1.0&q=80&w=1080)

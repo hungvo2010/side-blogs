@@ -6,6 +6,7 @@ keyword: ca phe muoi
 tags: salt coffee, Vietnamese salted coffee, salted cream coffee, ca phe muoi recipe, what is ca phe muoi, Vietnamese coffee with salt, salted coffee foam, how to make salt coffee
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1762326733230-d853cf18fdf4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjYSUyMHBoZSUyMG11b2l8ZW58MHx8fHwxNzkwMDAwOTU4fDA&ixlib=rb-4.1.0&q=80&w=1080
+description: Discover the flavor science behind ca phe muoi and learn to taste it like a pro. Click to unlock your home brewing lab and master salted coffee.
 ---
 
 ![ca phe muoi](https://images.unsplash.com/photo-1762326733230-d853cf18fdf4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjYSUyMHBoZSUyMG11b2l8ZW58MHx8fHwxNzkwMDAwOTU4fDA&ixlib=rb-4.1.0&q=80&w=1080)

@@ -6,6 +6,7 @@ keyword: vietnamese iced coffee
 tags: cà phê sữa đá, Vietnamese coffee recipe, how to make Vietnamese iced coffee, coffee phin filter, condensed milk coffee, Vietnamese coffee vs regular coffee, best beans for Vietnamese coffee, Robusta coffee beans
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1662105489808-f3dd79b7f13c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHw2fHx2aWV0bmFtZXNlJTIwaWNlZCUyMGNvZmZlZXxlbnwwfHx8fDE3ODk5MTc2NDZ8MA&ixlib=rb-4.1.0&q=80&w=1080
+description: Discover the science and soul of vietnamese iced coffee—flavor, ritual, and regional twists. Click to explore this field guide and elevate your next cup.
 home_slot: hero
 ---
 

@@ -173,8 +173,8 @@ def _article_markdown(article: dict) -> str:
     date = article.get("date") or datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
     fm = f"---\ntitle: {title or 'Untitled'}\ndate: {date}\nslug: {slug}\n"
-    if article.get("description"):
-        fm += f"description: {_one_line(article['description'])}\n"
+    if article.get("meta_description") or article.get("description"):
+        fm += f"description: {_one_line(article.get('meta_description') or article.get('description'))}\n"
     if article.get("keyword"):
         fm += f"keyword: {_one_line(article['keyword'])}\n"
     tags = [_one_line(t) for t in (article.get("tags") or []) if _one_line(t)]

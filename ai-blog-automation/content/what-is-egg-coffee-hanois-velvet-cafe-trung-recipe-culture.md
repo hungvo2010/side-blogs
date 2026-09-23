@@ -6,7 +6,7 @@ keyword: egg coffee
 tags: vietnamese coffee, egg coffee, hanoi, recipe, culture
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1751569543716-70c5fb9a8298?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxlZ2clMjBjb2ZmZWV8ZW58MHx8fHwxNzg4MjM3MzI3fDA&ixlib=rb-4.1.0&q=80&w=1080
-description: Egg coffee — cá phê trứng — is Vietnam's most famous surprise: rich Vietnamese coffee crowned with a silky, sweet whipped-egg foam. Here's the story, the recipe, and where the trend began in Hanoi.
+description: Egg coffee — cá phê trứng — is Vietnam's most famous surprise: rich Vietnamese coffee crowned with a silky, sweet whipped-egg foam. Here's the story, the recipe, and wher
 ---
 
 ![egg coffee cafe trung](https://images.unsplash.com/photo-1751569543716-70c5fb9a8298?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxlZ2clMjBjb2ZmZWV8ZW58MHx8fHwxNzg4MjM3MzI3fDA&ixlib=rb-4.1.0&q=80&w=1080)

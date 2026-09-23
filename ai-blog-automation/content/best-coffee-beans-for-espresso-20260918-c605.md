@@ -6,6 +6,7 @@ keyword: best coffee beans for espresso
 tags: top rated espresso beans, espresso coffee bean reviews, best espresso roast, espresso bean buying guide, whole bean espresso coffee, dark roast espresso beans, espresso blend vs single origin, crema and espresso beans
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1621782967300-337e387d0c39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwzfHxjb2xkYnJld3xlbnwwfHx8fDE3ODk3MDcyOTN8MA&ixlib=rb-4.1.0&q=80&w=1080
+description: best coffee beans for espresso https://images.unsplash.com/photo-1621782967300-337e387d0c39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfH
 ---
 
 ![best coffee beans for espresso](https://images.unsplash.com/photo-1621782967300-337e387d0c39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwzfHxjb2xkYnJld3xlbnwwfHx8fDE3ODk3MDcyOTN8MA&ixlib=rb-4.1.0&q=80&w=1080)

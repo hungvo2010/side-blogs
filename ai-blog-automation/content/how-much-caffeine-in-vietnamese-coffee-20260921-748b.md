@@ -6,6 +6,7 @@ keyword: how much caffeine in vietnamese coffee
 tags: caffeine content in vietnamese coffee, vietnamese coffee caffeine levels, robusta coffee caffeine, arabica vs robusta caffeine, ca phe sua da caffeine, vietnamese iced coffee caffeine, is vietnamese coffee strong, caffeine in phin filter coffee
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1662105489808-f3dd79b7f13c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjBtdWNoJTIwY2FmZmVpbmUlMjBpbiUyMHZpZXRuYW1lc2UlMjBjb2ZmZWV8ZW58MHx8fHwxNzkwMDAzNDMzfDA&ixlib=rb-4.1.0&q=80&w=200
+description: Curious how much caffeine in Vietnamese coffee? Discover the real numbers behind the bold brew and what it means for your energy. Click to learn more!
 ---
 
 ![how much caffeine in vietnamese coffee](https://images.unsplash.com/photo-1662105489808-f3dd79b7f13c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjBtdWNoJTIwY2FmZmVpbmUlMjBpbiUyMHZpZXRuYW1lc2UlMjBjb2ZmZWV8ZW58MHx8fHwxNzkwMDAzNDMzfDA&ixlib=rb-4.1.0&q=80&w=1080)

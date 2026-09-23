@@ -6,6 +6,7 @@ keyword: coffee filter paper
 tags: coffee filter paper types, unbleached coffee filters, paper coffee filter vs metal filter, how to use coffee filter paper, coffee filter paper size chart, best coffee filter paper for pour over, compostable coffee filters, coffee filter paper alternatives
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1521677446241-d182a96ec49f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjb2ZmZWUlMjBmaWx0ZXIlMjBwYXBlcnxlbnwwfHx8fDE3ODg3MDg3MTF8MA&ixlib=rb-4.1.0&q=80&w=200
+description: coffee filter paper https://images.unsplash.com/photo-1521677446241-d182a96ec49f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxf
 ---
 
 ![coffee filter paper](https://images.unsplash.com/photo-1521677446241-d182a96ec49f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjb2ZmZWUlMjBmaWx0ZXIlMjBwYXBlcnxlbnwwfHx8fDE3ODg3MDg3MTF8MA&ixlib=rb-4.1.0&q=80&w=1080)

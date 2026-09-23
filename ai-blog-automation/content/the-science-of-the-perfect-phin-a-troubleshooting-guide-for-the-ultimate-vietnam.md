@@ -6,7 +6,7 @@ keyword: vietnamese iced coffee recipe
 tags: vietnamese iced coffee recipe
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1461023058943-07fcbe16d735?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwaWNlZCUyMGNvZmZlZSUyMHJlY2lwZXxlbnwwfHx8fDE3ODY2Njc2NDF8MA&ixlib=rb-4.1.0&q=80&w=200
-description: Have you ever sat in a bustling café in Saigon, listening to the rhythmic clink-clink of ice against glass, and wondered why that coffee tastes so fundamenta…
+description: Master the Vietnamese iced coffee recipe with this phin troubleshooting guide: grind size, drip time, condensed milk ratio, and fixes for bitter or watery cà phê sữa đá.
 ---
 
 ![vietnamese iced coffee recipe](https://images.unsplash.com/photo-1461023058943-07fcbe16d735?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwaWNlZCUyMGNvZmZlZSUyMHJlY2lwZXxlbnwwfHx8fDE3ODY2Njc2NDF8MA&ixlib=rb-4.1.0&q=80&w=1080)

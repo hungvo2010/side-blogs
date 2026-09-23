@@ -6,6 +6,7 @@ keyword: coffee before workout
 tags: caffeine and exercise performance, pre-workout coffee benefits, coffee as pre-workout, how long before workout to drink coffee, caffeine timing for workouts, coffee before gym, caffeine for endurance training, coffee and muscle performance
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1536914561643-9e3a7a8d063d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjb2ZmZWUlMjBiZWZvcmUlMjB3b3Jrb3V0fGVufDB8fHx8MTc4OTI4ODY1NXww&ixlib=rb-4.1.0&q=80&w=200
+description: Discover the optimal coffee before workout protocol: 3–6 mg/kg caffeine, 45–60 min before training. Get the full timing and dosage guide now.
 ---
 
 ![coffee before workout](https://images.unsplash.com/photo-1536914561643-9e3a7a8d063d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjb2ZmZWUlMjBiZWZvcmUlMjB3b3Jrb3V0fGVufDB8fHx8MTc4OTI4ODY1NXww&ixlib=rb-4.1.0&q=80&w=1080)

@@ -6,6 +6,7 @@ keyword: how to remove coffee stain from carpet
 tags: coffee stain removal from carpet, how to clean coffee spills on carpet, DIY carpet stain remover for coffee, best carpet cleaner for coffee stains, natural ways to remove coffee stains, baking soda for coffee stain removal, vinegar solution for carpet stains, blotting coffee stains on carpet
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1627835171402-f7655f44a808?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMHJlbW92ZSUyMGNvZmZlZSUyMHN0YWluJTIwZnJvbSUyMGNhcnBldHxlbnwwfHx8fDE3ODg5NjYwOTd8MA&ixlib=rb-4.1.0&q=80&w=200
+description: how to remove coffee stain from carpet https://images.unsplash.com/photo-1627835171402-f7655f44a808?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNz
 ---
 
 ![how to remove coffee stain from carpet](https://images.unsplash.com/photo-1627835171402-f7655f44a808?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMHJlbW92ZSUyMGNvZmZlZSUyMHN0YWluJTIwZnJvbSUyMGNhcnBldHxlbnwwfHx8fDE3ODg5NjYwOTd8MA&ixlib=rb-4.1.0&q=80&w=1080)

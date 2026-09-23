@@ -6,6 +6,7 @@ keyword: how to brew cold brew coffee
 tags: cold brew coffee ratio, cold brew concentrate, best coffee beans for cold brew, cold brew steeping time, coarse ground coffee for cold brew, cold brew vs iced coffee, how long to steep cold brew, cold brew coffee maker
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1461023058943-07fcbe16d735?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGJyZXclMjBjb2xkJTIwYnJldyUyMGNvZmZlZXxlbnwwfHx8fDE3ODk3MDYxNzB8MA&ixlib=rb-4.1.0&q=80&w=200
+description: Master how to brew cold brew coffee at home: the ultimate guide to smooth, low-acid concentrate. Use the Cold Brew Compass to craft your perfect batch. Brew now
 ---
 
 ![how to brew cold brew coffee](https://images.unsplash.com/photo-1461023058943-07fcbe16d735?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjB0byUyMGJyZXclMjBjb2xkJTIwYnJldyUyMGNvZmZlZXxlbnwwfHx8fDE3ODk3MDYxNzB8MA&ixlib=rb-4.1.0&q=80&w=1080)

@@ -6,6 +6,7 @@ keyword: vietnamese coffee ice cream
 tags: Vietnamese iced coffee, cà phê sữa đá, coffee ice cream recipe, Vietnamese coffee flavor, condensed milk ice cream, how to make Vietnamese coffee ice cream, Vietnamese coffee dessert, coffee ice cream without ice cream maker
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1575031728012-cfed523185c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwY29mZmVlJTIwaWNlJTIwY3JlYW18ZW58MHx8fHwxNzkwMTcyNDI2fDA&ixlib=rb-4.1.0&q=80&w=200
+description: The Phin-to-Freeze Method: How to Make Vietnamese Coffee Ice Cream That Actually Tastes Like Vietnam By Tien Nguyen Most Vietnamese coffee ice cream is a l
 ---
 
 ![vietnamese coffee ice cream](https://images.unsplash.com/photo-1575031728012-cfed523185c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHx2aWV0bmFtZXNlJTIwY29mZmVlJTIwaWNlJTIwY3JlYW18ZW58MHx8fHwxNzkwMTcyNDI2fDA&ixlib=rb-4.1.0&q=80&w=1080)

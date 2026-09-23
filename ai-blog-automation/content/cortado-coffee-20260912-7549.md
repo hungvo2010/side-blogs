@@ -6,6 +6,7 @@ keyword: cortado coffee
 tags: espresso and milk, Spanish coffee drink, cortado vs flat white, what is a cortado, cortado recipe, steamed milk, equal parts espresso and milk, cortado meaning
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1670217756837-34134e2e9e60?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjb3J0YWRvJTIwY29mZmVlfGVufDB8fHx8MTc4OTE4MzM5Nnww&ixlib=rb-4.1.0&q=80&w=200
+description: Discover the perfect 1:1 espresso-to-milk balance with our complete cortado coffee guide—learn how to order, brew, and enjoy it. Master your next cup today!
 ---
 
 ![cortado coffee](https://images.unsplash.com/photo-1670217756837-34134e2e9e60?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjb3J0YWRvJTIwY29mZmVlfGVufDB8fHx8MTc4OTE4MzM5Nnww&ixlib=rb-4.1.0&q=80&w=1080)

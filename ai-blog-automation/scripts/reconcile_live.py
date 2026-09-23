@@ -156,9 +156,15 @@ def _frontmatter_from_db(a, body: str, extra_keys: dict) -> str:
     # `featured` now lives in the DB (Article.featured), not the frontmatter.
     if getattr(a, "featured", False):
         fm += "featured: true\n"
-    for k in ("description", "blocks"):
-        if extra_keys.get(k):
-            fm += f"{k}: {extra_keys[k]}\n"
+    # description: the SEO meta_description lives in the DB column (set by phase 5
+    # and backfills); prefer it so the page's <meta name=description> is the SEO
+    # copy, not the auto first-sentence fallback. Local `description:` is only a
+    # fallback for rows that predate the meta_description column.
+    desc = " ".join((a.meta_description or "").split()) or extra_keys.get("description") or ""
+    if desc:
+        fm += f"description: {desc}\n"
+    if extra_keys.get("blocks"):
+        fm += f"blocks: {extra_keys['blocks']}\n"
     fm += _layout_frontmatter(a)
     fm += "---\n\n"
     return fm

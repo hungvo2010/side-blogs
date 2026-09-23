@@ -6,6 +6,7 @@ keyword: mushroom coffee
 tags: benefits of mushroom coffee, what is mushroom coffee, mushroom coffee brands, how to make mushroom coffee, adaptogenic mushrooms, lion's mane mushroom coffee, reishi mushroom coffee, chaga mushroom coffee
 author: Tien Nguyen
 image: https://images.unsplash.com/photo-1559052593-e9ade85c53d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwyfHxtdXNocm9vbSUyMGNvZmZlZXxlbnwwfHx8fDE3ODg5NjY5NTZ8MA&ixlib=rb-4.1.0&q=80&w=1080
+description: mushroom coffee https://images.unsplash.com/photo-1559052593-e9ade85c53d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwyfHxtdXNo
 ---
 
 ![mushroom coffee](https://images.unsplash.com/photo-1559052593-e9ade85c53d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwyfHxtdXNocm9vbSUyMGNvZmZlZXxlbnwwfHx8fDE3ODg5NjY5NTZ8MA&ixlib=rb-4.1.0&q=80&w=1080)
