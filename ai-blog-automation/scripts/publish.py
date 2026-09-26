@@ -142,7 +142,7 @@ FEATURED_EXTERNAL = (
 
 def footer_cols_html() -> str:
     """Footer link row: every static page + sitemap/RSS + one real external link."""
-    links = "".join(f'<a href="/{slug}">{label}</a>' for slug, label in STATIC_PAGES)
+    links = "".join(f'<a href="/{slug}/">{label}</a>' for slug, label in STATIC_PAGES)
     links += '<a href="/sitemap.xml">Sitemap</a><a href="/rss.xml">RSS</a>'
     links += (
         f'<a href="{FEATURED_EXTERNAL[0]}" target="_blank" rel="noopener">'

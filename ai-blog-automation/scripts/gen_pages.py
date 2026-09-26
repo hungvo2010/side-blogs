@@ -202,7 +202,7 @@ the robusta-first growing culture behind them.</p>
   produced with AI assistance and then reviewed, corrected and reworked before publishing. Claims
   that cannot be verified are cut rather than softened.</li>
   <li><strong>Corrections are welcome.</strong> If a number is wrong, tell us — the
-  <a href="/contact">contact page</a> is open and fixes get applied to the article itself.</li>
+  <a href="/contact/">contact page</a> is open and fixes get applied to the article itself.</li>
 </ul>
 
 <h2>What you will not find here</h2>
@@ -235,7 +235,7 @@ reach us: <a href="mailto:{CONTACT_EMAIL}"><strong>{CONTACT_EMAIL}</strong></a>.
   altitude: that is genuinely useful information for other readers.</li>
   <li><strong>You have a story tip.</strong> A roaster, a region, a brewing method we have not covered.</li>
   <li><strong>You want to write a guest guide.</strong> See the guidelines on the
-  <a href="/contributors">contributors page</a>.</li>
+  <a href="/contributors/">contributors page</a>.</li>
 </ul>
 
 <h2>Please do not bother with</h2>
@@ -456,9 +456,9 @@ system and no advertising script on this site.</p>
 you click through to that network.</p>
 
 <h2>Email</h2>
-<p>If you email the address on the <a href="/contact">contact page</a>, we keep the message only for
+<p>If you email the address on the <a href="/contact/">contact page</a>, we keep the message only for
 as long as it takes to reply and do not add you to any list. There is no newsletter to be added to
-yet; see the <a href="/newsletter">newsletter page</a> for how the feed works instead.</p>
+yet; see the <a href="/newsletter/">newsletter page</a> for how the feed works instead.</p>
 
 <h2>Your rights</h2>
 <p>Since we hold no personal data, there is nothing to export or erase. If you believe a request from
@@ -491,7 +491,7 @@ NOT_FOUND = f"""<main class="page">
     <li><a href="/">All stories on the homepage</a></li>
     <li><a href="/sitemap.xml">Every article (sitemap)</a></li>
     <li><a href="/rss.xml">Follow the feed</a></li>
-    <li><a href="/contact">Tell us which link broke</a></li>
+    <li><a href="/contact/">Tell us which link broke</a></li>
   </ul>
 </div>
 <p class="back"><a href="/">← Back to all stories</a></p>
