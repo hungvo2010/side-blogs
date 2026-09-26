@@ -291,6 +291,7 @@ INDEX_TEMPLATE = """\
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <meta name="google-site-verification" content="BWPdVOyPoQmHVqgfn8_PMBl7N6F0e5-q1CVNjHuMhOg" />
     <link rel="canonical" href="{site_url}">
+    <script type="application/ld+json">{index_ld_json}</script>
     <meta property="og:title" content="{title}">
     <meta property="og:description" content="{description}">
     <meta property="og:type" content="website">
@@ -318,16 +319,16 @@ INDEX_TEMPLATE = """\
         .tile img{{width:100%;height:100%;object-fit:cover;display:block}}
         .tile .cap{{position:absolute;left:0;right:0;bottom:0;padding:20px 18px 16px;color:#fff;background:linear-gradient(transparent,rgba(28,20,14,.88))}}
         .tile .cap .k{{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#f0dcc0}}
-        .tile .cap h3{{font-family:var(--serif);font-weight:600;font-size:1.18rem;line-height:1.26;margin:6px 0 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}}
+        .tile .cap h2{{font-family:var(--serif);font-weight:600;font-size:1.18rem;line-height:1.26;margin:6px 0 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}}
         .tile.big{{grid-column:span 2;grid-row:span 2}}
-        .tile.big .cap h3{{font-size:clamp(1.35rem,2.1vw,1.85rem);-webkit-line-clamp:4}}
+        .tile.big .cap h2{{font-size:clamp(1.35rem,2.1vw,1.85rem);-webkit-line-clamp:4}}
         .tile.wide{{grid-column:span 2}}
         .tile.flat{{display:flex;flex-direction:column;justify-content:center;gap:8px;padding:22px;background:var(--accent-soft);border-color:var(--accent-soft)}}
-        .tile.flat h3{{font-family:var(--serif);font-size:1.15rem;line-height:1.25;margin:0}}
+        .tile.flat h2{{font-family:var(--serif);font-size:1.15rem;line-height:1.25;margin:0}}
         .tile.flat p{{color:#6d4f2b;font-size:.9rem;margin:0}}
         .tile.flat code{{background:#fff;border-radius:8px;padding:6px 10px;font-size:.8rem;align-self:flex-start}}
         .tile.dark{{display:flex;flex-direction:column;justify-content:center;padding:22px;background:var(--ink);color:#f7f1e8;border-color:var(--ink)}}
-        .tile.dark h3{{font-family:var(--serif);font-size:1.15rem;line-height:1.25;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}}
+        .tile.dark h2{{font-family:var(--serif);font-size:1.15rem;line-height:1.25;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}}
         .tile.dark p{{opacity:.82;font-size:.9rem;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}}
         .tile.hide{{display:none}}
         .sec{{font-family:var(--serif);font-size:1.15rem;font-weight:600;margin:44px 0 16px;display:flex;align-items:center;gap:14px}}
@@ -356,7 +357,7 @@ INDEX_TEMPLATE = """\
         @media(max-width:560px){{
             .bento{{grid-template-columns:1fr;grid-auto-rows:200px}}
             .tile.wide,.tile.big{{grid-column:span 1}}
-            .tile.big .cap h3{{font-size:1.3rem}}
+            .tile.big .cap h2{{font-size:1.3rem}}
         }}
     </style>
 </head>
@@ -955,13 +956,13 @@ def build_index(posts_meta: list[dict]) -> str:
         if not url:  # no image -> text tile (still clickable)
             return (
                 f'<a class="tile flat" href="/{p["slug"]}/" data-topic="{topic}">'
-                f'<h3>{p["title"]}</h3><p>{_kicker(p)} · {_meta(p)}</p></a>'
+                f'<h2>{p["title"]}</h2><p>{_kicker(p)} · {_meta(p)}</p></a>'
             )
         kick = f'<div class="k">{_kicker(p)}</div>' if cls in ("big", "wide") else ""
         return (
             f'<a class="tile {cls}" href="/{p["slug"]}/" data-topic="{topic}">'
             f'<img src="{url}" alt="{alt}" loading="lazy" width="800" height="600">'
-            f'<div class="cap">{kick}<h3>{p["title"]}</h3></div></a>'
+            f'<div class="cap">{kick}<h2>{p["title"]}</h2></div></a>'
         )
 
     def _dark(p):
@@ -969,7 +970,7 @@ def build_index(posts_meta: list[dict]) -> str:
             f'<a class="tile dark" href="/{p["slug"]}/" data-topic="{topic_of(p)}">'
             f'<div class="k" style="font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;'
             f'color:#f0dcc0;font-weight:700;margin-bottom:6px">{_kicker(p)}</div>'
-            f'<h3>{p["title"]}</h3><p>{p.get("description", "")[:110]}…</p></a>'
+            f'<h2>{p["title"]}</h2><p>{p.get("description", "")[:110]}…</p></a>'
         )
 
     slots, slot_warnings = assign_home_slots(posts_meta)
@@ -988,7 +989,7 @@ def build_index(posts_meta: list[dict]) -> str:
     if cold:
         tiles.append(
             f'<a class="tile flat" href="/{cold["slug"]}/" data-topic="brewing">'
-            '<h3>Try the 1:4 cold brew ratio</h3>'
+            '<h2>Try the 1:4 cold brew ratio</h2>'
             '<p>Coarse grind, 16 hours in the fridge — smooth, never bitter.</p>'
             '<code>50 g coffee · 200 g water</code></a>'
         )
@@ -997,7 +998,7 @@ def build_index(posts_meta: list[dict]) -> str:
     tiles += [_dark(p) for p in spotlight]
     tiles.append(
         '<a class="tile flat" href="/rss.xml" data-topic="all">'
-        '<h3>Every new guide, straight to your reader</h3>'
+        '<h2>Every new guide, straight to your reader</h2>'
         '<p>No tracking, no popups — just the posts.</p><code>/rss.xml</code></a>'
     )
 
@@ -1028,6 +1029,26 @@ def build_index(posts_meta: list[dict]) -> str:
             'stories in the archive →</a></li>'
         )
 
+    index_ld = [
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": DEFAULTS["site_name"],
+            "url": f"{DEFAULTS['site_url']}/",
+            "description": DEFAULTS["description"],
+            "inLanguage": DEFAULTS["lang"],
+        },
+        {
+            "@context": "https://schema.org",
+            "@type": "Blog",
+            "name": DEFAULTS["site_name"],
+            "url": f"{DEFAULTS['site_url']}/",
+            "description": DEFAULTS["description"],
+            "inLanguage": DEFAULTS["lang"],
+            "author": {"@type": "Person", "name": DEFAULTS["author"]},
+        },
+    ]
+
     return INDEX_TEMPLATE.format(
         layout_css=LAYOUT_CSS,
         site_css=SITE_CSS,
@@ -1037,6 +1058,7 @@ def build_index(posts_meta: list[dict]) -> str:
         title=f"{DEFAULTS['site_name']} — Latest Posts & Articles on Coffee, Brewing & Home Barista Tips",
         site_url=DEFAULTS["site_url"],
         description=DEFAULTS["description"],
+        index_ld_json=json.dumps(index_ld, ensure_ascii=False),
         post_count=len(posts_meta),
         filters_html=filters_html,
         tiles_html="".join(tiles),
