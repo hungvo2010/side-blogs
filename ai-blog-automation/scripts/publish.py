@@ -290,12 +290,12 @@ INDEX_TEMPLATE = """\
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <meta name="google-site-verification" content="BWPdVOyPoQmHVqgfn8_PMBl7N6F0e5-q1CVNjHuMhOg" />
-    <link rel="canonical" href="{site_url}">
+    <link rel="canonical" href="{site_url}/">
     <script type="application/ld+json">{index_ld_json}</script>
     <meta property="og:title" content="{title}">
     <meta property="og:description" content="{description}">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{site_url}">
+    <meta property="og:url" content="{site_url}/">
     <link rel="alternate" type="application/rss+xml" title="{site_name} RSS" href="/rss.xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1162,9 +1162,19 @@ def build_site(
     favicon = _ROOT / "public" / "favicon.svg"
     if favicon.exists():
         shutil.copy2(favicon, dist / "favicon.svg")
-    redirects = _ROOT / "public" / "_redirects"
-    if redirects.exists():
-        shutil.copy2(redirects, dist / "_redirects")
+    # NOTE: Cloudflare Pages does NOT support domain-level redirects in
+    # _redirects (official docs: "Domain-level redirects ❌"). So www→apex
+    # CANNOT be done with a rule like `https://www.x/* https://x/:splat 301`
+    # — it is silently ignored. www→apex must be a ZONE-level Redirect Rule
+    # (dash → dripper.top → Rules → Redirect Rules), or left to the canonical
+    # tag (every www page already points its canonical at the apex, which GSC
+    # reports as the benign "Alternate page with proper canonical tag").
+    # Only same-host PATH redirects may live here.
+    (dist / "_redirects").write_text(
+        "# Path redirects only — domain-level (www→apex) redirects are NOT\n"
+        "# supported by Cloudflare Pages. Use a zone Redirect Rule for those.\n",
+        encoding="utf-8",
+    )
 
     (dist / "index.html").write_text(build_index(posts_meta), encoding="utf-8")
     (dist / "sitemap.xml").write_text(build_sitemap(posts_meta), encoding="utf-8")

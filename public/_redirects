@@ -1,2 +1,2 @@
-# 301 redirects for www → non-www canonicalization
-https://www.side-blogs.pages.dev/* https://side-blogs.pages.dev/:splat 301!
+# Path redirects only — domain-level (www→apex) redirects are NOT
+# supported by Cloudflare Pages. Use a zone Redirect Rule for those.
