@@ -24,6 +24,7 @@ markdown2 = "^2.4.12"
 httpx = "^0.26.0"
 tenacity = "^8.2.3"
 psycopg2-binary = "^2.9.9"
+psycopg = { version = "^3.2", extras = ["binary"] }
 structlog = "^23.3.0"
 streamlit = "^1.29.0"
 plotly = "^5.18.0"
