@@ -1160,8 +1160,7 @@ def build_site(
     # Copy hand-made static assets (favicon, apple-touch-icon, …) from ./static
     # into the build output. public/ is 100% generated (and git-ignored), so the
     # real source assets live in ./static — a fresh clone rebuilds without loss.
-    _ROOT = Path(__file__).resolve().parent.parent
-    _static = _ROOT / "static"
+    _static = dist.parent / "static"  # repo root ./static (dist = ../public)
     if _static.is_dir():
         for _f in sorted(_static.iterdir()):
             if _f.is_file():
