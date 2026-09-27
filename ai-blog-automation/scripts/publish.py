@@ -1183,6 +1183,18 @@ def build_site(
         pd.mkdir(parents=True, exist_ok=True)
         (pd / "index.html").write_text(new_html, encoding="utf-8")
 
+    # Static pages (about/contact/privacy/…) and a real 404.html come from
+    # gen_pages.py, which imports THIS module for its design tokens — so import
+    # it lazily (module fully loaded by now) and run it in-process. Without this
+    # every build path (CLI and the dashboard's approve-and-publish) shipped a
+    # site with no static pages and a soft-404 fallback.
+    _scripts_dir = str(Path(__file__).resolve().parent)
+    if _scripts_dir not in sys.path:
+        sys.path.insert(0, _scripts_dir)
+    import gen_pages  # noqa: PLC0415  (deferred on purpose: gen_pages imports publish)
+
+    gen_pages.main()
+
     print(f"✅ Built {len(posts_meta)} posts → {dist}/")
 
 
