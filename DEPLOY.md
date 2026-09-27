@@ -198,19 +198,30 @@ Muốn đổi kích thước/kiểu ảnh → sửa CSS `.posts .thumb` trong đ
 | `CLOUDFLARE_ACCOUNT_ID` | Cho publish_cf.py / wrangler | Cloudflare account ID (account chứa project `side-blogs`) |
 | `CLOUDFLARE_PROJECT_NAME` | No (default: side-blogs) | Tên Pages project |
 
-## Static pages (About, Privacy)
+## Static pages (About, Privacy, Contact…) + 404
+
+`publish.py` tự sinh chúng — cuối mỗi `build()` nó gọi `gen_pages.main()` in-process,
+nên **1 lệnh build ra cả site**, không cần chạy gen_pages riêng nữa:
 
 ```bash
 cd ai-blog-automation
-.venv/bin/python scripts/gen_pages.py
+SITE_NAME="The Daily Brew" SITE_URL="https://dripper.top" \
+    PYTHONPATH=src .venv/bin/python scripts/publish.py     # → ../public/
 ```
 
-Kết quả trong `public/about/index.html` và `public/privacy/index.html`.
-Muốn đổi nội dung → sửa trực tiếp trong `gen_pages.py`.
+→ sinh `public/about`, `/contributors`, `/contact`, `/newsletter`, `/pay-it-forward`,
+`/sustainability`, `/privacy` + một `404.html` thật (unknown path trả 404, không
+còn fallback soft-404 về homepage).
+
+`scripts/gen_pages.py` vẫn còn và chạy độc lập được (`python scripts/gen_pages.py`)
+để chỉnh/preview, nhưng **không còn là bước riêng bắt buộc** của deploy flow nữa.
+Muốn đổi nội dung → sửa trong `gen_pages.py` (hoặc `publish.py` cho footer/CSS).
 
 ## Lưu ý
 
-- **public/** là thư mục output, đừng sửa file trong đó (sẽ bị overwrite khi build).
+- **public/** là OUTPUT build — `publish.py` ghi lại toàn bộ mỗi lần chạy. **Đừng sửa file trong đó**, và nó **KHÔNG được track trong git** (đã nằm trong `.gitignore`); deploy upload thẳng `public/` lên Pages. Rebuild để có lại, đừng commit.
+- Asset tay (`favicon.svg`, `apple-touch-icon.png`…) nằm ở **`./static/`** — build tự copy sang `public/`. Thêm asset mới thì bỏ vào `static/`, ĐỪNG bỏ vào `public/`.
+- ⚠️ **Đừng deploy bằng `publish_cf.py --no-build` với `public/` cũ** — nó đẩy HTML cũ lên production (đã từng làm canonical homepage bị revert về bản thiếu slash). Luôn build lại trước khi deploy.
 - Chỉ sửa markdown trong **content/** hoặc script trong **scripts/**.
 - publish.py build toàn bộ content/*.md mỗi lần chạy → xóa bài cũ bằng cách xóa file .md rồi build lại.
 - Không cần database nếu chỉ dùng publish.py (database chỉ cần cho AI pipeline với run.py).
