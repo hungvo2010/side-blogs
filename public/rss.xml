@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
-  <title>The Daily Brew</title>
+  <title>x</title>
   <link>https://dripper.top</link>
   <description>Expert coffee guides, brewing tips, and in-depth reviews to help you make the perfect cup at home — from French press to drip machines and Vietnamese coffee culture.</description>
   <atom:link href="https://dripper.top/rss.xml" rel="self" type="application/rss+xml"/>
@@ -15,12 +15,28 @@
       <enclosure url="https://images.unsplash.com/photo-1620051787208-a45bc64e32ff?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxiZXN0JTIwaG9tZSUyMGVzcHJlc3NvJTIwbWFjaGluZXN8ZW58MHx8fHwxNzkwMzg1Mzc1fDA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
+      <title>Coconut Coffee's Journey from Tradition to Trend</title>
+      <link>https://dripper.top/coconut-coffee-20260926-2daf/</link>
+      <guid isPermaLink="true">https://dripper.top/coconut-coffee-20260926-2daf/</guid>
+      <pubDate>Sat, 26 Sep 2026 07:00:00 +0700</pubDate>
+      <description>From Southeast Asian stalls to global cafes, coconut coffee has become a trend. Discover traditional vs trendy styles and find your perfect brew. Learn more!</description>
+      <enclosure url="https://images.unsplash.com/photo-1588413335672-87b35888b55d?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxjb2NvbnV0JTIwY29mZmVlfGVufDB8fHx8MTc5MDM4NDk4MHww&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
+    </item>
+    <item>
       <title>How Long Do Coffee Beans Stay Fresh? Trust Your Senses</title>
       <link>https://dripper.top/how-long-do-coffee-beans-stay-fresh-20260926-694d/</link>
       <guid isPermaLink="true">https://dripper.top/how-long-do-coffee-beans-stay-fresh-20260926-694d/</guid>
       <pubDate>Sat, 26 Sep 2026 07:00:00 +0700</pubDate>
       <description>How long do coffee beans stay fresh? Trust your senses, not the package. Discover the signs of stale beans and brew a vibrant cup—click to learn more!</description>
       <enclosure url="https://images.unsplash.com/photo-1447933601403-0c6688de566e?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxob3clMjBsb25nJTIwZG8lMjBjb2ZmZWUlMjBiZWFucyUyMHN0YXklMjBmcmVzaHxlbnwwfHx8fDE3OTAzODYxMjR8MA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
+    </item>
+    <item>
+      <title>Shaken Espresso: The Complete Guide to the Foamy, Chilled Coffee Drink</title>
+      <link>https://dripper.top/shaken-espresso-20260923-25a8/</link>
+      <guid isPermaLink="true">https://dripper.top/shaken-espresso-20260923-25a8/</guid>
+      <pubDate>Sat, 26 Sep 2026 07:00:00 +0700</pubDate>
+      <description>Shaken Espresso: The Complete Guide to the Foamy, Chilled Coffee Drink By Tien Nguyen There's a moment when you order a shaken espresso and the barista han</description>
+      <enclosure url="https://images.unsplash.com/photo-1583165278997-0250ea5d72e2?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MTEwNzF8MHwxfHNlYXJjaHwxfHxzaGFrZW4lMjBlc3ByZXNzb3xlbnwwfHx8fDE3OTAxNzI3MDh8MA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=200" type="image/jpeg"/>
     </item>
     <item>
       <title>Dirty Coffee: Why It Layers, Where It's From, How to Pour</title>

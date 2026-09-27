@@ -1157,24 +1157,16 @@ def build_site(
 
     dist.mkdir(parents=True, exist_ok=True)
 
-    # Copy static assets (favicon, _redirects, etc.)
+    # Copy static assets (favicon, etc.)
     _ROOT = Path(__file__).resolve().parent.parent
     favicon = _ROOT / "public" / "favicon.svg"
     if favicon.exists():
         shutil.copy2(favicon, dist / "favicon.svg")
-    # NOTE: Cloudflare Pages does NOT support domain-level redirects in
-    # _redirects (official docs: "Domain-level redirects ❌"). So www→apex
-    # CANNOT be done with a rule like `https://www.x/* https://x/:splat 301`
-    # — it is silently ignored. www→apex must be a ZONE-level Redirect Rule
-    # (dash → dripper.top → Rules → Redirect Rules), or left to the canonical
-    # tag (every www page already points its canonical at the apex, which GSC
-    # reports as the benign "Alternate page with proper canonical tag").
-    # Only same-host PATH redirects may live here.
-    (dist / "_redirects").write_text(
-        "# Path redirects only — domain-level (www→apex) redirects are NOT\n"
-        "# supported by Cloudflare Pages. Use a zone Redirect Rule for those.\n",
-        encoding="utf-8",
-    )
+    # NOTE: no _redirects is emitted on purpose — Cloudflare Pages does NOT
+    # support domain-level redirects there ("Domain-level redirects ❌" in the
+    # docs), and this site needs no path redirects. www→apex is a ZONE-level
+    # Redirect Rule; until then the canonical tag already points every www
+    # page at the apex (GSC: benign "Alternate page with proper canonical tag").
 
     (dist / "index.html").write_text(build_index(posts_meta), encoding="utf-8")
     (dist / "sitemap.xml").write_text(build_sitemap(posts_meta), encoding="utf-8")

@@ -1,2 +1,0 @@
-# Path redirects only — domain-level (www→apex) redirects are NOT
-# supported by Cloudflare Pages. Use a zone Redirect Rule for those.
