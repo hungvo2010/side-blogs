@@ -1157,11 +1157,15 @@ def build_site(
 
     dist.mkdir(parents=True, exist_ok=True)
 
-    # Copy static assets (favicon, etc.)
+    # Copy hand-made static assets (favicon, apple-touch-icon, …) from ./static
+    # into the build output. public/ is 100% generated (and git-ignored), so the
+    # real source assets live in ./static — a fresh clone rebuilds without loss.
     _ROOT = Path(__file__).resolve().parent.parent
-    favicon = _ROOT / "public" / "favicon.svg"
-    if favicon.exists():
-        shutil.copy2(favicon, dist / "favicon.svg")
+    _static = _ROOT / "static"
+    if _static.is_dir():
+        for _f in sorted(_static.iterdir()):
+            if _f.is_file():
+                shutil.copy2(_f, dist / _f.name)
     # NOTE: no _redirects is emitted on purpose — Cloudflare Pages does NOT
     # support domain-level redirects there ("Domain-level redirects ❌" in the
     # docs), and this site needs no path redirects. www→apex is a ZONE-level

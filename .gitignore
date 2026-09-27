@@ -1,2 +1,6 @@
 .wrangler/
 .env
+
+# public/ là OUTPUT build (publish.py/gen_pages.py sinh ra) rồi upload lên
+# Cloudflare Pages. Rebuild lại, KHÔNG commit. Asset tay (favicon…) nằm ở ./static/.
+public/
